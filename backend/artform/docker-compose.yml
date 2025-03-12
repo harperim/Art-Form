@@ -31,11 +31,13 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://mandarin.iptime.org:5432/${DB_NAME}
-      - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - DB_URL=jdbc:postgresql://mandarin.iptime.org:5432/${PSQL_NAME}
+      - DB_NAME=${PSQL_NAME}
+      - DB_USERNAME=${PSQL_USERNAME}
+      - DB_PASSWORD=${PSQL_PASSWORD}
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
       - SERVER_PORT=8081
     networks:
       - user-network
     restart: always
+    #test2
