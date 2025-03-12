@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:17
+    container_name: psql
+    # restart: always
+    environment:
+      PSQL_DATABASE: ${PSQL_NAME}
+      PSQL_ROOT_PASSWORD: ${PSQL_ROOT_PASSWORD}
+      PSQL_USER: ${PSQL_USERNAME}
+      PSQL_PASSWORD: ${PSQL_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+        interval: 20s
+        timeout: 5s
+        retries: 5
+    networks:
+      - user-network
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: spring-server
+    container_name: spring-server
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_URL=jdbc:postgresql://mandarin.iptime.org:5432/${PSQL_NAME}
+      - DB_NAME=${PSQL_NAME}
+      - DB_USERNAME=${PSQL_USERNAME}
+      - DB_PASSWORD=${PSQL_PASSWORD}
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SERVER_PORT=8081
+    networks:
+      - user-network
+    restart: always
