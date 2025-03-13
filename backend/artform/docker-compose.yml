@@ -1,10 +1,10 @@
 networks:
   user-network:
     driver: bridge
-    
+
 services:
   db:
-    image: postgres:17
+    image: postgres
     container_name: psql
     # restart: always
     environment:
