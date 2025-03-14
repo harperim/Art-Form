@@ -1,6 +1,6 @@
 networks:
   user-network:
-    driver: bridge 
+    driver: bridge
 
 services:
   db:
