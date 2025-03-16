@@ -1,0 +1,45 @@
+networks:
+  user-network:
+    driver: bridge
+
+services:
+  db:
+    image: postgres
+    container_name: psql
+    # restart: always
+    environment:
+      POSTGRES_DB: ${PSQL_DB_NAME}
+      POSTGRES_USER: ${PSQL_USERNAME}
+      POSTGRES_PASSWORD: ${PSQL_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PSQL_USERNAME} -d ${PSQL_DB_NAME}"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+    networks:
+      - user-network
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: artform-user-server
+    container_name: artform-user-server
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_URL=jdbc:postgresql://mandarin.iptime.org:5432/${PSQL_DB_NAME}
+      - DB_NAME=${PSQL_DB_NAME}
+      - DB_USERNAME=${PSQL_USERNAME}
+      - DB_PASSWORD=${PSQL_PASSWORD}
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SERVER_PORT=8081
+    networks:
+      - user-network
+    restart: always
