@@ -1,5 +1,5 @@
 networks:
-  user-network:
+  core-network:
     driver: bridge
 
 services:
@@ -21,25 +21,25 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - user-network
+      - core-network
   app:
     build:
       context: ./
       dockerfile: Dockerfile
-    image: artform-user-server
-    container_name: artform-user-server
+    image: artform-core-server
+    container_name: artform-core-server
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "8081:8081"
     environment:
-      - DB_URL=jdbc:postgresql://mandarin.iptime.org:5432/${PSQL_DB_NAME}
+      - DB_URL=jdbc:postgresql://${DB_DOMAIN}/${PSQL_DB_NAME}
       - DB_NAME=${PSQL_DB_NAME}
       - DB_USERNAME=${PSQL_USERNAME}
       - DB_PASSWORD=${PSQL_PASSWORD}
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
       - SERVER_PORT=8081
     networks:
-      - user-network
+      - core-network
     restart: always
