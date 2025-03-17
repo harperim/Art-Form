@@ -5,7 +5,7 @@ networks:
 services:
   db:
     image: postgres
-    container_name: psql
+    container_name: psql-core
     # restart: always
     environment:
       POSTGRES_DB: ${PSQL_DB_NAME}
@@ -14,7 +14,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - ./postgres_data_core:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PSQL_USERNAME} -d ${PSQL_DB_NAME}"]
       interval: 20s
@@ -34,8 +34,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - DB_URL=jdbc:postgresql://${DB_DOMAIN}/${PSQL_DB_NAME}
-      - DB_NAME=${PSQL_DB_NAME}
+      - DB_URL=jdbc:postgresql://SERVER_URL:5432/${PSQL_DB_NAME}
       - DB_USERNAME=${PSQL_USERNAME}
       - DB_PASSWORD=${PSQL_PASSWORD}
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
