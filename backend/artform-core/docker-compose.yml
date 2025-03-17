@@ -42,3 +42,4 @@ services:
     networks:
       - core-network
     restart: always
+ 
