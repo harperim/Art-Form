@@ -41,4 +41,4 @@ services:
       - SERVER_PORT=8081
     networks:
       - core-network
-    restart: always
+    restart: always 
