@@ -34,7 +34,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - DB_URL=jdbc:postgresql://SERVER_URL:5432/${PSQL_DB_NAME}
+      - DB_URL=jdbc:postgresql://${SERVER_URL}:5432/${PSQL_DB_NAME}
       - DB_USERNAME=${PSQL_USERNAME}
       - DB_PASSWORD=${PSQL_PASSWORD}
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
