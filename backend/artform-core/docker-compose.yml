@@ -23,7 +23,7 @@ services:
     networks:
       - core-network
   app:
-    build: 
+    build:
       context: ./
       dockerfile: Dockerfile
     image: artform-core-server
