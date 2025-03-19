@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: artform-user
+
+  jpa:
+    database: postgresql
+    hibernate:
+      ddl-auto: create
+
+  datasource:
+    hikari:
+      maximum-pool-size: 4
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+#    driver-class-name: org.postgresql.Driver
