@@ -16,4 +16,4 @@ services:
 
 networks:
   nginx-network:
-    external: true 
+    external: true
