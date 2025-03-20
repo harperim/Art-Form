@@ -21,5 +21,6 @@ export default tseslint.config({
     '@typescript-eslint/explicit-module-boundary-types': 'off', // 함수 반환 타입 명시 비활성화
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }], // 사용하지 않는 변수 경고 (예외: _로 시작하는 변수)
     '@typescript-eslint/consistent-type-imports': 'warn', // `import type {}` 사용 권장
+    '@typescript-eslint/no-require-imports': ['error', { allow: ['../assets/'] }], // require 사용 금지 (예외: assets)
   },
 });
