@@ -7,6 +7,10 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseDto {
-    private String msg;
+public class UserInfoDto {
+
+    private String userId;
+    private String email;
+    private String nickname;
+
 }
