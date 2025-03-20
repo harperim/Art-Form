@@ -2,18 +2,21 @@ spring:
   application:
     name: artform-core
 
-  jpa:
-    database: postgresql
-    hibernate:
-      ddl-auto: create
+  config:
+    import: optional:file:.env[.properties]
 
   datasource:
     hikari:
       maximum-pool-size: 4
-    url: ${DB_URL}
+    url: jdbc:postgresql://${DB_URL}:${DB_PORT}/${DB}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database: postgresql
+    hibernate:
+      ddl-auto: create
 
   data:
     redis:

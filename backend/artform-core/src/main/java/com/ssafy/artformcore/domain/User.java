@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "users")
 public class User {
 
     @Id
