@@ -1,32 +1,16 @@
 spring:
   application:
-    name: artform-core
-
-  config:
-    import: optional:file:.env[.properties]
-
-  datasource:
-    hikari:
-      maximum-pool-size: 4
-    url: jdbc:postgresql://${DB_URL}:${DB_PORT}/${DB}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
+    name: artform-user
 
   jpa:
     database: postgresql
     hibernate:
       ddl-auto: create
 
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-
-jwt:
-  secret: ${JWT_SECRET}
-  access-token:
-    expire-time: 259200000 # 3일
-  refresh-token:
-    expire-time: 604800000 # 7일
-
+  datasource:
+    hikari:
+      maximum-pool-size: 4
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+#    driver-class-name: org.postgresql.Driver
