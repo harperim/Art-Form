@@ -46,4 +46,4 @@ services:
     networks:
       - core-network
       - nginx-network
-    restart: always 
+    restart: always
