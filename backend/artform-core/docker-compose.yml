@@ -41,4 +41,5 @@ services:
       - SERVER_PORT=8081
     networks:
       - core-network
+      - nginx-network
     restart: always 
