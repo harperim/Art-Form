@@ -22,5 +22,11 @@ services:
 
 volumes:
   letsencrypt_certs:
+    external: true
   letsencrypt_data:
+    external: true
   webroot:
+
+networks:
+  nginx-network:
+    external: true
