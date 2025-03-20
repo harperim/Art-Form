@@ -4,7 +4,7 @@
     "target": "esnext", // 최신 ECMAScript 문법을 사용
     "module": "esnext", // ESNext 모듈 시스템을 사용
     "lib": ["esnext", "dom"], // 최신 ECMAScript 및 DOM API 사용 가능
-    "jsx": "react-native", // React Native에서 JSX를 사용할 수 있도록 설정
+    "jsx": "react-jsx", // React Native에서 JSX를 사용할 수 있도록 설정
 
     "strict": true, // TypeScript의 엄격한 타입 검사를 활성화
     "noImplicitAny": true, // 암시적인 `any` 타입을 허용하지 않음 (타입을 명확히 지정해야 함)
@@ -20,6 +20,6 @@
       "@/*": ["src/*"] // `@/components/Button` 같은 경로 단축(alias) 기능 제공
     }
   },
-  "include": ["src", "App.tsx", "index.tsx", "eslint.config.mjs"], // 프로젝트에서 TypeScript가 적용될 파일들
+  "include": ["src", "App.tsx", "index.tsx", "eslint.config.mjs", "**/*.tsx"], // 프로젝트에서 TypeScript가 적용될 파일들
   "exclude": ["node_modules", "babel.config.js", "metro.config.js"] // 빌드 대상에서 제외할 파일들
 }
