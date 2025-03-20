@@ -1,8 +1,10 @@
 networks:
   core-network:
     driver: bridge
+    name: core-network
   nginx-network:
     driver: bridge
+    name: nginx-network
 
 services:
   db:
