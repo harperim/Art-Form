@@ -3,6 +3,7 @@
     "name": "Artform",
     "slug": "Artform",
     "version": "1.0.0",
+    "scheme": "Artform-scheme",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -22,7 +23,9 @@
       }
     },
     "web": {
+      "bundler": "metro",
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": ["expo-router"]
   }
 }
