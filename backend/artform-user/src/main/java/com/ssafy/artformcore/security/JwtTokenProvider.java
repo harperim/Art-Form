@@ -31,9 +31,6 @@ public class JwtTokenProvider {
     @Value("${jwt.refresh-token.expire-time}")
     private long REFRESH_TOKEN_EXPIRE_TIME;
 
-    @Value("${jwt.secret}")
-
-
     private static final String GRANT_TYPE = "Bearer";
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey, UserDetailsService userDetailsService, RedisDao redisDao) {
@@ -50,7 +47,6 @@ public class JwtTokenProvider {
 
         long now = (new Date()).getTime();
         String email = authentication.getName();
-
         return generateToken(now, email, authorities);
     }
 
@@ -108,5 +104,9 @@ public class JwtTokenProvider {
             throw new IllegalArgumentException("userId cannot be null");
         }
         redisDao.deleteValues(email);
+    }
+
+    public void getAuthentication(String token) {
+        Claims claims = parseClaims(token);
     }
 }

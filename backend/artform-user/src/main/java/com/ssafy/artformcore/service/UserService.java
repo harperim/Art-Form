@@ -9,9 +9,9 @@ public interface UserService {
 
     JwtToken login(LoginRequestDto loginRequestDto);
 
-    void logout(String logoutRequestDto, String userId);
+    void logout(String logoutRequestDto, String email);
 
-    boolean deleteUser(String userId);
+    void deleteUser(Long userId);
 
     boolean checkEmailAvailability(String email);
 

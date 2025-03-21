@@ -5,6 +5,7 @@ import com.ssafy.artformcore.dto.LoginResponseDto;
 import com.ssafy.artformcore.dto.ResponseDto;
 import com.ssafy.artformcore.dto.SignupRequestDto;
 import com.ssafy.artformcore.security.JwtToken;
+import com.ssafy.artformcore.security.JwtTokenProvider;
 import com.ssafy.artformcore.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "회원가입",
             responses = {
@@ -49,7 +51,7 @@ public class UserController {
     }
 
     // 로그아웃
-    @Operation(summary = "부모 로그아웃")
+    @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorization, @RequestBody Map<String, String> map) {
         String email = map.get("email");
@@ -58,6 +60,37 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/{parentId}")
+    public ResponseEntity<Void> deleteParent(@PathVariable("userId") Long userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/email-check/{email}")
+    public ResponseEntity<Boolean> emailCheck(@PathVariable("email") String email) {
+        Boolean isAvailable = userService.checkEmailAvailability(email);
+        return ResponseEntity.ok(isAvailable);
+    }
+
+    @GetMapping("/nickname-check/{nickname}")
+    public ResponseEntity<Boolean> nicknameCheck(@PathVariable("nickname") String nickname) {
+        Boolean isAvailable = userService.checkNicknameAvailability(nickname);
+        return ResponseEntity.ok(isAvailable);
+    }
+
+    @GetMapping
+    public ResponseEntity<ResponseDto> getMyInfo(@RequestHeader("Authorization") String authorization) {
+
+        return ResponseEntity.ok(new ResponseDto());
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<ResponseDto> getUser(@PathVariable("userId") Long userId) {
+        return ResponseEntity.ok(new ResponseDto());
+    }
+
+
 
 
 }

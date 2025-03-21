@@ -2,6 +2,7 @@ package com.ssafy.artformcore.service;
 
 import com.ssafy.artformcore.domain.User;
 import com.ssafy.artformcore.dto.*;
+import com.ssafy.artformcore.exception.UserNotFoundException;
 import com.ssafy.artformcore.repository.UserRepository;
 import com.ssafy.artformcore.security.JwtToken;
 import com.ssafy.artformcore.security.JwtTokenProvider;
@@ -53,18 +54,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean deleteUser(String userId) {
-        return false;
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(()-> new UserNotFoundException("User not found"));
+        user.setDeleted(true);
     }
 
     @Override
     public boolean checkEmailAvailability(String email) {
-        return false;
+        return userRepository.findByEmail(email).isPresent();
     }
 
     @Override
     public boolean checkNicknameAvailability(String nickname) {
-        return false;
+        return userRepository.findByNickname(nickname).isPresent();
     }
 
     @Override
@@ -79,6 +81,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public TokenRefreshResponseDto refreshAccessToken(String refreshToken) {
+
         return null;
     }
 }

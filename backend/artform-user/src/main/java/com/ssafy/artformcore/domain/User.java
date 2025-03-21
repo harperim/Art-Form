@@ -33,6 +33,7 @@ public class User {
     private String password;
 
     @NotNull
+    @Column(unique = true)
     private String nickname;
 
     @CreatedDate
@@ -44,5 +45,9 @@ public class User {
 
     @Builder.Default
     private boolean deleted = false;
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 
 }
