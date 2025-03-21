@@ -1,6 +1,10 @@
 networks:
   user-network:
     driver: bridge
+    name: core-network
+  nginx-network:
+    driver: bridge
+    name: nginx-network
 
 services:
   db:
@@ -41,4 +45,5 @@ services:
       - SERVER_PORT=8081
     networks:
       - user-network
+      - nginx-network
     restart: always
