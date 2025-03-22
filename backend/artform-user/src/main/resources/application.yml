@@ -1,6 +1,6 @@
 spring:
   application:
-    name: artform-core
+    name: artform-user
 
   config:
     import: optional:file:.env[.properties]

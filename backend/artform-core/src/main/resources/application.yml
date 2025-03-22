@@ -1,6 +1,6 @@
 spring:
   application:
-    name: artform-user
+    name: artform-core
 
   jpa:
     database: postgresql
