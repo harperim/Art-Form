@@ -1,6 +1,6 @@
-package com.ssafy.artformcore.service;
+package com.ssafy.artformuser.service;
 
-import com.ssafy.artformcore.dto.SignupRequestDto;
+import com.ssafy.artformuser.dto.SignupRequestDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

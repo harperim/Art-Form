@@ -1,8 +1,8 @@
-package com.ssafy.artformcore.controller;
+package com.ssafy.artformuser.controller;
 
-import com.ssafy.artformcore.dto.ResponseDto;
-import com.ssafy.artformcore.dto.SignupRequestDto;
-import com.ssafy.artformcore.service.UserService;
+import com.ssafy.artformuser.dto.ResponseDto;
+import com.ssafy.artformuser.dto.SignupRequestDto;
+import com.ssafy.artformuser.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

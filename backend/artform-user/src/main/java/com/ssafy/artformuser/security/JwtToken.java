@@ -1,4 +1,4 @@
-package com.ssafy.artformcore.security;
+package com.ssafy.artformuser.security;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

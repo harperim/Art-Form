@@ -1,4 +1,4 @@
-package com.ssafy.artformcore.dao;
+package com.ssafy.artformuser.dao;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;

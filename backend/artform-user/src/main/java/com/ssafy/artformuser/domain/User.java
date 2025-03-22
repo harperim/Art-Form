@@ -1,4 +1,4 @@
-package com.ssafy.artformcore.domain;
+package com.ssafy.artformuser.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

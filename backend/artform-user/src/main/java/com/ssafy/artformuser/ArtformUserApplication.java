@@ -1,13 +1,13 @@
-package com.ssafy.artformcore;
+package com.ssafy.artformuser;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ArtformCoreApplication {
+public class ArtformUserApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ArtformCoreApplication.class, args);
+		SpringApplication.run(ArtformUserApplication.class, args);
 	}
 
 }

@@ -1,7 +1,7 @@
-package com.ssafy.artformcore.security;
+package com.ssafy.artformuser.security;
 
-import com.ssafy.artformcore.domain.User;
-import com.ssafy.artformcore.repository.UserRepository;
+import com.ssafy.artformuser.domain.User;
+import com.ssafy.artformuser.repository.UserRepository;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

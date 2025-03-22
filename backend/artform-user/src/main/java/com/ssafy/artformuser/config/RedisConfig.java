@@ -1,4 +1,4 @@
-package com.ssafy.artformcore.config;
+package com.ssafy.artformuser.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

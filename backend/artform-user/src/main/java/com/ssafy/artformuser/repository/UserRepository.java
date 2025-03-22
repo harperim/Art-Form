@@ -1,6 +1,6 @@
-package com.ssafy.artformcore.repository;
+package com.ssafy.artformuser.repository;
 
-import com.ssafy.artformcore.domain.User;
+import com.ssafy.artformuser.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

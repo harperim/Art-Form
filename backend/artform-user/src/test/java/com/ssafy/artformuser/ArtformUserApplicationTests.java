@@ -1,10 +1,10 @@
-package com.ssafy.artformcore;
+package com.ssafy.artformuser;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ArtformCoreApplicationTests {
+class ArtformUserApplicationTests {
 
 	@Test
 	void contextLoads() {

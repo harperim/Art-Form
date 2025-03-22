@@ -1,4 +1,4 @@
-package com.ssafy.artformcore.dto;
+package com.ssafy.artformuser.dto;
 
 import lombok.*;
 

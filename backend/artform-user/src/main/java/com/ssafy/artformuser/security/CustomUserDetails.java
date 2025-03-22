@@ -1,6 +1,6 @@
-package com.ssafy.artformcore.security;
+package com.ssafy.artformuser.security;
 
-import com.ssafy.artformcore.domain.User;
+import com.ssafy.artformuser.domain.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
