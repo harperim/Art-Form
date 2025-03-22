@@ -47,4 +47,5 @@ services:
       - core-network
       - nginx-network
     restart: always
- 
+
+ # test
