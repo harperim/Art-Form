@@ -16,7 +16,7 @@ services:
       POSTGRES_USER: ${PSQL_USERNAME}
       POSTGRES_PASSWORD: ${PSQL_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - ./postgres_data_core:/var/lib/postgresql/data
     healthcheck:
@@ -36,7 +36,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "8081:8081"
+      - "8082:8081"
     environment:
       - DB_URL=jdbc:postgresql://${SERVER_URL}:5432/${PSQL_DB_NAME}
       - DB_USERNAME=${PSQL_USERNAME}
