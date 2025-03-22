@@ -1,5 +1,5 @@
 networks:
-  user-network:
+  core-network:
     driver: bridge
     name: core-network
   nginx-network:
@@ -9,7 +9,7 @@ networks:
 services:
   db:
     image: postgres
-    container_name: psql-user
+    container_name: psql-core
     # restart: always
     environment:
       POSTGRES_DB: ${PSQL_DB_NAME}
@@ -18,20 +18,20 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - ./postgres_data_user:/var/lib/postgresql/data
+      - ./postgres_data_core:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PSQL_USERNAME} -d ${PSQL_DB_NAME}"]
       interval: 20s
       timeout: 5s
       retries: 5
     networks:
-      - user-network
+      - core-network
   app:
     build: 
       context: ./
       dockerfile: Dockerfile
-    image: artform-user-server
-    container_name: artform-user-server
+    image: artform-core-server
+    container_name: artform-core-server
     depends_on:
       db:
         condition: service_healthy
