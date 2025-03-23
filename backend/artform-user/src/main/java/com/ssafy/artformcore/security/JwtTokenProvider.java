@@ -126,6 +126,8 @@ public class JwtTokenProvider {
         return Long.parseLong(claims.getSubject());
     }
 
+
+
     // 검증
     public Boolean validateToken(String token) {
 
@@ -174,6 +176,8 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 
-
+    public long getAccessTokenExpireTime() {
+        return ACCESS_TOKEN_EXPIRE_TIME;
+    }
 
 }
