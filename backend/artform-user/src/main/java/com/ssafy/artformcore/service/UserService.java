@@ -7,10 +7,6 @@ public interface UserService {
 
     void signup(SignupRequestDto signupRequestDto);
 
-    JwtToken login(LoginRequestDto loginRequestDto);
-
-    void logout(String logoutRequestDto, String email);
-
     void deleteUser(Long userId);
 
     boolean checkEmailAvailability(String email);
@@ -19,7 +15,7 @@ public interface UserService {
 
     UserResponseDto getMyUserInfo();
 
-    UserResponseDto getUserInfo(String userId);
+    UserResponseDto getUserInfo(Long userId);
 
     TokenRefreshResponseDto refreshAccessToken(String refreshToken);
 

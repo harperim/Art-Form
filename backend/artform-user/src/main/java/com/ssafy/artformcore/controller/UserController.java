@@ -1,9 +1,6 @@
 package com.ssafy.artformcore.controller;
 
-import com.ssafy.artformcore.dto.LoginRequestDto;
-import com.ssafy.artformcore.dto.LoginResponseDto;
-import com.ssafy.artformcore.dto.ResponseDto;
-import com.ssafy.artformcore.dto.SignupRequestDto;
+import com.ssafy.artformcore.dto.*;
 import com.ssafy.artformcore.security.JwtToken;
 import com.ssafy.artformcore.security.JwtTokenProvider;
 import com.ssafy.artformcore.service.UserService;
@@ -25,7 +22,6 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "회원가입",
             responses = {
@@ -36,29 +32,6 @@ public class UserController {
     public ResponseEntity<ResponseDto> signup(@Valid @RequestBody SignupRequestDto signupRequestDto) {
         userService.signup(signupRequestDto);
         return ResponseEntity.ok(new ResponseDto("회원가입 성공"));
-    }
-
-    @Operation(summary = "로그인",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "로그인 성공"),
-                    @ApiResponse(responseCode = "401", description = "로그인 실패")
-            })
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
-        JwtToken jwtToken = userService.login(loginRequestDto);
-        LoginResponseDto loginResponseDto = new LoginResponseDto("로그인 성공",jwtToken);
-        return ResponseEntity.ok(loginResponseDto);
-    }
-
-    // 로그아웃
-    @Operation(summary = "로그아웃")
-    @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorization, @RequestBody Map<String, String> map) {
-        String email = map.get("email");
-        String accessToken = authorization.substring(7);
-        userService.logout(accessToken, email);
-
-        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{parentId}")
@@ -80,17 +53,15 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseDto> getMyInfo(@RequestHeader("Authorization") String authorization) {
-
-        return ResponseEntity.ok(new ResponseDto());
+    public ResponseEntity<UserResponseDto> getMyInfo(@RequestHeader("Authorization") String authorization) {
+        UserResponseDto myUserInfo = userService.getMyUserInfo();
+        return ResponseEntity.ok(myUserInfo);
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ResponseDto> getUser(@PathVariable("userId") Long userId) {
-        return ResponseEntity.ok(new ResponseDto());
+    public ResponseEntity<UserResponseDto> getUser(@PathVariable("userId") Long userId) {
+        UserResponseDto userInfo = userService.getUserInfo(userId);
+        return ResponseEntity.ok(userInfo);
     }
-
-
-
 
 }

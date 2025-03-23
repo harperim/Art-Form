@@ -2,6 +2,7 @@ package com.ssafy.artformcore.service;
 
 import com.ssafy.artformcore.domain.User;
 import com.ssafy.artformcore.dto.*;
+import com.ssafy.artformcore.exception.AuthenticationException;
 import com.ssafy.artformcore.exception.UserNotFoundException;
 import com.ssafy.artformcore.repository.UserRepository;
 import com.ssafy.artformcore.security.JwtToken;
@@ -25,9 +26,6 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final TokenBlackListService tokenBlackListService;
 
     @Override
     public void signup(SignupRequestDto signupDto) {
@@ -38,19 +36,6 @@ public class UserServiceImpl implements UserService {
                 .nickname(signupDto.getNickname())
                 .build();
         userRepository.save(user);
-    }
-
-    @Override
-    public JwtToken login(LoginRequestDto loginRequestDto) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword());
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        return jwtTokenProvider.generateTokenWithAuthentication(authentication);
-    }
-
-    @Override
-    public void logout(String accessToken , String userId) {
-        jwtTokenProvider.deleteRefreshToken(userId);
-        tokenBlackListService.addBlacklist(accessToken);
     }
 
     @Override
@@ -71,12 +56,46 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto getMyUserInfo() {
-        return null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AuthenticationException("인증 정보가 없습니다.");
+        }
+
+        // accessToken에서 추출한 userId 가져오기
+        Long userId = Long.valueOf(authentication.getName());
+
+        // DB에서 사용자 정보 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+
+        UserInfoDto userInfoDto = UserInfoDto.builder()
+                .userId(user.getId().toString())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .build();
+
+        return UserResponseDto.builder()
+                .msg("조회 성공")
+                .data(userInfoDto)
+                .build();
     }
 
     @Override
-    public UserResponseDto getUserInfo(String userId) {
-        return null;
+    public UserResponseDto getUserInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+
+        UserInfoDto userInfoDto = UserInfoDto.builder()
+                .userId(user.getId().toString())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .build();
+
+        return UserResponseDto.builder()
+                .msg("조회 성공")
+                .data(userInfoDto)
+                .build();
     }
 
     @Override

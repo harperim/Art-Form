@@ -51,4 +51,8 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return !user.isDeleted();
     }
+
+    public Long getUserId(){
+        return user.getId();
+    }
 }

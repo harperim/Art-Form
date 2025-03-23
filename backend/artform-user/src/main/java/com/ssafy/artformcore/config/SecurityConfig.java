@@ -34,11 +34,11 @@ public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
 
     public SecurityFilterChain filterChain(HttpSecurity http , HandlerMappingIntrospector introspector) throws Exception {
+
         MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
-        // Todo 패턴 추가
+
         MvcRequestMatcher[] permitAllList = {
-            mvc.pattern("/user"),
-            mvc.pattern("/login"),
+            mvc.pattern("/user/auth/**"),
         };
 
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -50,7 +50,7 @@ public class SecurityConfig {
         http.formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable);
 
-        //
+        // 허용
         http.authorizeHttpRequests(authorize ->
                 authorize.requestMatchers(permitAllList).permitAll()
                         .anyRequest().authenticated()
