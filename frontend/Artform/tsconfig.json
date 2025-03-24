@@ -17,7 +17,8 @@
 
     "baseUrl": "./", // 기본 경로를 프로젝트 루트로 설정
     "paths": {
-      "@/*": ["src/*"] // `@/components/Button` 같은 경로 단축(alias) 기능 제공
+      "~/*": ["./*"],
+      "@/*": ["src/*"]
     }
   },
   "include": ["src", "App.tsx", "index.tsx", "eslint.config.mjs", "**/*.tsx"], // 프로젝트에서 TypeScript가 적용될 파일들
