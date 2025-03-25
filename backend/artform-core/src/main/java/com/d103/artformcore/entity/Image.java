@@ -1,6 +1,8 @@
 package com.d103.artformcore.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Image {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long imageId;
     public long modelId;
     public long userId;

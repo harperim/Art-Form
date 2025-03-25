@@ -15,8 +15,13 @@ spring:
     password: ${DB_PASSWORD}
 #    driver-class-name: org.postgresql.Driver
 
+# 로그 설정
+
+# S3 설정
 cloud:
   aws:
+    s3:
+      bucket: ${BUCKET_NAME}
     credentials:
       access-key: ${ACCESS_KEY_ID}
       secret-key: ${SECRET_ACCESS_KEY}
@@ -24,3 +29,7 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
+
+logging:
+  level:
+    com.d103.artformcore: DEBUG
