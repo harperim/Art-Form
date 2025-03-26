@@ -37,6 +37,7 @@ public class User {
     private String nickname;
 
     @CreatedDate
+    @Column(nullable = true)
     private LocalDateTime createdAt;
 
     private LocalDateTime deletedAt;

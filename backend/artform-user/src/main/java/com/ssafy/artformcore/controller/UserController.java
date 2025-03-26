@@ -53,7 +53,7 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<UserResponseDto> getMyInfo(@RequestHeader("Authorization") String authorization) {
+    public ResponseEntity<UserResponseDto> getMyInfo() {
         UserResponseDto myUserInfo = userService.getMyUserInfo();
         return ResponseEntity.ok(myUserInfo);
     }
