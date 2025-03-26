@@ -12,30 +12,23 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
-@Table(name = "image")
-public class Image {
+@Table(name = "review")
+public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long imageId;
+    private Long reviewId;
 
     @ManyToOne
     @JoinColumn(name = "model_id", nullable = false)
     private Model model;
 
-    @Column(nullable = false)
+    @Column
     private Long userId;
 
+    @Column(length = 255)
+    private String content;
+
     @Column(nullable = false)
-    private boolean isPublic = true;
-
-    @Column(nullable = false, length = 255)
-    private String uploadFileName;
-
-    @Column(nullable = false, updatable = false)
     @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    private LocalDateTime deletedAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
-

@@ -9,8 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Setter
 @ToString
 public class ImageSaveDto {
-    private MultipartFile image;
     private long modelId;
     private long userId;
     private boolean isPublic;
+    private String uploadFileName;
 }

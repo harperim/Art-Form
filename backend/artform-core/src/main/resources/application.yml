@@ -13,9 +13,6 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-#    driver-class-name: org.postgresql.Driver
-
-# 로그 설정
 
 # S3 설정
 cloud:
@@ -30,6 +27,7 @@ cloud:
     stack:
       auto: false
 
+# 로그 설정
 logging:
   level:
     com.d103.artformcore: DEBUG
