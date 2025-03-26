@@ -34,7 +34,7 @@ public class UserController {
         return ResponseEntity.ok(new ResponseDto("회원가입 성공"));
     }
 
-    @DeleteMapping("/{parentId}")
+    @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteParent(@PathVariable("userId") Long userId) {
         userService.deleteUser(userId);
         return ResponseEntity.ok().build();

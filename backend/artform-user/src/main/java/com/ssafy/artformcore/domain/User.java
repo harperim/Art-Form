@@ -37,10 +37,8 @@ public class User {
     private String nickname;
 
     @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
     @Builder.Default

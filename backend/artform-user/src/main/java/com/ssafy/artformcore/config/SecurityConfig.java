@@ -33,13 +33,24 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http , HandlerMappingIntrospector introspector) throws Exception {
 
         MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
 
         MvcRequestMatcher[] permitAllList = {
-            mvc.pattern("/user/auth/**"),
+            mvc.pattern("/user/auth/**"), mvc.pattern("/user/signup"),
         };
+
+        MvcRequestMatcher[] swaggerPatterns = {
+                mvc.pattern("/v3/api-docs"),
+                mvc.pattern("/v3/api-docs/**"),
+                mvc.pattern("/swagger-ui/**"),
+                mvc.pattern("/swagger-ui.html"),
+                mvc.pattern("/swagger-resources/**"),
+                mvc.pattern("/webjars/**"),
+        };
+
 
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -53,6 +64,7 @@ public class SecurityConfig {
         // 허용
         http.authorizeHttpRequests(authorize ->
                 authorize.requestMatchers(permitAllList).permitAll()
+                        .requestMatchers(swaggerPatterns).permitAll()
                         .anyRequest().authenticated()
         );
 
@@ -64,7 +76,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowCredentials(true);
         // Todo 추후 도메인으로 변경
         corsConfiguration.addAllowedOrigin("*");
         corsConfiguration.addAllowedHeader("*");
