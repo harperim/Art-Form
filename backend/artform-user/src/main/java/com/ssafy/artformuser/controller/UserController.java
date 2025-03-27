@@ -1,6 +1,8 @@
 package com.ssafy.artformuser.controller;
 
 import com.ssafy.artformuser.dto.*;
+import com.ssafy.artformuser.dto.ResponseDto;
+import com.ssafy.artformuser.dto.SignupRequestDto;
 import com.ssafy.artformuser.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -9,6 +11,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Tag(name = "유저 컨트롤러")
@@ -22,7 +28,7 @@ public class UserController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "회원가입 성공"),
                     @ApiResponse(responseCode = "400", description = "회원가입 실패")
-    })
+            })
     @PostMapping("/signup")
     public ResponseEntity<ResponseDto> signup(@Valid @RequestBody SignupRequestDto signupRequestDto) {
         userService.signup(signupRequestDto);
@@ -58,5 +64,4 @@ public class UserController {
         UserResponseDto userInfo = userService.getUserInfo(userId);
         return ResponseEntity.ok(userInfo);
     }
-
 }

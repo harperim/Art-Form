@@ -1,6 +1,6 @@
 package com.ssafy.artformuser.service;
-
 import com.ssafy.artformuser.dto.*;
+import com.ssafy.artformuser.dto.SignupRequestDto;
 
 public interface UserService {
 
@@ -15,7 +15,4 @@ public interface UserService {
     UserResponseDto getMyUserInfo();
 
     UserResponseDto getUserInfo(Long userId);
-
-    TokenRefreshResponseDto refreshAccessToken(String refreshToken);
-
 }

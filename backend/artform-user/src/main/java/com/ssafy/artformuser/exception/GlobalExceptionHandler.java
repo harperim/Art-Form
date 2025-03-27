@@ -18,6 +18,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 실패" + e.getMessage());
     }
 
-
-
 }

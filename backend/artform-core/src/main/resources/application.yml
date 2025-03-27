@@ -1,6 +1,6 @@
 spring:
   application:
-    name: artform-user
+    name: artform-core
 
   jpa:
     database: postgresql
@@ -13,4 +13,21 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-#    driver-class-name: org.postgresql.Driver
+
+# S3 설정
+cloud:
+  aws:
+    s3:
+      bucket: ${BUCKET_NAME}
+    credentials:
+      access-key: ${ACCESS_KEY_ID}
+      secret-key: ${SECRET_ACCESS_KEY}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+# 로그 설정
+logging:
+  level:
+    com.d103.artformcore: DEBUG

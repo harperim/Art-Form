@@ -13,6 +13,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -53,7 +55,7 @@ public class JwtTokenProvider {
                 .collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
-        
+
         Long userId = ((CustomUserDetails) authentication.getPrincipal()).getUserId();
         return generateToken(now, String.valueOf(userId), authorities);
     }
@@ -202,6 +204,4 @@ public class JwtTokenProvider {
     public long getAccessTokenExpireTime() {
         return ACCESS_TOKEN_EXPIRE_TIME;
     }
-
-
 }
