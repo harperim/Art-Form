@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
+    "start:clear": "expo start -c",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
@@ -13,6 +14,8 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.1",
+    "@gorhom/bottom-sheet": "^5.1.2",
+    "@shopify/flash-list": "1.7.3",
     "@types/react": "~18.3.12",
     "expo": "~52.0.39",
     "expo-asset": "^11.0.4",
@@ -47,6 +50,7 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "prettier": "^3.5.3",
+    "react-native-svg-transformer": "^1.5.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.1"
   },

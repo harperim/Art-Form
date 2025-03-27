@@ -1,35 +1,15 @@
-import { Slot, useRouter } from 'expo-router';
-import { AuthProvider, useAuth } from '../lib/auth-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Slot } from 'expo-router';
+import { AuthProvider } from '../lib/auth-context';
 import { useFonts } from 'expo-font';
-import { useEffect } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text } from 'react-native';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
 const customFonts = {
   'SansitaSwashed-Regular': require('../assets/fonts/SansitaSwashed-Regular.ttf'),
   'SansitaSwashed-Bold': require('../assets/fonts/SansitaSwashed-Bold.ttf'),
   'SansitaSwashed-Medium': require('../assets/fonts/SansitaSwashed-Medium.ttf'),
 };
-
-function AppLayout() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/login');
-    }
-  }, [loading, user]);
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  return <Slot />;
-}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts(customFonts);
@@ -43,8 +23,13 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <AppLayout />
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <AuthProvider>
+          <Slot />
+        </AuthProvider>
+        =][]
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 }
