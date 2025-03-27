@@ -8,7 +8,5 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResponseDto {
-
-    String message;
-
+    private String msg;
 }

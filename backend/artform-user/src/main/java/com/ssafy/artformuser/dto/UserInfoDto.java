@@ -7,10 +7,10 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SignupRequestDto {
+public class UserInfoDto {
 
-    String email;
-    String password;
-    String nickname;
+    private String userId;
+    private String email;
+    private String nickname;
 
 }

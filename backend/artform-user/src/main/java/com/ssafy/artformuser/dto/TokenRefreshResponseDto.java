@@ -7,10 +7,9 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SignupRequestDto {
+public class TokenRefreshResponseDto {
 
-    String email;
-    String password;
-    String nickname;
+    private String msg;
+    private String refreshToken;
 
 }

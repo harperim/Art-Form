@@ -33,16 +33,20 @@ public class User {
     private String password;
 
     @NotNull
+    @Column(unique = true)
     private String nickname;
 
     @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = true)
     private LocalDateTime createdAt;
 
-    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
     @Builder.Default
     private boolean deleted = false;
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 
 }
