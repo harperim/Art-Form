@@ -12,12 +12,12 @@ import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ModelBottomSheet from '~/components/ModelBottomSheet';
 
 const dummyData: Model[] = [
-  { id: '1', title: '기억의 지속', image: require('../../assets/images/1.png') },
-  { id: '2', title: '그랑드자트섬의 일요일 오후', image: require('../../assets/images/2.png') },
-  { id: '3', title: '물랭 드 라 갈레트의 무도회', image: require('../../assets/images/3.png') },
-  { id: '4', title: '절규', image: require('../../assets/images/4.png') },
-  { id: '5', title: '파리 거리, 비오는 날', image: require('../../assets/images/5.png') },
-  { id: '6', title: '우산 든 여인', image: require('../../assets/images/6.png') },
+  { id: '1', title: '기억의 지속', image: require('~/assets/images/1.png') },
+  { id: '2', title: '그랑드자트섬의 일요일 오후', image: require('~/assets/images/2.png') },
+  { id: '3', title: '물랭 드 라 갈레트의 무도회', image: require('~/assets/images/3.png') },
+  { id: '4', title: '절규', image: require('~/assets/images/4.png') },
+  { id: '5', title: '파리 거리, 비오는 날', image: require('~/assets/images/5.png') },
+  { id: '6', title: '우산 든 여인', image: require('~/assets/images/6.png') },
 ];
 
 function AnimatedCard({
@@ -131,12 +131,16 @@ export default function StoreScreen() {
         </Animated.ScrollView>
       </SafeAreaView>
 
-      {/* 분리한 바텀시트 */}
-      <ModelBottomSheet
-        ref={bottomSheetModalRef}
-        selected={selected}
-        onDismiss={() => setSelected(null)}
-      />
+      {/* 바텀시트 */}
+      {selected && (
+        <ModelBottomSheet
+          ref={bottomSheetModalRef}
+          selected={selected}
+          onDismiss={() => {
+            setSelected(null);
+          }}
+        />
+      )}
     </>
   );
 }

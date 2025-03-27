@@ -1,29 +1,14 @@
 // components/CustomTabBar.tsx
 import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import HomeIcon from '~/assets/icons/home-outline.svg';
-import StoreIcon from '~/assets/icons/store-outline.svg';
-import ModelIcon from '~/assets/icons/model-outline.svg';
-import MyPageIcon from '~/assets/icons/mypage-outline.svg';
-import HomeIconFilled from '~/assets/icons/home-filled.svg';
-import StoreIconFilled from '~/assets/icons/store-filled.svg';
-import ModelIconFilled from '~/assets/icons/model-filled.svg';
-import MyPageIconFilled from '~/assets/icons/mypage-filled.svg';
+import { TAB_ICONS } from '~/constants/icons';
 
-const ICONS = {
-  home: { outline: HomeIcon, filled: HomeIconFilled },
-  store: { outline: StoreIcon, filled: StoreIconFilled },
-  model: { outline: ModelIcon, filled: ModelIconFilled },
-  mypage: { outline: MyPageIcon, filled: MyPageIconFilled },
-};
-
-export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   return (
     <View style={styles.tabBar}>
       {state.routes.map((route, index) => {
         const focused = state.index === index;
-        const { options } = descriptors[route.key];
-        const iconSet = ICONS[route.name as keyof typeof ICONS];
+        const iconSet = TAB_ICONS[route.name as keyof typeof TAB_ICONS];
         const IconComponent = focused ? iconSet.filled : iconSet.outline;
 
         const onPress = () => {
@@ -61,7 +46,7 @@ const styles = StyleSheet.create({
     bottom: Platform.OS === 'ios' ? 20 : 10,
     left: 20,
     right: 20,
-    height: 70,
+    height: 60,
     backgroundColor: 'black',
     borderRadius: 35,
     flexDirection: 'row',
@@ -72,7 +57,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,
     elevation: 10,
-    zIndex: 99,
+    // zIndex: 99,
   },
   tabItem: {
     flex: 1,
