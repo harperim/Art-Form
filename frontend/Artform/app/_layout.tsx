@@ -9,6 +9,7 @@ const customFonts = {
   'SansitaSwashed-Regular': require('../assets/fonts/SansitaSwashed-Regular.ttf'),
   'SansitaSwashed-Bold': require('../assets/fonts/SansitaSwashed-Bold.ttf'),
   'SansitaSwashed-Medium': require('../assets/fonts/SansitaSwashed-Medium.ttf'),
+  'Freesentation-6SemiBold': require('~/assets/fonts/Freesentation-6SemiBold.ttf'),
 };
 
 export default function RootLayout() {
@@ -28,7 +29,6 @@ export default function RootLayout() {
         <AuthProvider>
           <Slot />
         </AuthProvider>
-        =][]
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
