@@ -36,7 +36,11 @@ services:
       db:
         condition: service_healthy
     ports:
+<<<<<<< Updated upstream
       - "8082:8081"
+=======
+      - "${SERVER_PORT}:8080"
+>>>>>>> Stashed changes
     environment:
       - DB_URL=jdbc:postgresql://${SERVER_URL}:5432/${PSQL_DB_NAME}
       - DB_USERNAME=${PSQL_USERNAME}
