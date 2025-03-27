@@ -10,7 +10,7 @@ services:
       - letsencrypt_certs:/etc/letsencrypt:ro
       - letsencrypt_data:/var/lib/letsencrypt
     restart: always
-    network:
+    networks:
       - nginx-network
 
   certbot:

@@ -10,7 +10,7 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 4
-    url: ${DB_URL}
+    url: jdbc:postgresql://${DB_URL}:${DB_PORT}/${DB}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
