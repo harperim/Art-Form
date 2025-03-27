@@ -39,14 +39,13 @@ public class SecurityConfig {
         };
 
         MvcRequestMatcher[] swaggerPatterns = {
-                mvc.pattern("/v3/api-docs"),
-                mvc.pattern("/v3/api-docs/**"),
-                mvc.pattern("/swagger-ui/**"),
-                mvc.pattern("/swagger-ui.html"),
+                mvc.pattern("/user/v3/api-docs"),
+                mvc.pattern("/user/v3/api-docs/**"),
+                mvc.pattern("/user/swagger-ui/**"),
+                mvc.pattern("/user/swagger-ui.html"),
                 mvc.pattern("/swagger-resources/**"),
                 mvc.pattern("/webjars/**"),
         };
-
 
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .httpBasic(AbstractHttpConfigurer::disable)
