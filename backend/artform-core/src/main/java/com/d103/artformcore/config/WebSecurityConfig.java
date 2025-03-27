@@ -40,7 +40,14 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+<<<<<<< Updated upstream
         configuration.setAllowedOrigins(Arrays.asList("http://127.0.0.1:5500"));
+=======
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://127.0.0.1:5500",
+                "https://j12d103.p.ssafy.io"
+        ));
+>>>>>>> Stashed changes
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
