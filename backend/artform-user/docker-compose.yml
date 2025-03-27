@@ -12,9 +12,9 @@ services:
     container_name: psql-user
     # restart: always
     environment:
-      - DB_URL=jdbc:postgresql://${SERVER_URL}:5433/${PSQL_DB_NAME}
-      - DB_USERNAME=${PSQL_USERNAME}
-      - DB_PASSWORD=${PSQL_PASSWORD}
+      POSTGRES_DB: ${PSQL_DB_NAME}
+      POSTGRES_USER: ${PSQL_USERNAME}
+      POSTGRES_PASSWORD: ${PSQL_PASSWORD}
     ports:
       - "5433:5432"
     volumes:
@@ -38,10 +38,9 @@ services:
     ports:
       - "8082:8081"
     environment:
-      - DB_URL=jdbc:postgresql://${SERVER_URL}:5432/${PSQL_DB_NAME}
+      - DB_URL=jdbc:postgresql://${SERVER_URL}:5433/${PSQL_DB_NAME}
       - DB_USERNAME=${PSQL_USERNAME}
       - DB_PASSWORD=${PSQL_PASSWORD}
-      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
       - SERVER_PORT=8081
     networks:
       - user-network
