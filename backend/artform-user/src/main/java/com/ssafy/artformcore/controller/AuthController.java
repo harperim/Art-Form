@@ -16,7 +16,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Tag(name = "인증 API")
 @RestController
-@RequestMapping("user/auth")
+@RequestMapping("/user/auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -36,12 +36,11 @@ public class AuthController {
     // 로그아웃
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorization, @RequestBody Map<String, String> map) {
-        String email = map.get("email");
+    public ResponseEntity<ResponseDto> logout(@RequestHeader("Authorization") String authorization) {
         String accessToken = authorization.substring(7);
-        authService.logout(accessToken, email);
+        ResponseDto responseDto = authService.logout(accessToken);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(responseDto);
     }
 
     @Operation(summary = "액세스 토큰 재발급",
@@ -52,6 +51,7 @@ public class AuthController {
 
     @PostMapping("/oauth/accesstoken")
     public ResponseEntity<TokenRefreshResponseDto> refreshAccessToken(@Valid @RequestBody TokenRefreshRequestDto requestDto) {
+        System.out.println("확인");
         TokenRefreshResponseDto responseDto = authService.refreshAccessToken(requestDto.getRefreshToken());
         return ResponseEntity.ok(responseDto);
     }

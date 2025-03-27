@@ -2,6 +2,7 @@ package com.ssafy.artformcore.service;
 
 import com.ssafy.artformcore.dao.RedisDao;
 import com.ssafy.artformcore.dto.LoginRequestDto;
+import com.ssafy.artformcore.dto.ResponseDto;
 import com.ssafy.artformcore.dto.TokenRefreshResponseDto;
 import com.ssafy.artformcore.exception.InvalidTokenException;
 import com.ssafy.artformcore.exception.JwtAuthenticationException;
@@ -13,9 +14,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.Date;
 
@@ -39,15 +42,17 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void logout(String accessToken, String userId) {
+    public ResponseDto logout(String accessToken) {
+        String userId = String.valueOf(jwtTokenProvider.getUserIdFromToken(accessToken));
         jwtTokenProvider.deleteRefreshToken(userId);
         tokenBlackListService.addBlacklist(accessToken);
+        return new ResponseDto("로그아웃 성공!");
     }
 
     @Override
     public TokenRefreshResponseDto refreshAccessToken(String refreshToken) {
 
-        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+        if (refreshToken == null || !jwtTokenProvider.validateRefreshToken(refreshToken)) {
             throw new InvalidTokenException("유효하지 않은 Refresh Token입니다");
         }
 
@@ -73,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(userId), authorities, accessTokenExpireDate);
         return TokenRefreshResponseDto.builder()
                 .msg("재발급 성공")
-                .data(accessToken)
+                .refreshToken(accessToken)
                 .build();
 
     }

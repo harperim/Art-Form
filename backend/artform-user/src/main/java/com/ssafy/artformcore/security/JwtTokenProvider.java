@@ -128,8 +128,8 @@ public class JwtTokenProvider {
 
 
 
-    // 검증
-    public Boolean validateToken(String token) {
+    // 액세스 토큰 검증
+    public Boolean validateAccessToken(String token) {
 
         try {
             Claims claims = Jwts.parserBuilder()
@@ -141,6 +141,31 @@ public class JwtTokenProvider {
             String auth = claims.get("auth", String.class);
             log.info("auth={}", auth);
             return auth != null;
+        } catch (SignatureException e) {
+            log.error("Invalid JWT Signature");
+        } catch (SecurityException | MalformedJwtException e) {
+            log.warn("Invalid JWT Token", e);
+        } catch (ExpiredJwtException e) {
+            log.warn("Expired JWT Token", e);
+        } catch (UnsupportedJwtException e) {
+            log.warn("Unsupported JWT Token", e);
+        } catch (IllegalArgumentException e) {
+            log.warn("JWT claims string is empty", e);
+        }
+        return false;
+    }
+
+    // 액세스 토큰 검증
+    public Boolean validateRefreshToken(String token) {
+
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)// 만료확인
+                    .getBody();
+
+            return true;
         } catch (SignatureException e) {
             log.error("Invalid JWT Signature");
         } catch (SecurityException | MalformedJwtException e) {
@@ -179,5 +204,6 @@ public class JwtTokenProvider {
     public long getAccessTokenExpireTime() {
         return ACCESS_TOKEN_EXPIRE_TIME;
     }
+
 
 }

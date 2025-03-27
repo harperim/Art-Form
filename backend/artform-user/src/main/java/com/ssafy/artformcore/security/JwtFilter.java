@@ -23,7 +23,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (accessToken != null) {
             // 토큰 검증
-            if (jwtTokenProvider.validateToken(accessToken)) {
+            if (jwtTokenProvider.validateAccessToken(accessToken)) {
                 // Authentication 객체를 가져와 SecurityContext에 저장
                 Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);

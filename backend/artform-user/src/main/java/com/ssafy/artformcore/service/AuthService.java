@@ -1,6 +1,7 @@
 package com.ssafy.artformcore.service;
 
 import com.ssafy.artformcore.dto.LoginRequestDto;
+import com.ssafy.artformcore.dto.ResponseDto;
 import com.ssafy.artformcore.dto.SignupRequestDto;
 import com.ssafy.artformcore.dto.TokenRefreshResponseDto;
 import com.ssafy.artformcore.security.JwtToken;
@@ -9,7 +10,7 @@ public interface AuthService {
 
     JwtToken login(LoginRequestDto loginRequestDto);
 
-    void logout(String logoutRequestDto, String email);
+    ResponseDto logout(String accessToken);
 
     TokenRefreshResponseDto refreshAccessToken(String refreshToken);
 }
