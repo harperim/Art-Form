@@ -28,7 +28,6 @@ export default function RootLayout() {
         <AuthProvider>
           <Slot />
         </AuthProvider>
-        =][]
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
