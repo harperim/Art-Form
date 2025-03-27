@@ -13,7 +13,7 @@ import {
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import type { ImageSourcePropType } from 'react-native';
 
-import ICONS from '~/constants/icons';
+import { ICONS } from '~/constants/icons';
 import colors from '~/constants/colors';
 import { useCallback } from 'react';
 import { BackHandler } from 'react-native';

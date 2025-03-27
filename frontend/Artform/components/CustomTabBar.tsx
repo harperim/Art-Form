@@ -1,14 +1,14 @@
 // components/CustomTabBar.tsx
 import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import ICONS from '~/constants/icons';
+import { TAB_ICONS } from '~/constants/icons';
 
 export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   return (
     <View style={styles.tabBar}>
       {state.routes.map((route, index) => {
         const focused = state.index === index;
-        const iconSet = ICONS[route.name as keyof typeof ICONS];
+        const iconSet = TAB_ICONS[route.name as keyof typeof TAB_ICONS];
         const IconComponent = focused ? iconSet.filled : iconSet.outline;
 
         const onPress = () => {

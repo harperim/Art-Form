@@ -16,7 +16,7 @@ import MyPageIconFilled from '~/assets/icons/mypage-filled.svg';
 
 import SendIcon from '~/assets/icons/send.svg';
 
-const ICONS = {
+export const ICONS = {
   home: { outline: HomeIcon, filled: HomeIconFilled },
   store: { outline: StoreIcon, filled: StoreIconFilled },
   model: { outline: ModelIcon, filled: ModelIconFilled },
@@ -25,4 +25,9 @@ const ICONS = {
   send: SendIcon,
 };
 
-export default ICONS;
+export const TAB_ICONS = {
+  home: { outline: HomeIcon, filled: HomeIconFilled },
+  store: { outline: StoreIcon, filled: StoreIconFilled },
+  model: { outline: ModelIcon, filled: ModelIconFilled },
+  mypage: { outline: MyPageIcon, filled: MyPageIconFilled },
+} as const;
