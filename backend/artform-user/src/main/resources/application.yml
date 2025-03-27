@@ -30,3 +30,8 @@ jwt:
   refresh-token:
     expire-time: 604800000 # 7일
 
+springdoc:
+  swagger-ui:
+    path: /user/swagger-ui.html  # 원하는 경로로 변경
+  api-docs:
+    path: /user/v3/api-docs      # API 문서 경로도 변경 가능
