@@ -2,6 +2,7 @@ package com.ssafy.artformuser.config;
 
 import com.ssafy.artformuser.security.JwtFilter;
 import com.ssafy.artformuser.security.JwtTokenProvider;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,6 +57,14 @@ public class SecurityConfig {
         http.formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable);
 
+        //  로그인 실패시
+        http.exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("인증 실패");
+                })
+        );
+
         // 허용
         http.authorizeHttpRequests(authorize ->
                 authorize.requestMatchers(permitAllList).permitAll()
@@ -75,7 +84,7 @@ public class SecurityConfig {
         corsConfiguration.addAllowedOrigin("*");
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.setAllowedMethods(Arrays.asList(
-                "GET","POST","DELETE"
+                "GET","POST","DELETE","OPTIONS"
         ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
