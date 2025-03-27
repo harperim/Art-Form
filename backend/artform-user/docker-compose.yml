@@ -44,6 +44,7 @@ services:
       - SERVER_PORT=8081
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - user-network
       - nginx-network
