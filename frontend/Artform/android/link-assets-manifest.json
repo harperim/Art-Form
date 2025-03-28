@@ -1,0 +1,65 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Freesentation-1Thin.ttf",
+      "sha1": "e1a262e4f101cda731643623db4db5a765fb05b0"
+    },
+    {
+      "path": "assets/fonts/Freesentation-2ExtraLight.ttf",
+      "sha1": "adecba73e60165cb65945a1b93fa06255d0319af"
+    },
+    {
+      "path": "assets/fonts/Freesentation-3Light.ttf",
+      "sha1": "a1d2ac0de460a5417cf07da87d12aa5866e2f537"
+    },
+    {
+      "path": "assets/fonts/Freesentation-4Regular.ttf",
+      "sha1": "7ce261d4c828b21402d731a4148da97ad5d5a317"
+    },
+    {
+      "path": "assets/fonts/Freesentation-5Medium.ttf",
+      "sha1": "c9274dd4f03512d8b112f37ffd730183d32458b7"
+    },
+    {
+      "path": "assets/fonts/Freesentation-6SemiBold.ttf",
+      "sha1": "3cffb072f33d8189e885a3d1227f384d61f0a600"
+    },
+    {
+      "path": "assets/fonts/Freesentation-7Bold.ttf",
+      "sha1": "3b8b6c3782ec5af1763a9d61224b97f82d823477"
+    },
+    {
+      "path": "assets/fonts/Freesentation-8ExtraBold.ttf",
+      "sha1": "5c2603303e1cca9604511f8ad7eeee6106bc3fb7"
+    },
+    {
+      "path": "assets/fonts/Freesentation-9Black.ttf",
+      "sha1": "acbcdaeca28c8217044efe0cd19ea127818434cb"
+    },
+    {
+      "path": "assets/fonts/SansitaSwashed-Bold.ttf",
+      "sha1": "8c99b4c7b2bc468ddb1119004acb323bf287ac24"
+    },
+    {
+      "path": "assets/fonts/SansitaSwashed-ExtraBold.ttf",
+      "sha1": "5e4718a08ec16aba5798cdb3856059e8e87ddb3a"
+    },
+    {
+      "path": "assets/fonts/SansitaSwashed-Light.ttf",
+      "sha1": "7b1a6e8974165e47fcfae5f1169e9ef83da8838f"
+    },
+    {
+      "path": "assets/fonts/SansitaSwashed-Medium.ttf",
+      "sha1": "fb3b03bdf85c493e99cfcdf75162d691ebb4f568"
+    },
+    {
+      "path": "assets/fonts/SansitaSwashed-Regular.ttf",
+      "sha1": "82bcae8904859f7044481c9a623f41598e38793c"
+    },
+    {
+      "path": "assets/fonts/SansitaSwashed-SemiBold.ttf",
+      "sha1": "14331c5fd0aaf03d16d0b9dc683887c005f3b799"
+    }
+  ]
+}

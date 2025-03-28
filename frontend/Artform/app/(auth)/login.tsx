@@ -11,8 +11,8 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useAuth } from '../../lib/auth-context';
-import FloatingLabelInput from '../../components/FloatingLabelInput';
+import { useAuth } from '~/lib/auth-context';
+import FloatingLabelInput from '~/components/FloatingLabelInput';
 
 export default function LoginScreen() {
   const { width, height } = useWindowDimensions();
@@ -61,12 +61,12 @@ export default function LoginScreen() {
     // TODO: 실제 API 요청으로 대체 가능
     const fakeToken = 'mocked-token';
     await login(fakeToken);
-    router.replace('/'); // ✅ 로그인 후 메인 화면으로 이동
+    router.replace('/home'); // ✅ 로그인 후 홈 화면으로 이동
   };
 
   return (
     <ImageBackground
-      source={require('../../assets/images/splash1.png')}
+      source={require('~/assets/images/splash1.png')}
       style={[styles.background, { width, height }]}
       resizeMode="cover"
     >
