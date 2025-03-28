@@ -44,7 +44,7 @@ public class ImageService {
 
     public PresignedUrlDto getPresignedGetUrl(long imageId) {
         Image image = imageRepository.findById(imageId).orElse(null);
-        String uploadFileName = "image/" + image.getUploadFileName();
+        String uploadFileName = image.getUploadFileName();
         String presignedUrl = s3Service.createPresignedGetUrl("artform-data", uploadFileName);
         if (presignedUrl.isEmpty()) {
             System.out.println("presigned url 생성 실패");
