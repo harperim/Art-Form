@@ -7,7 +7,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import colors from '~/constants/colors';
-import type { Model } from '~/components/ModelBottomSheet';
+import type { Model } from '~/types/model';
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ModelBottomSheet from '~/components/ModelBottomSheet';
 
