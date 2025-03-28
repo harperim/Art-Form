@@ -7,6 +7,8 @@ import com.d103.artformcore.entity.Model;
 import com.d103.artformcore.repository.ImageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import software.amazon.awssdk.services.s3.S3Client;
@@ -17,6 +19,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,6 +51,18 @@ public class ImageService {
             return null;
         }
         return new PresignedUrlDto(presignedUrl, uploadFileName);
+    }
+
+    public List<PresignedUrlDto> getPresignedGetUrlRecentList(int page) {
+        List<Image> imageList = imageRepository.findAll(
+                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
+        ).getContent();
+
+        List<PresignedUrlDto> presignedUrlDtoList = new ArrayList<>();
+        for (Image image : imageList) {
+            presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId()));
+        }
+        return presignedUrlDtoList;
     }
 
     public Image saveMetadata(ImageSaveDto imageSaveDto) {

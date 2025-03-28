@@ -40,7 +40,15 @@ public class ImageController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
     }
 
-
+    @GetMapping("/presign/recent/{page}")
+    public ResponseEntity<?> getPresignedGetUrlRecentList(@PathVariable int page) {
+        System.out.println("page: " + page);
+        List<PresignedUrlDto> presignedUrlDtoList = imageService.getPresignedGetUrlRecentList(page);
+        if (!presignedUrlDtoList.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(presignedUrlDtoList);
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
+    }
 
     @PostMapping("/metadata")
     public ResponseEntity<?> saveMetadata(@RequestBody ImageSaveDto imageSaveDto) {
