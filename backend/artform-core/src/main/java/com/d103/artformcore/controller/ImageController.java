@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.util.List;
 
 
 @RestController
@@ -20,11 +21,31 @@ public class ImageController {
     private final ImageService imageService;
 
     @GetMapping("/presign")
-    public ResponseEntity<?> getPresignedUrl(@RequestParam String fileType, @RequestParam String fileName) {
+    public ResponseEntity<?> getPresignedPutUrl(@RequestParam String fileType, @RequestParam String fileName) {
         System.out.println("fileType: " + fileType + ", fileName: " + fileName);
-        PresignedUrlDto presignedUrlDto = imageService.getPresignedUrl(fileType, fileName);
+        PresignedUrlDto presignedUrlDto = imageService.getPresignedPutUrl(fileType, fileName);
         if (presignedUrlDto != null) {
             return ResponseEntity.status(HttpStatus.OK).body(presignedUrlDto);
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
+    }
+
+    @GetMapping("/presign/{imageId}")
+    public ResponseEntity<?> getPresignedGetUrl(@PathVariable long imageId) {
+        System.out.println("imageId: " + imageId);
+        PresignedUrlDto presignedUrlDto = imageService.getPresignedGetUrl(imageId);
+        if (presignedUrlDto != null) {
+            return ResponseEntity.status(HttpStatus.OK).body(presignedUrlDto);
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
+    }
+
+    @GetMapping("/presign/recent/{page}")
+    public ResponseEntity<?> getPresignedGetUrlRecentList(@PathVariable int page) {
+        System.out.println("page: " + page);
+        List<PresignedUrlDto> presignedUrlDtoList = imageService.getPresignedGetUrlRecentList(page);
+        if (!presignedUrlDtoList.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(presignedUrlDtoList);
         }
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
     }
@@ -39,10 +60,6 @@ public class ImageController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("이미지 메타데이터 저장 실패");
     }
 
-    @GetMapping("/{imageId}")
-    public ResponseEntity<?> getMetadata() {
-        return null;
-    }
 
 //    @GetMapping("/{uuid}")
 //    public ResponseEntity<?> getTest(@PathVariable String uuid) {
