@@ -13,6 +13,7 @@
     "lint:fix": "npm run lint && npm run format"
   },
   "dependencies": {
+    "@babel/plugin-proposal-export-namespace-from": "^7.18.9",
     "@expo/metro-runtime": "~4.0.1",
     "@gorhom/bottom-sheet": "^5.1.2",
     "@shopify/flash-list": "1.7.3",

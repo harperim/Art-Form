@@ -43,7 +43,7 @@ const PaginationDot: React.FC<PaginationDotProps> = ({ index, scrollX }) => {
     const backgroundColor = interpolateColor(
       scrollX.value,
       [0, ITEM_WIDTH, 2 * ITEM_WIDTH],
-      ['#9095A7', '#9095A7', '#9095A7'],
+      ['#DBA740', '#DBA740', '#DBA740'],
     );
     return {
       backgroundColor,
@@ -78,11 +78,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 10,
+    marginTop: 10,
   },
 
   dots: {
     height: 10,
-    marginHorizontal: 8,
+    marginHorizontal: 4,
     borderRadius: 5,
     backgroundColor: 'green',
   },

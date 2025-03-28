@@ -1,32 +1,28 @@
 import type { ImageSourcePropType } from 'react-native';
-import { Text, View, StyleSheet, ImageBackground, Dimensions } from 'react-native';
+import { Text, StyleSheet, ImageBackground, Dimensions, View } from 'react-native';
 import React from 'react';
 import type { SharedValue } from 'react-native-reanimated';
 import Animated, { useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
+import { ICONS } from '~/constants/icons';
 
-const OFFSET = 19;
+const OFFSET = 20;
 const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
-const ITEM_HEIGHT = 247;
+const ITEM_HEIGHT = Dimensions.get('window').height * 0.36;
 
-// ✅ props 타입 정의
+// props 타입 정의
 interface CarouselItem {
   poster: ImageSourcePropType;
   title: string;
+  likes: number;
 }
 
 interface ParallaxCarouselCardProps {
   item: CarouselItem;
   id: number;
-  scrollX: SharedValue<number>; // Reanimated 2에서 사용되는 공유 값 타입
-  total: number;
+  scrollX: SharedValue<number>;
 }
 
-const ParallaxCarouselCard: React.FC<ParallaxCarouselCardProps> = ({
-  item,
-  id,
-  scrollX,
-  total,
-}) => {
+const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scrollX }) => {
   const inputRange = [(id - 1) * ITEM_WIDTH, id * ITEM_WIDTH, (id + 1) * ITEM_WIDTH];
 
   const translateStyle = useAnimatedStyle(() => {
@@ -63,8 +59,6 @@ const ParallaxCarouselCard: React.FC<ParallaxCarouselCardProps> = ({
         {
           width: ITEM_WIDTH,
           height: ITEM_HEIGHT,
-          marginLeft: id === 0 ? OFFSET : undefined,
-          marginRight: id === total - 1 ? OFFSET : undefined,
           overflow: 'hidden',
           borderRadius: 15,
         },
@@ -73,8 +67,18 @@ const ParallaxCarouselCard: React.FC<ParallaxCarouselCardProps> = ({
     >
       <Animated.View style={translateImageStyle}>
         <ImageBackground source={item.poster} style={styles.imageBackground}>
-          <Animated.View style={[styles.posterInfoView, translateTextStyle]}>
+          <Animated.View
+            style={[styles.posterInfoView, translateTextStyle, { width: ITEM_WIDTH - OFFSET * 4 }]}
+          >
             <Text style={styles.posterTitle}>{item.title}</Text>
+            <View style={styles.heartBox}>
+              <ICONS.heart.filled
+                width={20}
+                height={20}
+                style={[{ position: 'relative', top: 1 }]}
+              />
+              <Text style={styles.likesCount}>{item.likes}</Text>
+            </View>
           </Animated.View>
         </ImageBackground>
       </Animated.View>
@@ -91,19 +95,35 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   posterInfoView: {
+    height: 44,
     position: 'absolute',
-    bottom: 15,
+    bottom: 16,
     alignSelf: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    paddingHorizontal: 21,
-    paddingVertical: 9,
-    borderRadius: 12,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    paddingHorizontal: 30,
+    borderRadius: 15,
+  },
+  heartBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3,
   },
   posterTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'Freesentation',
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  likesCount: {
+    justifyContent: 'center',
+    fontSize: 18,
+
+    fontFamily: 'Freesentation',
+    fontWeight: '700',
   },
 });
 
-export default ParallaxCarouselCard;
+export default TodayPickCarousel;
