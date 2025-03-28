@@ -35,7 +35,8 @@ public class SecurityConfig {
         MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
 
         MvcRequestMatcher[] permitAllList = {
-                mvc.pattern("/user/auth/**"), mvc.pattern("/user/signup"),
+                mvc.pattern("/user/auth/login"), mvc.pattern("/user/signup"),
+                mvc.pattern("/user/email-check/*"),mvc.pattern("/user/nickname-check/*"),
         };
 
         MvcRequestMatcher[] swaggerPatterns = {
