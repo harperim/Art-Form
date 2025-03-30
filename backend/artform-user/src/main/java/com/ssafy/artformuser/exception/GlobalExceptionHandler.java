@@ -1,5 +1,6 @@
 package com.ssafy.artformuser.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +32,14 @@ public class GlobalExceptionHandler {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("데이터 무결성 위반: " + e.getMessage());
     }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
+        if (e.getMessage() != null && e.getMessage().contains("올바른 형식의 이메일 주소여야 합니다")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("올바른 이메일 형식이 아닙니다");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("입력값 검증 실패: " + e.getMessage());
+    }
+
 
 }
