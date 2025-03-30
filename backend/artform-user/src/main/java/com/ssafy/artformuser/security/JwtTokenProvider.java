@@ -155,7 +155,7 @@ public class JwtTokenProvider {
         return false;
     }
 
-    // 액세스 토큰 검증
+    // 리프레시 토큰 검증
     public Boolean validateRefreshToken(String token) {
 
         try {
@@ -165,7 +165,10 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token)// 만료확인
                     .getBody();
 
-            return true;
+            String userId = claims.getSubject();
+            String refreshToken = (String) redisDao.getValues(userId);
+
+            return refreshToken != null && refreshToken.equals(token);
         } catch (SignatureException e) {
             log.error("Invalid JWT Signature");
         } catch (SecurityException | MalformedJwtException e) {
