@@ -61,14 +61,6 @@ public class SecurityConfig {
         http.formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable);
 
-
-        //  로그인 실패시
-        http.formLogin(form -> form
-                .loginProcessingUrl("/user/auth/login") // 로그인 처리 URL
-                .failureHandler(authenticationFailureHandler) // 로그인 실패 핸들러
-                .permitAll()
-        );
-
         http.exceptionHandling(exception -> exception
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
         );
