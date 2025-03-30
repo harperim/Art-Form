@@ -22,23 +22,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String accessToken = getJwtFromRequest(request);
 
-        // 토큰이 없으면
-        if(accessToken == null){
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Authorization token is missing");
-            return;
-        }
-
-        // 토큰 검증
-        if (jwtTokenProvider.validateAccessToken(accessToken)) {
-            // Authentication 객체를 가져와 SecurityContext에 저장
-            Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        } else {
-            // 유효하지 않은 토큰이면 401 Unauthorized 응답
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid or expired token");
-            return;
+        if (accessToken != null) {
+            // 토큰 검증
+            if (jwtTokenProvider.validateAccessToken(accessToken)) {
+                // Authentication 객체를 가져와 SecurityContext에 저장
+                Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
         filterChain.doFilter(request, response);
     }

@@ -1,9 +1,12 @@
 package com.ssafy.artformuser.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.sql.SQLException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -16,6 +19,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({AuthenticationException.class, InvalidTokenException.class} )
     public ResponseEntity<String> handleAuthenticationException(AuthenticationException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 실패" + e.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<String> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        if (e.getMessage() != null && e.getMessage().contains("users_email_key")) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("중복된 이메일입니다");
+        }
+        if (e.getMessage() != null && e.getMessage().contains("users_nickname_key")) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("중복된 닉네임입니다");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("데이터 무결성 위반: " + e.getMessage());
     }
 
 }
