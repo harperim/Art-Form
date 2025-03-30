@@ -1,13 +1,19 @@
-// app/(auth)/_layout.tsx
-import { Stack } from 'expo-router';
+import { Tabs } from 'expo-router';
+import CustomTabBar from '~/components/CustomTabBar';
 
-export default function Layout() {
+export default function AppTabLayout() {
   return (
-    <Stack
+    <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
-        animation: 'none',
         headerShown: false,
+        tabBarHideOnKeyboard: true,
       }}
-    />
+    >
+      <Tabs.Screen name="home" />
+      <Tabs.Screen name="store" />
+      <Tabs.Screen name="model" />
+      <Tabs.Screen name="mypage" />
+    </Tabs>
   );
 }
