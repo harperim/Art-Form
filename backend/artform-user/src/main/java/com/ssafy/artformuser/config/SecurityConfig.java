@@ -1,5 +1,7 @@
 package com.ssafy.artformuser.config;
 
+import com.ssafy.artformuser.exception.JwtAuthenticationException;
+import com.ssafy.artformuser.security.CustomAuthenticationFailureHandler;
 import com.ssafy.artformuser.security.JwtFilter;
 import com.ssafy.artformuser.security.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,6 +14,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
@@ -28,6 +31,8 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final CustomAuthenticationFailureHandler authenticationFailureHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http , HandlerMappingIntrospector introspector) throws Exception {
@@ -57,12 +62,16 @@ public class SecurityConfig {
         http.formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable);
 
+
         //  로그인 실패시
+        http.formLogin(form -> form
+                .loginProcessingUrl("/user/auth/login") // 로그인 처리 URL
+                .failureHandler(authenticationFailureHandler) // 로그인 실패 핸들러
+                .permitAll()
+        );
+
         http.exceptionHandling(exception -> exception
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("인증 실패");
-                })
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
         );
 
         // 허용
