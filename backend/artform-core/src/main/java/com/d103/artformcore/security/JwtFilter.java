@@ -21,15 +21,13 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String accessToken = getJwtFromRequest(request);
-
-        if (StringUtils.hasText(accessToken)) {
-            if(jwtTokenValidator.validateAccessToken(accessToken)) {
-
+        // 토큰 가지고 있을 경우
+        if (accessToken != null) {
+            // 토큰 검증
+            if (jwtTokenValidator.validateAccessToken(accessToken)) {
+                // Authentication 객체를 가져와 SecurityContext에 저장
                 Authentication authentication = jwtTokenValidator.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-            }else{
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid or expired token");
             }
         }
         filterChain.doFilter(request, response);

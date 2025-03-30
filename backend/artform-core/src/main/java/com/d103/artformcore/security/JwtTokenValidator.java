@@ -4,6 +4,7 @@ import com.d103.artformcore.exception.JwtAuthenticationException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,6 +13,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -19,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 @Slf4j
+@Component
 public class JwtTokenValidator {
 
     private Key key;
@@ -67,7 +70,6 @@ public class JwtTokenValidator {
                 .map(SimpleGrantedAuthority::new)
                 .toList();
 
-        Long userId = Long.parseLong(claims.getSubject());
         UserDetails userDetails = new User(claims.getSubject(), "", authorities);
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);

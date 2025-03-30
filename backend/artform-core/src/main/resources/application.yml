@@ -2,6 +2,9 @@ spring:
   application:
     name: artform-core
 
+  config:
+    import: optional:file:.env[.properties]
+
   jpa:
     database: postgresql
     hibernate:
@@ -34,9 +37,9 @@ cloud:
 # swagger 설정
 springdoc:
   swagger-ui:
-    path: /user/swagger-ui.html  # 원하는 경로로 변경
+    path: /core/swagger-ui.html  # 원하는 경로로 변경
   api-docs:
-    path: /user/v3/api-docs      # API 문서 경로도 변경 가능
+    path: /core/v3/api-docs      # API 문서 경로도 변경 가능
 
 # 로그 설정
 logging:
