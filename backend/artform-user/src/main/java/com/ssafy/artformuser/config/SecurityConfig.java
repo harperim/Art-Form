@@ -1,10 +1,7 @@
 package com.ssafy.artformuser.config;
 
-import com.ssafy.artformuser.exception.JwtAuthenticationException;
-import com.ssafy.artformuser.security.CustomAuthenticationFailureHandler;
 import com.ssafy.artformuser.security.JwtFilter;
 import com.ssafy.artformuser.security.JwtTokenProvider;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +29,6 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final CustomAuthenticationFailureHandler authenticationFailureHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http , HandlerMappingIntrospector introspector) throws Exception {
