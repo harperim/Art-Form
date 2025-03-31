@@ -1,7 +1,8 @@
 package com.d103.artformcore.service;
 
+import com.d103.artformcore.dto.ImageLoadResponseDto;
 import com.d103.artformcore.dto.ImageSaveDto;
-import com.d103.artformcore.dto.PresignedUrlDto;
+import com.d103.artformcore.dto.ImageSaveResponseDto;
 import com.d103.artformcore.entity.Image;
 import com.d103.artformcore.entity.Model;
 import com.d103.artformcore.repository.ImageRepository;
@@ -11,13 +12,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
-
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,34 +25,36 @@ public class ImageService {
     private final S3Service s3Service;
 
     @Transactional
-    public PresignedUrlDto getPresignedPutUrl(String fileType, String fileName) {
-        String uploadFileName = "image/" + fileName.substring(0, fileName.lastIndexOf("."))
+    public ImageSaveResponseDto getPresignedPutUrl(String fileType, String fileName) {
+        String uploadFileName = fileName.substring(0, fileName.lastIndexOf("."))
                 + "_" + UUID.randomUUID().toString() + fileName.substring(fileName.lastIndexOf("."));
-        String presignedUrl = s3Service.createPresignedPutUrl("artform-data", uploadFileName, fileType);
+        String presignedUrl = s3Service.createPresignedPutUrl("artform-data", "image/" + uploadFileName, fileType);
         if (presignedUrl.isEmpty()) {
             System.out.println("presigned url 생성 실패");
             return null;
         }
-        return new PresignedUrlDto(presignedUrl, uploadFileName);
+        return new ImageSaveResponseDto(presignedUrl, uploadFileName);
     }
 
-    public PresignedUrlDto getPresignedGetUrl(long imageId) {
+    public ImageLoadResponseDto getPresignedGetUrl(long imageId) {
         Image image = imageRepository.findById(imageId).orElse(null);
         String uploadFileName = image.getUploadFileName();
-        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", uploadFileName);
+        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", "image/" + uploadFileName);
+        Long modeId = image.getModel().getModelId();
+        Long userId = image.getUserId();
         if (presignedUrl.isEmpty()) {
             System.out.println("presigned url 생성 실패");
             return null;
         }
-        return new PresignedUrlDto(presignedUrl, uploadFileName);
+        return new ImageLoadResponseDto(modeId, userId, presignedUrl, uploadFileName);
     }
 
-    public List<PresignedUrlDto> getPresignedGetUrlRecentList(int page) {
+    public List<ImageLoadResponseDto> getPresignedGetUrlRecentList(int page) {
         List<Image> imageList = imageRepository.findAll(
                 PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
         ).getContent();
 
-        List<PresignedUrlDto> presignedUrlDtoList = new ArrayList<>();
+        List<ImageLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Image image : imageList) {
             presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId()));
         }

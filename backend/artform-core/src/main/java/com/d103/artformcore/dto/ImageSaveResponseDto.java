@@ -7,7 +7,7 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class PresignedUrlDto {
-    String presignedUrl;
-    String uploadFileName;
+public class ImageSaveResponseDto {
+    private String presignedUrl;
+    private String uploadFileName;
 }
