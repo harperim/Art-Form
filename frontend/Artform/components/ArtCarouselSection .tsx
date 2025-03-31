@@ -21,7 +21,6 @@ interface ParallaxCarouselCardProps {
 }
 
 const ArtCarouselSection: React.FC<ParallaxCarouselCardProps> = ({ item, id, scrollX }) => {
-
   return (
     <Animated.View style={[styles.cardContainer]}>
       <Image source={item.poster} style={styles.image} />

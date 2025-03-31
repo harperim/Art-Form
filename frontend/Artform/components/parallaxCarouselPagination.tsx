@@ -8,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import React from 'react';
 
-const OFFSET = 45;
+const OFFSET = 20;
 const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
 
 // ✅ PaginationDot props 타입 정의
@@ -43,7 +43,7 @@ const PaginationDot: React.FC<PaginationDotProps> = ({ index, scrollX }) => {
     const backgroundColor = interpolateColor(
       scrollX.value,
       [0, ITEM_WIDTH, 2 * ITEM_WIDTH],
-      ['#DBA740', '#DBA740', '#DBA740'],
+      ['#c78200', '#c78200', '#c78200'],
     );
     return {
       backgroundColor,

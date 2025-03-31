@@ -34,6 +34,21 @@ export default function Home() {
       title: '별이 빛나는 밤',
       likes: 40,
     },
+    {
+      poster: require('../../assets/images/splash2.png'),
+      title: '진주 귀걸이를 한 소녀',
+      likes: 30,
+    },
+    {
+      poster: require('../../assets/images/splash3.png'),
+      title: '최후의 만찬',
+      likes: 20,
+    },
+    {
+      poster: require('../../assets/images/splash4.png'),
+      title: '나폴레옹',
+      likes: 27,
+    },
   ];
 
   const data1 = [
@@ -163,27 +178,30 @@ export default function Home() {
 const styles = StyleSheet.create({
   main: {
     padding: 20,
+    backgroundColor: '#F7F4F1',
   },
   logo: {
-    width: 128,
-    height: 40,
+    marginTop: 40,
+    width: 132,
+    height: 45,
   },
   todayRecommend: {
-    marginTop: 28,
+    marginTop: 40,
   },
   title: {
-    fontSize: 18,
-    fontFamily: 'Freesentation-6SemiBold',
-    fontWeight: 'bold',
+    color: '#2C2D26',
+    fontSize: 22,
+    fontFamily: 'Freesentation',
+    fontWeight: '800',
   },
   parallaxCarouselView: {
     marginTop: 12,
   },
   popularModelView: {
-    marginTop: 20,
+    marginTop: 28,
   },
   newModelView: {
-    marginTop: 20,
+    marginTop: 28,
     marginBottom: 120,
   },
   seeMoreBtn: {
