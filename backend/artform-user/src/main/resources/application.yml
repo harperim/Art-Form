@@ -23,6 +23,20 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
 
+  rabbitmq:
+    host: ${REPO_URL}
+    port: ${MQ_PORT}
+    username: ${MQ_NAME}
+    password: ${MQ_PASS}
+    virtual-host: /
+    connection-timeout: 5000
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 3
+        multiplier: 1.0
+
 jwt:
   secret: ${JWT_SECRET}
   access-token:
