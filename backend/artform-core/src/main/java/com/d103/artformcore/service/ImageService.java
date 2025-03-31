@@ -5,6 +5,8 @@ import com.d103.artformcore.dto.ImageSaveDto;
 import com.d103.artformcore.dto.ImageSaveResponseDto;
 import com.d103.artformcore.entity.Image;
 import com.d103.artformcore.entity.Model;
+import com.d103.artformcore.exception.CustomException;
+import com.d103.artformcore.exception.ErrorCode;
 import com.d103.artformcore.repository.ImageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,22 +32,43 @@ public class ImageService {
                 + "_" + UUID.randomUUID().toString() + fileName.substring(fileName.lastIndexOf("."));
         String presignedUrl = s3Service.createPresignedPutUrl("artform-data", "image/" + uploadFileName, fileType);
         if (presignedUrl.isEmpty()) {
-            System.out.println("presigned url 생성 실패");
-            return null;
+            throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
         }
         return new ImageSaveResponseDto(presignedUrl, uploadFileName);
     }
 
+    public Image saveMetadata(ImageSaveDto imageSaveDto) {
+        // TODO: model service에서 model 정보 불러와야 함.
+        Model model = Model.builder()
+                .modelId(imageSaveDto.getModelId())
+                .build();
+
+        Image image = Image.builder()
+                .model(model)
+                .userId(imageSaveDto.getUserId())
+                .uploadFileName(imageSaveDto.getUploadFileName())
+                .isPublic(imageSaveDto.isPublic())
+                .createdAt(LocalDateTime.now())
+                .build();
+        try {
+            return imageRepository.save(image);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.METADATA_SAVE_FAILED);
+        }
+    }
+
     public ImageLoadResponseDto getPresignedGetUrl(long imageId) {
         Image image = imageRepository.findById(imageId).orElse(null);
+        if (image == null) {
+            throw new CustomException(ErrorCode.IMAGE_NOT_FOUND);
+        }
         String uploadFileName = image.getUploadFileName();
         String presignedUrl = s3Service.createPresignedGetUrl("artform-data", "image/" + uploadFileName);
+        if (presignedUrl.isEmpty()) {
+            throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
+        }
         Long modeId = image.getModel().getModelId();
         Long userId = image.getUserId();
-        if (presignedUrl.isEmpty()) {
-            System.out.println("presigned url 생성 실패");
-            return null;
-        }
         return new ImageLoadResponseDto(modeId, userId, presignedUrl, uploadFileName);
     }
 
@@ -61,21 +84,9 @@ public class ImageService {
         return presignedUrlDtoList;
     }
 
-    public Image saveMetadata(ImageSaveDto imageSaveDto) {
-        Model model = Model.builder()
-                .modelId(imageSaveDto.getModelId())
-                .build();
-
-        Image image = Image.builder()
-                .model(model)
-                .userId(imageSaveDto.getUserId())
-                .uploadFileName(imageSaveDto.getUploadFileName())
-                .isPublic(imageSaveDto.isPublic())
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        System.out.println(image);
-
+    public Image deleteImage(Long imageId) throws Exception {
+        Image image = imageRepository.findById(imageId).orElseThrow(() -> new Exception("이미지가 존재하지 않습니다."));
+        image.setDeletedAt(LocalDateTime.now());
         return imageRepository.save(image);
     }
 

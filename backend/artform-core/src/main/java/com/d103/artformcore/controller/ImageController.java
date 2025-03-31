@@ -4,6 +4,8 @@ import com.d103.artformcore.dto.ImageLoadResponseDto;
 import com.d103.artformcore.dto.ImageSaveDto;
 import com.d103.artformcore.dto.ImageSaveResponseDto;
 import com.d103.artformcore.entity.Image;
+import com.d103.artformcore.exception.CustomException;
+import com.d103.artformcore.exception.ErrorResponse;
 import com.d103.artformcore.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,37 +23,40 @@ public class ImageController {
 
     @GetMapping("/presign")
     public ResponseEntity<?> getPresignedPutUrl(@RequestParam String fileType, @RequestParam String fileName) {
-        System.out.println("fileType: " + fileType + ", fileName: " + fileName);
-        ImageSaveResponseDto imageSaveResponseDto = imageService.getPresignedPutUrl(fileType, fileName);
-        if (imageSaveResponseDto != null) {
+        try {
+            ImageSaveResponseDto imageSaveResponseDto = imageService.getPresignedPutUrl(fileType, fileName);
             return ResponseEntity.status(HttpStatus.OK).body(imageSaveResponseDto);
+        } catch (CustomException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage()));
         }
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
     }
 
     @PostMapping("/metadata")
     public ResponseEntity<?> saveMetadata(@RequestBody ImageSaveDto imageSaveDto) {
-        System.out.println(imageSaveDto);
-        Image image = imageService.saveMetadata(imageSaveDto);
-        if (image != null) {
+        try {
+            Image image = imageService.saveMetadata(imageSaveDto);
             return ResponseEntity.status(HttpStatus.OK).body(image);
+        } catch (CustomException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage()));
         }
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("이미지 메타데이터 저장 실패");
     }
 
     @GetMapping("/presign/{imageId}")
     public ResponseEntity<?> getPresignedGetUrl(@PathVariable long imageId) {
-        System.out.println("imageId: " + imageId);
-        ImageLoadResponseDto imageLoadResponseDto = imageService.getPresignedGetUrl(imageId);
-        if (imageLoadResponseDto != null) {
+        try {
+            ImageLoadResponseDto imageLoadResponseDto = imageService.getPresignedGetUrl(imageId);
             return ResponseEntity.status(HttpStatus.OK).body(imageLoadResponseDto);
+        } catch (CustomException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage()));
         }
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
     }
 
     @GetMapping("/presign/recent/{page}")
     public ResponseEntity<?> getPresignedGetUrlRecentList(@PathVariable int page) {
-        System.out.println("page: " + page);
+        System.out.println("recent/page: " + page);
         List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlRecentList(page);
         if (!imageLoadResponseDtoList.isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(imageLoadResponseDtoList);
@@ -59,16 +64,14 @@ public class ImageController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
     }
 
-
-
-
-//    @GetMapping("/{uuid}")
-//    public ResponseEntity<?> getTest(@PathVariable String uuid) {
-//        System.out.println(uuid);
-//        File image = imageService.getImage(uuid);
-//        if (image.exists()) {
-//            return  ResponseEntity.status(HttpStatus.OK).body(image);
+//    @DeleteMapping("/{imageId}")
+//    public ResponseEntity<?> deleteImage(@PathVariable Long imageId) {
+//        System.out.println("delete: " + imageId);
+//        imageService.deleteImage(imageId);
+//        if (!imageLoadResponseDtoList.isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.OK).body(imageLoadResponseDtoList);
 //        }
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+//        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
 //    }
+
 }
