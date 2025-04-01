@@ -84,11 +84,27 @@ public class ImageService {
         return presignedUrlDtoList;
     }
 
-    public Image deleteImage(Long imageId) throws Exception {
-        Image image = imageRepository.findById(imageId).orElseThrow(() -> new Exception("이미지가 존재하지 않습니다."));
+    public List<ImageLoadResponseDto> getPresignedGetUrlMyList(int page, Long userId) {
+        List<Image> imageList = imageRepository.findByUserId(
+                userId,
+                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
+        ).getContent();
+
+        List<ImageLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
+        for (Image image : imageList) {
+            presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId()));
+        }
+        return presignedUrlDtoList;
+    }
+
+    public Image deleteImage(Long imageId) {
+        Image image = imageRepository.findById(imageId).orElseThrow(() -> {
+            throw new CustomException(ErrorCode.IMAGE_NOT_FOUND);
+        });
         image.setDeletedAt(LocalDateTime.now());
         return imageRepository.save(image);
     }
+
 
 //    @Transactional
 //    public boolean saveImage(ImageSaveDto imageSaveDto) {

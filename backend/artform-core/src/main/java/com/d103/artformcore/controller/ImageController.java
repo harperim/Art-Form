@@ -1,5 +1,6 @@
 package com.d103.artformcore.controller;
 
+import com.d103.artformcore.dto.ApiResponse;
 import com.d103.artformcore.dto.ImageLoadResponseDto;
 import com.d103.artformcore.dto.ImageSaveDto;
 import com.d103.artformcore.dto.ImageSaveResponseDto;
@@ -10,6 +11,8 @@ import com.d103.artformcore.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,57 +24,78 @@ import java.util.List;
 public class ImageController {
     private final ImageService imageService;
 
-    @GetMapping("/presign")
+    @GetMapping("/presigned-url")
     public ResponseEntity<?> getPresignedPutUrl(@RequestParam String fileType, @RequestParam String fileName) {
         try {
             ImageSaveResponseDto imageSaveResponseDto = imageService.getPresignedPutUrl(fileType, fileName);
-            return ResponseEntity.status(HttpStatus.OK).body(imageSaveResponseDto);
+            return ResponseEntity.ok(ApiResponse.success(imageSaveResponseDto));
         } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage()));
+                    .body(ApiResponse.error(errorResponse));
         }
     }
 
     @PostMapping("/metadata")
-    public ResponseEntity<?> saveMetadata(@RequestBody ImageSaveDto imageSaveDto) {
+    public ResponseEntity<ApiResponse<Image>> saveMetadata(@RequestBody ImageSaveDto imageSaveDto) {
         try {
             Image image = imageService.saveMetadata(imageSaveDto);
-            return ResponseEntity.status(HttpStatus.OK).body(image);
+            return ResponseEntity.ok(ApiResponse.success(image));
         } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage()));
+                    .body(ApiResponse.error(errorResponse));
         }
     }
 
-    @GetMapping("/presign/{imageId}")
-    public ResponseEntity<?> getPresignedGetUrl(@PathVariable long imageId) {
+    @GetMapping("/{imageId}/presigned-url")
+    public ResponseEntity<ApiResponse<ImageLoadResponseDto>> getPresignedGetUrl(@PathVariable long imageId) {
         try {
             ImageLoadResponseDto imageLoadResponseDto = imageService.getPresignedGetUrl(imageId);
-            return ResponseEntity.status(HttpStatus.OK).body(imageLoadResponseDto);
+            return ResponseEntity.ok(ApiResponse.success(imageLoadResponseDto));
         } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage()));
+                    .body(ApiResponse.error(errorResponse));
         }
     }
 
-    @GetMapping("/presign/recent/{page}")
-    public ResponseEntity<?> getPresignedGetUrlRecentList(@PathVariable int page) {
-        System.out.println("recent/page: " + page);
-        List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlRecentList(page);
-        if (!imageLoadResponseDtoList.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.OK).body(imageLoadResponseDtoList);
+    @GetMapping("/recent")
+    public ResponseEntity<?> getPresignedGetUrlRecentList(@RequestParam int page) {
+        try {
+            List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlRecentList(page);
+            return ResponseEntity.ok(ApiResponse.success(imageLoadResponseDtoList));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
         }
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
     }
 
-//    @DeleteMapping("/{imageId}")
-//    public ResponseEntity<?> deleteImage(@PathVariable Long imageId) {
-//        System.out.println("delete: " + imageId);
-//        imageService.deleteImage(imageId);
-//        if (!imageLoadResponseDtoList.isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.OK).body(imageLoadResponseDtoList);
-//        }
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("presigned url 생성 실패");
-//    }
+    @GetMapping("/my-gallery")
+    public ResponseEntity<?> getPresignedGetUrlMyList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            // userDetail.getUserName()은 sub값을 불러옴.
+            List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlMyList(page, Long.parseLong(userDetails.getUsername()));
+            return ResponseEntity.ok(ApiResponse.success(imageLoadResponseDtoList));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
+        }
+    }
+
+    @DeleteMapping("/{imageId}")
+    public ResponseEntity<?> deleteImage(@PathVariable Long imageId) {
+        try {
+            imageService.deleteImage(imageId);
+            return ResponseEntity.ok(ApiResponse.success("이미지 삭제 처리 성공"));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
+        }
+    }
+
 
 }
