@@ -34,5 +34,13 @@ public class LikeController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @PostMapping
+    public ResponseEntity<ResponseDto> likeList(Authentication authentication) {
+        Long userId = Long.valueOf(authentication.getName());
+        ResponseDto likeList = likeService.getLikeList(userId);
+
+        return ResponseEntity.ok(likeList);
+    }
+
 
 }

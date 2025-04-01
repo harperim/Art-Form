@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -57,6 +58,14 @@ public class LikeServiceImpl implements LikeService {
             log.info("사용자 {}가 모델 {} 좋아요 등록", userId, modelInfoDto.getModelName());
             return new ResponseDto("좋아요가 등록되었습니다.");
         }
+    }
+
+    @Override
+    public ResponseDto getLikeList(Long userId) {
+        
+        List<Like> likesById = likeRepository.getLikesById(userId);
+
+        return new ResponseDto("das");
     }
 
     private void sendLikeEvent(Long userId, ModelInfoDto modelInfoDto, String action) {

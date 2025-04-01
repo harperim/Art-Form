@@ -8,4 +8,6 @@ import org.springframework.stereotype.Service;
 public interface LikeService {
     // 좋아요
     ResponseDto toggleLike(Long userId, ModelInfoDto modelId);
+
+    ResponseDto getLikeList(Long userId);
 }
