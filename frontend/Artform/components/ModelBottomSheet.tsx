@@ -1,6 +1,7 @@
 // components/ModelBottomSheet.tsx
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { ImageSourcePropType } from 'react-native';
+import { Keyboard, TextInput } from 'react-native';
 import {
   Text,
   Image,
@@ -9,23 +10,16 @@ import {
   TouchableOpacity,
   FlatList,
   Pressable,
-  // TextInput,
   BackHandler,
 } from 'react-native';
-import {
-  BottomSheetBackdrop,
-  BottomSheetFlatList,
-  BottomSheetModal,
-  BottomSheetTextInput,
-} from '@gorhom/bottom-sheet';
-import { TextInput } from 'react-native-gesture-handler';
+import { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { ICONS } from '~/constants/icons';
 import colors from '~/constants/colors';
 import { useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { mockModels } from '~/constants/mockModels';
-import type { Model, Review } from '~/types/model';
+import type { Model } from '~/types/model';
 
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -54,11 +48,12 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
   const [comment, setComment] = useState('');
 
   const [commentImage, setCommentImage] = useState<ImageSourcePropType | null>(null);
-  const [visibleReviews, setVisibleReviews] = useState<Review[]>([]);
-  const [reviewPage, setReviewPage] = useState(1);
-  const REVIEWS_PER_PAGE = 2;
+  // const [visibleReviews, setVisibleReviews] = useState<Review[]>([]);
+  // const [reviewPage, setReviewPage] = useState(1);
+  // const REVIEWS_PER_PAGE = 2;
 
   const innerRef = useRef<BottomSheetModal>(null);
+  const inputRef = useRef<TextInput>(null);
   const router = useRouter();
 
   useImperativeHandle(ref, () => innerRef.current!);
@@ -72,18 +67,31 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
     }
   }, [selected]);
 
-  // Lazy Load 리뷰 함수
   useEffect(() => {
-    if (model) {
-      const start = 0;
-      const end = REVIEWS_PER_PAGE;
-      setVisibleReviews(model.reviews.slice(start, end));
-    }
-  }, [selected]);
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      inputRef.current?.blur(); // 키보드 내려가면 확실히 blur
+    });
+
+    return () => hideSub.remove();
+  }, []);
+
+  // Lazy Load 리뷰 함수
+  // useEffect(() => {
+  //   if (model) {
+  //     const start = 0;
+  //     const end = REVIEWS_PER_PAGE;
+  //     setVisibleReviews(model.reviews.slice(start, end));
+  //   }
+  // }, [selected]);
 
   useFocusEffect(
     useCallback(() => {
       const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+        if (inputRef.current?.isFocused()) {
+          inputRef.current.blur(); // <- 명시적으로 blur 처리
+          return true; // 이벤트 소비
+        }
+
         if (innerRef.current) {
           innerRef.current.close(); // 바텀시트를 닫음
           return true; // 뒤로가기 이벤트 소비
@@ -99,15 +107,15 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
   const model = mockModels.find((model) => model.id === selected.id);
   if (!model) return null;
 
-  const loadMoreReviews = () => {
-    if (!model) return;
-    const nextPage = reviewPage + 1;
-    const newReviews = model.reviews.slice(0, nextPage * REVIEWS_PER_PAGE);
-    if (newReviews.length > visibleReviews.length) {
-      setVisibleReviews(newReviews);
-      setReviewPage(nextPage);
-    }
-  };
+  // const loadMoreReviews = () => {
+  //   if (!model) return;
+  //   const nextPage = reviewPage + 1;
+  //   const newReviews = model.reviews.slice(0, nextPage * REVIEWS_PER_PAGE);
+  //   if (newReviews.length > visibleReviews.length) {
+  //     setVisibleReviews(newReviews);
+  //     setReviewPage(nextPage);
+  //   }
+  // };
 
   // 이미지 선택 함수
   const pickImage = async () => {
@@ -127,142 +135,123 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
       snapPoints={snapPoints}
       enablePanDownToClose
       onDismiss={onDismiss}
+      keyboardBehavior="interactive"
       android_keyboardInputMode="adjustResize"
       backdropComponent={(props) => (
         <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} />
       )}
       backgroundStyle={{ borderRadius: 20 }}
     >
-      <BottomSheetFlatList
-        contentContainerStyle={styles.container}
-        data={visibleReviews}
-        keyExtractor={(item) => item.id}
-        onEndReached={loadMoreReviews}
-        onEndReachedThreshold={0.5}
-        renderItem={({ item, index }) => (
+      <BottomSheetScrollView contentContainerStyle={styles.container}>
+        {/* 헤더 정보 */}
+        <View style={styles.header}>
           <View>
-            <View style={styles.reviewRow}>
-              <View style={styles.reviewContent}>
-                <Text style={styles.reviewer}>{item.nickname}</Text>
-                <Text style={styles.commentText}>{item.comment}</Text>
-                <Text style={styles.reviewDate}>{item.date}</Text>
+            <Text style={styles.title}>{model.title}</Text>
+            <Text style={styles.author}>by {model.artist}</Text>
+          </View>
+        </View>
+
+        {/* 대표 이미지 */}
+        <View style={styles.mainImageWrapper}>
+          <Image source={model.image} style={styles.mainImage} />
+          <Pressable
+            style={styles.heartButton}
+            onPress={() => {
+              setLiked((prev) => !prev);
+              setLikes((prev) => (liked ? prev - 1 : prev + 1));
+            }}
+          >
+            {liked ? (
+              <ICONS.heart.filled width={24} height={24} />
+            ) : (
+              <ICONS.heart.outline width={24} height={24} />
+            )}
+            <Text style={{ marginLeft: 4 }}>{likes}</Text>
+          </Pressable>
+        </View>
+
+        {/* 관련 이미지 */}
+        <View style={styles.section}>
+          <Text style={styles.subTitle}>이 모델로 만든 이미지</Text>
+          <FlatList
+            horizontal
+            data={model.relatedImages}
+            keyExtractor={(_, index) => `image-${index}`}
+            renderItem={({ item }) => <Image source={item} style={styles.thumbImage} />}
+            showsHorizontalScrollIndicator={false}
+          />
+        </View>
+
+        {/* 사용 버튼 */}
+        <Pressable
+          style={styles.useButton}
+          onPress={() => {
+            if (!model.image) return;
+            router.push({ pathname: '/convert', params: { modelId: model.id } });
+          }}
+        >
+          <Text style={styles.useButtonText}>사용해 보기</Text>
+        </Pressable>
+
+        <View style={styles.divider} />
+
+        {/* 리뷰 섹션 */}
+        <View style={styles.section}>
+          <Text style={styles.subTitle}>리뷰 {model.reviews.length}개</Text>
+          {model.reviews.map((item, index) => (
+            <View key={item.id}>
+              <View style={styles.reviewRow}>
+                <View style={styles.reviewContent}>
+                  <Text style={styles.reviewer}>{item.nickname}</Text>
+                  <Text style={styles.commentText}>{item.comment}</Text>
+                  <Text style={styles.reviewDate}>{item.date}</Text>
+                </View>
+                <Image source={item.image} style={styles.reviewImage} />
               </View>
-              <Image source={item.image} style={styles.reviewImage} />
+              {index !== model.reviews.length - 1 && <View style={styles.reviewDivider} />}
             </View>
-            {index !== visibleReviews.length - 1 && <View style={styles.reviewDivider} />}
+          ))}
+        </View>
+
+        {/* 댓글 입력 */}
+        {commentImage && (
+          <View style={styles.previewContainer}>
+            <Image source={commentImage} style={styles.previewImage} />
+            <TouchableOpacity style={styles.removeImageBtn} onPress={() => setCommentImage(null)}>
+              <Text style={styles.removeImageText}>×</Text>
+            </TouchableOpacity>
           </View>
         )}
-        ListHeaderComponent={
-          <View>
-            {/* 제목 & 작가 & 좋아요 */}
-            <View style={styles.header}>
-              <View>
-                <Text style={styles.title}>{model.title}</Text>
-                <Text style={styles.author}>by {model.artist}</Text>
-              </View>
-            </View>
 
-            {/* 대표 이미지 */}
-            <View style={styles.mainImageWrapper}>
-              <Image source={model.image} style={styles.mainImage} />
-              <Pressable
-                style={styles.heartButton}
-                onPress={() => {
-                  setLiked((prev) => !prev);
-                  setLikes((prev) => (liked ? prev - 1 : prev + 1));
-                }}
-              >
-                {liked ? (
-                  <ICONS.heart.filled width={24} height={24} />
-                ) : (
-                  <ICONS.heart.outline width={24} height={24} />
-                )}
-                <Text style={{ marginLeft: 4 }}>{likes}</Text>
-              </Pressable>
-            </View>
+        <View style={styles.commentInputContainer}>
+          <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
+            <Text style={{ fontSize: 22, color: '#555' }}>＋</Text>
+          </TouchableOpacity>
 
-            {/* 관련 이미지 */}
-            <View style={styles.section}>
-              <Text style={styles.subTitle}>이 모델로 만든 이미지</Text>
-              <FlatList
-                horizontal
-                data={model.relatedImages}
-                keyExtractor={(_, index) => `image-${index}`}
-                renderItem={({ item }) => <Image source={item} style={styles.thumbImage} />}
-                showsHorizontalScrollIndicator={false}
-              />
-            </View>
-
-            {/* 사용 버튼 */}
-            <Pressable
-              style={styles.useButton}
-              onPress={() => {
-                if (!model.image) return;
-
-                router.push({
-                  pathname: '/convert',
-                  params: {
-                    modelId: model.id,
-                  },
-                });
-              }}
-            >
-              <Text style={styles.useButtonText}>사용해 보기</Text>
-            </Pressable>
-
-            <View style={styles.divider} />
-
-            {/* 리뷰 타이틀 */}
-            <View style={styles.section}>
-              <Text style={styles.subTitle}>리뷰 {model.reviews.length}개</Text>
-            </View>
+          <View style={styles.commentBox}>
+            <TextInput
+              ref={inputRef}
+              style={styles.commentInput}
+              placeholder="댓글 작성하기..."
+              placeholderTextColor="#999"
+              onChangeText={setComment}
+            />
           </View>
-        }
-        ListFooterComponent={
-          <View style={{ marginTop: 20 }}>
-            {/* 선택된 이미지 미리보기 */}
-            {commentImage && (
-              <View style={styles.previewContainer}>
-                <Image source={commentImage} style={styles.previewImage} />
-                <TouchableOpacity
-                  style={styles.removeImageBtn}
-                  onPress={() => setCommentImage(null)}
-                >
-                  <Text style={styles.removeImageText}>×</Text>
-                </TouchableOpacity>
-              </View>
-            )}
 
-            {/* 댓글 입력창 */}
-            <View style={styles.commentInputContainer}>
-              <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
-                <Text style={{ fontSize: 22, color: '#555' }}>＋</Text>
-              </TouchableOpacity>
-
-              <View style={styles.commentBox}>
-                <TextInput
-                  style={styles.commentInput}
-                  placeholder="댓글 작성하기..."
-                  placeholderTextColor="#999"
-                  value={comment}
-                  onChangeText={setComment}
-                />
-              </View>
-              <TouchableOpacity
-                style={styles.sendButton}
-                onPress={() => {
-                  if (!comment.trim()) return;
-                  console.log('댓글 전송:', comment);
-                  setComment('');
-                  setCommentImage(null);
-                }}
-              >
-                <ICONS.send width={20} height={20} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        }
-      />
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={() => {
+              if (!comment.trim()) return;
+              console.log('댓글 전송:', comment);
+              setComment('');
+              inputRef.current?.clear();
+              setCommentImage(null);
+            }}
+          >
+            <ICONS.send width={20} height={20} />
+          </TouchableOpacity>
+        </View>
+      </BottomSheetScrollView>
     </BottomSheetModal>
   );
 });

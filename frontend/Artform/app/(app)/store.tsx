@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
   sortButtons: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   sortBtn: {
     paddingVertical: 6,
