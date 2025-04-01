@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header
 from fastapi.responses import FileResponse
 from fastapi.responses import Response
 import uuid
@@ -28,6 +28,8 @@ def cleanup_files_in_directory(directory_path):
 
 app = FastAPI()
 
+CORE_SERVER_BASE = "http://j12d103.p.ssafy.io:8081"
+
 @app.post("/train/")
 async def train_endpoint(
     image: UploadFile = File(...),
@@ -54,7 +56,7 @@ async def train_endpoint(
     run_augmentation(input_dir=str(img_dir), output_dir=str(aug_dir), target_num_images=target_num_images)
 
     # 증강된 이미지로 모델 학습 실행
-    run_training(image_folder=str(aug_dir), output_dir=str(model_dir))
+    run_training(image_folder=str(aug_dir), output_dir=str(model_dir), model_name=str(model_name))
 
     # 학습 완료 후, 이미지들이 저장된 폴더 내부의 파일만 삭제
     cleanup_files_in_directory(str(img_dir))
@@ -96,9 +98,9 @@ async def train_endpoint(
 async def apply_endpoint(
     image: UploadFile = File(...),
     user_id: str = Form(...),
-    producer_id: str = Form(...),
-    model_name: str = Form(...),
-    strength: str = Form("0.33")
+    model_id: str = Form(...),
+    strength: str = Form("0.33"),
+    authorization: str = Header(...)
 ):
  
     # 업로드된 이미지를 임시 저장할 디렉토리 생성
@@ -111,40 +113,109 @@ async def apply_endpoint(
     with input_image_path.open("wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
     
-    # 사용할 모델 디렉토리 (ai/img_model/{producer_id}/{model_name})
+    # model정보 조회
+    async with httpx.AsyncClient() as client:
+        model_info_resp = await client.get(
+            f"{CORE_SERVER_BASE}/model/{model_id}",
+            params={"model_id": model_id},
+            headers={"Authorization": authorization}
+        )
+    if model_info_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="모델 정보 조회에 실패했습니다.")
+    model_info = model_info_resp.json().get("data")
+    if not model_info:
+        raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
+    producer_id = model_info.get("user_id")
+    model_name = model_info.get("model_name")
+
+    # 로컬 모델 디렉토리 확인 및 inference 실행
     model_dir = os.path.join("ai", "img_model", producer_id, model_name)
     if not os.path.exists(model_dir):
         raise HTTPException(status_code=404, detail="모델을 찾을 수 없습니다.")
+    result_image_path = run_inference(str(input_image_path), model_dir, strength_str=strength, model_name=str(model_name))
+
+    # Core 서버에 presigned URL 요청 (원본 이미지)
+    async with httpx.AsyncClient() as client:
+        presigned_orig_resp = await client.post(
+            f"{CORE_SERVER_BASE}/core/image/presigned-url?filetype=jpg&fileName=test.jpg",
+            headers={"Authorization": authorization},
+            json={"fileType": "original"}
+        )
+    if presigned_orig_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="원본 이미지 presigned URL 요청에 실패했습니다.")
+    orig_presigned_data = presigned_orig_resp.json()
+    if not orig_presigned_data.get("success"):
+        raise HTTPException(status_code=500, detail="원본 이미지 presigned URL 발급 실패")
+    orig_presigned_url = orig_presigned_data["data"]["presignedUrl"]
+    orig_upload_filename = orig_presigned_data["data"]["uploadFileName"]
+
+    # Core 서버에 presigned URL 요청 (변환 이미지)
+    async with httpx.AsyncClient() as client:
+        presigned_result_resp = await client.post(
+            f"{CORE_SERVER_BASE}/core/image/presigned-url?filetype=jpg&fileName=test.jpg",
+            headers={"Authorization": authorization},
+            json={"fileType": "result"}
+        )
+    if presigned_result_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="변환 이미지 presigned URL 요청에 실패했습니다.")
+    result_presigned_data = presigned_result_resp.json()
+    if not result_presigned_data.get("success"):
+        raise HTTPException(status_code=500, detail="변환 이미지 presigned URL 발급 실패")
+    result_presigned_url = result_presigned_data["data"]["presignedUrl"]
+    result_upload_filename = result_presigned_data["data"]["uploadFileName"]
+
+    # presigned URL을 사용하여 원본 이미지 업로드 (HTTP PUT)
+    with open(input_image_path, "rb") as f:
+        orig_file_content = f.read()
+    async with httpx.AsyncClient() as client:
+        upload_orig_resp = await client.put(orig_presigned_url, content=orig_file_content)
+    if upload_orig_resp.status_code not in (200, 201):
+        raise HTTPException(status_code=500, detail="원본 이미지 업로드에 실패했습니다.")
+
+    # presigned URL을 사용하여 변환 이미지 업로드 (HTTP PUT)
+    with open(result_image_path, "rb") as f:
+        result_file_content = f.read()
+    async with httpx.AsyncClient() as client:
+        upload_result_resp = await client.put(result_presigned_url, content=result_file_content)
+    if upload_result_resp.status_code not in (200, 201):
+        raise HTTPException(status_code=500, detail="변환 이미지 업로드에 실패했습니다.")
     
-    # inference 실행: 추론 결과 이미지 경로 반환
-    result_image_path = run_inference(str(input_image_path), model_dir, strength_str=strength)
-    
-    # multipart 응답 바디 구성 (각 파트: user_id, 원본 이미지, 결과 이미지)
+    # Core 서버에 업로드 완료 등록 요청 (두 이미지 정보 함께 전송)
+    register_payload = {
+        "modelId": model_id,
+        "userId": user_id,
+        "isPublic": "true",
+        "originalUploadFileName": orig_upload_filename,
+        "resultUploadFileName": result_upload_filename
+    }
+    async with httpx.AsyncClient() as client:
+        register_resp = await client.post(
+            f"{CORE_SERVER_BASE}/core/image/metadata",
+            json=register_payload,
+            headers={"Authorization": authorization}
+        )
+    if register_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="이미지 등록에 실패했습니다.")
+    register_data = register_resp.json()
+
+    # 원본 이미지와 변환 이미지 각각을 읽어 multipart 메시지 구성
     boundary = "myboundary"
     parts = []
     
-    # user_id 파트
-    parts.append(f"--{boundary}\r\n".encode())
-    parts.append(b'Content-Disposition: form-data; name="user_id"\r\n\r\n')
-    parts.append(user_id.encode())
-    parts.append(b"\r\n")
-    
     # 원본 이미지 파트
     with open(input_image_path, "rb") as f:
-        original_data = f.read()
+        orig_data = f.read()
     orig_filename = Path(input_image_path).name
-    # 파일 확장자에 따라 content-type 지정 (jpg)
     parts.append(f"--{boundary}\r\n".encode())
     parts.append(f'Content-Disposition: form-data; name="original_image"; filename="{orig_filename}"\r\n'.encode())
     parts.append(b"Content-Type: image/jpeg\r\n\r\n")
-    parts.append(original_data)
+    parts.append(orig_data)
     parts.append(b"\r\n")
     
-    # 추론 결과 이미지 파트
+    # 추론 이미지 파트
     with open(result_image_path, "rb") as f:
         result_data = f.read()
     result_filename = Path(result_image_path).name
-    # 결과 이미지는 jpg로
     parts.append(f"--{boundary}\r\n".encode())
     parts.append(f'Content-Disposition: form-data; name="result_image"; filename="{result_filename}"\r\n'.encode())
     parts.append(b"Content-Type: image/jpeg\r\n\r\n")
@@ -159,12 +230,6 @@ async def apply_endpoint(
     os.remove(input_image_path)
     os.remove(result_image_path)
     
-    # EC2에 위치한 백엔드 URL (실제 주소로 수정 필요)
-    ec2_url = "주소주소"
+    # multipart 응답 전송
     headers = {"Content-Type": f"multipart/mixed; boundary={boundary}"}
-    
-    async with httpx.AsyncClient() as client:
-        ec2_response = await client.post(ec2_url, data=body, headers=headers)
-    
-    # 프론트엔드에 이미지지 전달
     return Response(content=body, headers=headers)

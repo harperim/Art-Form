@@ -6,9 +6,10 @@ import torch
 from PIL import Image
 from diffusers import StableDiffusionImg2ImgPipeline, DDPMScheduler
 
-def run_inference(input_image_path: str, model_dir: str, strength_str: str = "0.33", 
-                  prompt: str = "a painting in the style of Van Gogh") -> str:
-
+def run_inference(input_image_path: str, model_dir: str, strength_str: str = "0.33", model_name: str = "",
+                  prompt: str = None) -> str:
+    if prompt is None:
+        prompt = f"a painting in the style of {model_name}"
     strength = float(strength_str)
     os.makedirs("./result", exist_ok=True)
     base_name = os.path.splitext(os.path.basename(input_image_path))[0]

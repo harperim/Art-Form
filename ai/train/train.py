@@ -26,7 +26,7 @@ def remove_unexpected_kwargs(orig_func, *args, **kwargs):
                 raise
 
 
-def run_training(image_folder, output_dir):
+def run_training(image_folder, output_dir, model_name):
     os.makedirs(output_dir, exist_ok=True)
     
     # LoRA 설정
@@ -59,7 +59,7 @@ def run_training(image_folder, output_dir):
                 transforms.ToTensor(),
                 transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
             ])
-            self.prompt = "a painting in the style of Van Gogh"
+            self.prompt = f"a painting in the style of {model_name}"
     
         def __len__(self):
             return len(self.image_paths)
@@ -143,7 +143,7 @@ def run_training(image_folder, output_dir):
                 max_norm=1.0
             )
             if torch.isnan(loss) or torch.isinf(loss):
-                print("⚠️ [Warning] Loss is NaN or Inf!")
+                print("[Warning] Loss is NaN or Inf!")
                 print("→ noise_pred min/max:", noise_pred.min().item(), noise_pred.max().item())
                 print("→ noise min/max:", noise.min().item(), noise.max().item())
                 raise ValueError("Training stopped due to unstable loss")
