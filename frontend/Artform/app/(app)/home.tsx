@@ -1,6 +1,6 @@
 // app/(app)/home.tsx
 import TodayPickCarousel from '~/components/TodayPickCarousel';
-import ArtCarouselSection from '~/components/ArtCarouselSection ';
+import ArtCarouselSection from '~/components/ArtCarouselSection';
 import ParallaxCarouselPagination from '~/components/parallaxCarouselPagination';
 import { Image, View, StyleSheet, Text, Dimensions } from 'react-native';
 import Animated, { useSharedValue } from 'react-native-reanimated';

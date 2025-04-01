@@ -1,8 +1,9 @@
+// components/ArtCarouselSection.tsx
 import type { ImageSourcePropType } from 'react-native';
-import { Text, StyleSheet, Image, Dimensions, View } from 'react-native';
+import { Text, StyleSheet, Image } from 'react-native';
 import React from 'react';
 import type { SharedValue } from 'react-native-reanimated';
-import Animated, { useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 const OFFSET = 12; // 이미지 양쪽 여백
 const ITEM_WIDTH = 148;
@@ -20,7 +21,7 @@ interface ParallaxCarouselCardProps {
   scrollX: SharedValue<number>;
 }
 
-const ArtCarouselSection: React.FC<ParallaxCarouselCardProps> = ({ item, id, scrollX }) => {
+const ArtCarouselSection: React.FC<ParallaxCarouselCardProps> = ({ item }) => {
   return (
     <Animated.View style={[styles.cardContainer]}>
       <Image source={item.poster} style={styles.image} />

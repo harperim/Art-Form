@@ -1,3 +1,4 @@
+// components/ParallaxCarouselPagination.tsx
 import { Dimensions, StyleSheet, View } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 import Animated, {
