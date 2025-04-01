@@ -24,7 +24,7 @@ spring:
       port: ${REDIS_PORT}
 
   rabbitmq:
-    host: ${REPO_URL}
+    host: ${SERVER_DOMAIN}
     port: ${MQ_PORT}
     username: ${MQ_NAME}
     password: ${MQ_PASS}
