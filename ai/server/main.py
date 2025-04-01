@@ -1,12 +1,12 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header
-from fastapi.responses import FileResponse
+from typing import List
 from fastapi.responses import Response
 import uuid
 import httpx
 from pathlib import Path
-from PIL import Image
 import shutil
 import os
+os.environ.pop("SSL_CERT_FILE", None)
 
 from ai.train.augment import run_augmentation
 from ai.train.train import run_training
@@ -32,7 +32,7 @@ CORE_SERVER_BASE = "http://j12d103.p.ssafy.io:8081"
 
 @app.post("/train/")
 async def train_endpoint(
-    image: UploadFile = File(...),
+    images: List[UploadFile] = File(...),
     user_id: str = Form(...),
     model_name: str = Form(...)
 ):
@@ -46,10 +46,11 @@ async def train_endpoint(
     model_dir.mkdir(parents=True, exist_ok=True)
 
     # 업로드된 이미지를 ai/train/img에 저장
-    image_filename = f"{uuid.uuid4().hex}_{image.filename}"
-    image_path = img_dir / image_filename
-    with image_path.open("wb") as buffer:
-        shutil.copyfileobj(image.file, buffer)
+    for image in images:
+        image_filename = f"{uuid.uuid4().hex}_{image.filename}"
+        image_path = img_dir / image_filename
+        with image_path.open("wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
 
     # 데이터 증강 실행 (목표 50장)
     target_num_images = 50
@@ -99,10 +100,11 @@ async def apply_endpoint(
     image: UploadFile = File(...),
     user_id: str = Form(...),
     model_id: str = Form(...),
+    producer_id: str = Form(...),
+    model_name: str = Form(...),
     strength: str = Form("0.33"),
     authorization: str = Header(...)
 ):
- 
     # 업로드된 이미지를 임시 저장할 디렉토리 생성
     input_dir = Path("ai/apply/input")
     input_dir.mkdir(parents=True, exist_ok=True)
@@ -113,20 +115,20 @@ async def apply_endpoint(
     with input_image_path.open("wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
     
-    # model정보 조회
-    async with httpx.AsyncClient() as client:
-        model_info_resp = await client.get(
-            f"{CORE_SERVER_BASE}/model/{model_id}",
-            params={"model_id": model_id},
-            headers={"Authorization": authorization}
-        )
-    if model_info_resp.status_code != 200:
-        raise HTTPException(status_code=500, detail="모델 정보 조회에 실패했습니다.")
-    model_info = model_info_resp.json().get("data")
-    if not model_info:
-        raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
-    producer_id = model_info.get("user_id")
-    model_name = model_info.get("model_name")
+    # # model정보 조회
+    # async with httpx.AsyncClient() as client:
+    #     model_info_resp = await client.get(
+    #         f"{CORE_SERVER_BASE}/model/{model_id}",
+    #         params={"model_id": model_id},
+    #         headers={"Authorization": authorization}
+    #     )
+    # if model_info_resp.status_code != 200:
+    #     raise HTTPException(status_code=500, detail="모델 정보 조회에 실패했습니다.")
+    # model_info = model_info_resp.json().get("data")
+    # if not model_info:
+    #     raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
+    # producer_id = model_info.get("user_id")
+    # model_name = model_info.get("model_name")
 
     # 로컬 모델 디렉토리 확인 및 inference 실행
     model_dir = os.path.join("ai", "img_model", producer_id, model_name)
@@ -156,6 +158,7 @@ async def apply_endpoint(
             headers={"Authorization": authorization},
             json={"fileType": "result"}
         )
+  
     if presigned_result_resp.status_code != 200:
         raise HTTPException(status_code=500, detail="변환 이미지 presigned URL 요청에 실패했습니다.")
     result_presigned_data = presigned_result_resp.json()
