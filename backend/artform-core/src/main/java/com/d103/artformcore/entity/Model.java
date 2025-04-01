@@ -31,7 +31,7 @@ public class Model {
     private boolean isPublic = true;
 
     @Column(nullable = false)
-    private int favoriteCount = 0;
+    private int likeCount = 0;
 
     @Column(nullable = false, length = 255)
     private String uploadFileName;

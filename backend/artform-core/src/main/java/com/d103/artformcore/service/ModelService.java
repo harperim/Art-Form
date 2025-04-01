@@ -1,19 +1,16 @@
 package com.d103.artformcore.service;
 
-import com.d103.artformcore.dto.ImageSaveDto;
-import com.d103.artformcore.dto.ImageSaveResponseDto;
 import com.d103.artformcore.dto.ModelSaveDto;
 import com.d103.artformcore.dto.ModelSaveResponseDto;
-import com.d103.artformcore.entity.Image;
 import com.d103.artformcore.entity.Model;
 import com.d103.artformcore.exception.CustomException;
 import com.d103.artformcore.exception.ErrorCode;
+import com.d103.artformcore.exception.ModelNotFoundException;
 import com.d103.artformcore.repository.ModelRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -44,6 +41,22 @@ public class ModelService {
             return modelRepository.save(model);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.METADATA_SAVE_FAILED);
+        }
+    }
+
+    public void incrementLikeCount(Long modelId) {
+        Model model = modelRepository.findById(modelId)
+                .orElseThrow(() -> new ModelNotFoundException("모델을 찾을 수 없습니다: " + modelId));
+        model.setLikeCount(model.getLikeCount() + 1);
+        modelRepository.save(model);
+    }
+
+    public void decrementLikeCount(Long modelId) {
+        Model model = modelRepository.findById(modelId)
+                .orElseThrow(() -> new ModelNotFoundException("모델을 찾을 수 없습니다: " + modelId));
+        if (model.getLikeCount() > 0) {
+            model.setLikeCount(model.getLikeCount() - 1);
+            modelRepository.save(model);
         }
     }
 }

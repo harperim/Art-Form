@@ -12,4 +12,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleException(Exception e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다: " + e.getMessage());
     }
+
+    @ExceptionHandler(ModelNotFoundException.class)
+    public ResponseEntity<String> handleException(ModelNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex) {
+        ErrorResponse error = new ErrorResponse("서버 오류", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR); // 500 에러로 처리
+    }
 }
