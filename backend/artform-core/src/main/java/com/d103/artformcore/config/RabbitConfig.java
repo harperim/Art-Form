@@ -28,10 +28,11 @@ public class RabbitConfig implements RabbitListenerConfigurer {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory); // 연결
         factory.setMessageConverter(jsonMessageConverter()); // 컨버터
-        factory.setAcknowledgeMode(AcknowledgeMode.AUTO); // 메시지 자동 확인
+        factory.setAcknowledgeMode(AcknowledgeMode.AUTO); // 메시지가 성공적으로 처리될 시 Ack 보냄
         return factory;
     }
 
+    // 리스너가 받은 메시지 변환
     @Bean
     public MappingJackson2MessageConverter consumerJackson2MessageConverter() {
         return new MappingJackson2MessageConverter();
@@ -44,6 +45,7 @@ public class RabbitConfig implements RabbitListenerConfigurer {
         return factory;
     }
 
+    // @Listener 가 달리면 위에 컨버터 사용
     @Override
     public void configureRabbitListeners(RabbitListenerEndpointRegistrar registrar) {
         registrar.setMessageHandlerMethodFactory(messageHandlerMethodFactory());
