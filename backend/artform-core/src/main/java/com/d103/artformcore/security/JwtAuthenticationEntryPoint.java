@@ -18,7 +18,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         // Authorization 헤더 확인
         String authHeader = request.getHeader("Authorization");
         String errorMessage;
-        System.out.println("!!!!!!!!authHeader: " + authHeader);
+        log.info("!!!!!!!!authHeader: " + authHeader);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             errorMessage = "액세스 토큰이 없거나 유효한 형식이 아닙니다.";
