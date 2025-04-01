@@ -1,3 +1,4 @@
+// app/(auth)/login.tsx
 import { useEffect, useRef, useState } from 'react';
 import {
   View,

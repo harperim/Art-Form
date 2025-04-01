@@ -1,9 +1,11 @@
+// app/_layout.tsx
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Slot } from 'expo-router';
 import { AuthProvider } from '../lib/auth-context';
 import { useFonts } from 'expo-font';
 import { View, Text } from 'react-native';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { ModelProvider } from '~/context/ModelContext';
 
 const customFonts = {
   'SansitaSwashed-Regular': require('../assets/fonts/SansitaSwashed-Regular.ttf'),
@@ -27,7 +29,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <AuthProvider>
-          <Slot />
+          <ModelProvider>
+            <Slot />
+          </ModelProvider>
         </AuthProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>

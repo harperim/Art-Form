@@ -1,3 +1,4 @@
+// app/(auth)/register.tsx
 import { useState, useRef, useEffect } from 'react';
 import {
   View,

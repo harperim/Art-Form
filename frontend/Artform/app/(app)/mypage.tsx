@@ -1,3 +1,4 @@
+// app/(app)/mypage.tsx
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '~/lib/auth-context';

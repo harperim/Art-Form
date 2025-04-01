@@ -19,6 +19,7 @@ import PaletteIcon from '~/assets/icons/palette.svg';
 import TextIcon from '~/assets/icons/text.svg';
 import GalleryIcon from '~/assets/icons/gallery.svg';
 import CameraIcon from '~/assets/icons/camera.svg';
+import CheckIcon from '~/assets/icons/check.svg';
 
 export const ICONS = {
   home: { outline: HomeIcon, filled: HomeIconFilled },
@@ -31,6 +32,7 @@ export const ICONS = {
   text: TextIcon,
   gallery: GalleryIcon,
   camera: CameraIcon,
+  check: CheckIcon,
 };
 
 export const TAB_ICONS = {

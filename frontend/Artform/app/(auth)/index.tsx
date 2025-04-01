@@ -1,3 +1,4 @@
+// app/(auth)/index.tsx
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../lib/auth-context';

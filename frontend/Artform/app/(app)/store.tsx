@@ -5,11 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import colors from '~/constants/colors';
 import type { Model } from '~/types/model';
-import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import ModelBottomSheet from '~/components/ModelBottomSheet';
+import { useModel } from '~/context/ModelContext';
+import { useFocusEffect } from 'expo-router';
 
 const dummyData: Model[] = [
   { id: '1', title: '기억의 지속', image: require('~/assets/images/1.png') },
@@ -24,14 +26,19 @@ function AnimatedCard({
   item,
   index,
   onPress,
+  selectedModel,
 }: {
   item: Model;
   index: number;
   onPress: () => void;
+  selectedModel: Model | null;
 }) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
-      <Animated.View entering={FadeInDown.delay(index * 100).springify()} style={styles.card}>
+      <Animated.View
+        entering={selectedModel ? undefined : FadeInDown.delay(index * 100).springify()}
+        style={styles.card}
+      >
         <Image source={item.image} style={styles.cardImage} />
         <LinearGradient
           colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.9)']}
@@ -50,16 +57,22 @@ function AnimatedCard({
 export default function StoreScreen() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'latest' | 'popular'>('latest');
-  const [selected, setSelected] = useState<Model | null>(null);
+  const { selectedModel, setSelectedModel } = useModel();
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   const openModal = (item: Model) => {
-    setSelected(item);
+    setSelectedModel(item);
     requestAnimationFrame(() => {
       bottomSheetModalRef.current?.present();
     });
   };
+
+  useFocusEffect(() => {
+    if (selectedModel) {
+      bottomSheetModalRef.current?.present();
+    }
+  });
 
   const filtered = dummyData.filter((item) =>
     item.title.toLowerCase().includes(search.toLowerCase()),
@@ -114,6 +127,7 @@ export default function StoreScreen() {
                   item={item}
                   index={index}
                   onPress={() => openModal(item)}
+                  selectedModel={selectedModel}
                 />
               ))}
             </View>
@@ -124,6 +138,7 @@ export default function StoreScreen() {
                   item={item}
                   index={index + 0.5}
                   onPress={() => openModal(item)}
+                  selectedModel={selectedModel}
                 />
               ))}
             </View>
@@ -132,12 +147,12 @@ export default function StoreScreen() {
       </SafeAreaView>
 
       {/* 바텀시트 */}
-      {selected && (
+      {selectedModel && (
         <ModelBottomSheet
           ref={bottomSheetModalRef}
-          selected={selected}
+          selected={selectedModel}
           onDismiss={() => {
-            setSelected(null);
+            setSelectedModel(null);
           }}
         />
       )}

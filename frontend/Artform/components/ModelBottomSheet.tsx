@@ -9,10 +9,16 @@ import {
   TouchableOpacity,
   FlatList,
   Pressable,
-  TextInput,
+  // TextInput,
   BackHandler,
 } from 'react-native';
-import { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet';
+import {
+  BottomSheetBackdrop,
+  BottomSheetFlatList,
+  BottomSheetModal,
+  BottomSheetTextInput,
+} from '@gorhom/bottom-sheet';
+import { TextInput } from 'react-native-gesture-handler';
 
 import { ICONS } from '~/constants/icons';
 import colors from '~/constants/colors';
@@ -37,7 +43,7 @@ const shadowStyle = {
 };
 
 type Props = {
-  selected: Model | null;
+  selected: Model;
   onDismiss: () => void;
 };
 
@@ -121,6 +127,7 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
       snapPoints={snapPoints}
       enablePanDownToClose
       onDismiss={onDismiss}
+      android_keyboardInputMode="adjustResize"
       backdropComponent={(props) => (
         <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} />
       )}
@@ -151,7 +158,7 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
             <View style={styles.header}>
               <View>
                 <Text style={styles.title}>{model.title}</Text>
-                <Text style={styles.author}>by 부리</Text>
+                <Text style={styles.author}>by {model.artist}</Text>
               </View>
             </View>
 
@@ -245,7 +252,7 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
                 style={styles.sendButton}
                 onPress={() => {
                   if (!comment.trim()) return;
-                  console.log('댓글 전송:', comment, commentImage);
+                  console.log('댓글 전송:', comment);
                   setComment('');
                   setCommentImage(null);
                 }}
