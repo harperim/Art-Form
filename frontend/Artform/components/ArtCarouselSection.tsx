@@ -1,58 +1,42 @@
 // components/ArtCarouselSection.tsx
 import type { ImageSourcePropType } from 'react-native';
-import { Text, StyleSheet, Image } from 'react-native';
-import React from 'react';
-import type { SharedValue } from 'react-native-reanimated';
-import Animated from 'react-native-reanimated';
+import { ScrollView, StyleSheet } from 'react-native';
+import ArtCarouselCard from './ArtCarouselCard';
 
-const OFFSET = 12; // 이미지 양쪽 여백
-const ITEM_WIDTH = 148;
-const ITEM_HEIGHT = 184; // 전체 카드 높이
-
-interface CarouselItem {
-  poster: ImageSourcePropType;
+type Item = {
+  id: string;
+  image: ImageSourcePropType;
   title: string;
-  likes: number;
-}
-
-interface ParallaxCarouselCardProps {
-  item: CarouselItem;
-  id: number;
-  scrollX: SharedValue<number>;
-}
-
-const ArtCarouselSection: React.FC<ParallaxCarouselCardProps> = ({ item }) => {
-  return (
-    <Animated.View style={[styles.cardContainer]}>
-      <Image source={item.poster} style={styles.image} />
-      <Text style={styles.title} numberOfLines={1}>
-        {item.title}
-      </Text>
-    </Animated.View>
-  );
+  artist?: string;
 };
 
+type Props = {
+  data: Item[];
+};
+
+export default function ArtCarouselSection({ data }: Props) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      snapToInterval={160}
+      decelerationRate="fast"
+      style={styles.scroll}
+    >
+      {data.map((item) => (
+        <ArtCarouselCard
+          key={item.id}
+          image={item.image}
+          title={item.title}
+          subtitle={item.artist}
+        />
+      ))}
+    </ScrollView>
+  );
+}
+
 const styles = StyleSheet.create({
-  cardContainer: {
-    width: ITEM_WIDTH,
-    height: ITEM_HEIGHT + 30,
-    marginHorizontal: OFFSET / 3,
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  image: {
-    width: ITEM_WIDTH,
-    height: ITEM_HEIGHT,
-    borderRadius: 12,
-    resizeMode: 'cover',
-    marginBottom: 6,
-  },
-  title: {
-    fontSize: 14,
-    fontFamily: 'Freesentation',
-    fontWeight: '700',
-    textAlign: 'center',
+  scroll: {
+    paddingVertical: 10,
   },
 });
-
-export default ArtCarouselSection;

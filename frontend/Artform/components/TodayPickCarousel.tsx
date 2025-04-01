@@ -11,7 +11,7 @@ const ITEM_HEIGHT = Dimensions.get('window').height * 0.36;
 
 // props 타입 정의
 interface CarouselItem {
-  poster: ImageSourcePropType;
+  image: ImageSourcePropType;
   title: string;
   likes: number;
 }
@@ -66,7 +66,7 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
       ]}
     >
       <Animated.View style={translateImageStyle}>
-        <ImageBackground source={item.poster} style={styles.imageBackground}>
+        <ImageBackground source={item.image} style={styles.imageBackground}>
           <Animated.View
             style={[styles.posterInfoView, translateTextStyle, { width: ITEM_WIDTH - OFFSET * 4 }]}
           >
