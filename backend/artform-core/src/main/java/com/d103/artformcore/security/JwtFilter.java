@@ -21,6 +21,7 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String accessToken = getJwtFromRequest(request);
+        System.out.println("!!!!!!!!!accessToken: " + accessToken);
         // 토큰 가지고 있을 경우
         if (accessToken != null) {
             // 토큰 검증
