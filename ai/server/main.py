@@ -100,7 +100,7 @@ async def apply_endpoint(
     strength: str = Form("0.33")
 ):
  
-    # 업로드된 이미지를 임시 저장할 디렉토리 생성 (예: ai/apply/input)
+    # 업로드된 이미지를 임시 저장할 디렉토리 생성
     input_dir = Path("ai/apply/input")
     input_dir.mkdir(parents=True, exist_ok=True)
     
