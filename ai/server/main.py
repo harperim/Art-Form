@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.responses import Response
 import uuid
+import httpx
 from pathlib import Path
 from PIL import Image
 import shutil
@@ -59,7 +60,7 @@ async def train_endpoint(
     cleanup_files_in_directory(str(img_dir))
     cleanup_files_in_directory(str(aug_dir))
     
-    # 학습된 모델 폴더를 zip으로 압축 (모델은 ai/img_model/{user_id}/{model_name} 에 저장됨)
+    # 학습된 모델 폴더를 zip으로 압축 (모델은 ai/img_model/{user_id}/{model_name} 에 저장)
     zip_path = f"{model_dir}.zip"
     shutil.make_archive(base_name=str(model_dir), format="zip", root_dir=str(model_dir))
     
@@ -158,5 +159,12 @@ async def apply_endpoint(
     os.remove(input_image_path)
     os.remove(result_image_path)
     
+    # EC2에 위치한 백엔드 URL (실제 주소로 수정 필요)
+    ec2_url = "주소주소"
     headers = {"Content-Type": f"multipart/mixed; boundary={boundary}"}
+    
+    async with httpx.AsyncClient() as client:
+        ec2_response = await client.post(ec2_url, data=body, headers=headers)
+    
+    # 프론트엔드에 이미지지 전달
     return Response(content=body, headers=headers)
