@@ -1,10 +1,8 @@
 package com.d103.artformcore.service;
 
-import com.d103.artformcore.dto.ImageLoadResponseDto;
 import com.d103.artformcore.dto.ModelLoadResponseDto;
 import com.d103.artformcore.dto.ModelSaveDto;
 import com.d103.artformcore.dto.ModelSaveResponseDto;
-import com.d103.artformcore.entity.Image;
 import com.d103.artformcore.entity.Model;
 import com.d103.artformcore.exception.CustomException;
 import com.d103.artformcore.exception.ErrorCode;
@@ -73,18 +71,24 @@ public class ModelService {
         return modelRepository.save(model);
     }
 
-    public ModelLoadResponseDto getPresignedGetUrl(long imageId, long userId) {
-        Model model = modelRepository.findById(imageId).orElse(null);
-        if (image == null) {
-            throw new CustomException(ErrorCode.IMAGE_NOT_FOUND);
+    public ModelLoadResponseDto getPresignedGetUrl(long modelId, long userId) {
+        Model model = modelRepository.findById(modelId)
+                .orElseThrow(()-> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+        // 삭제 여부 확인
+        if (model.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.DELETED_MODEL);
         }
-        String uploadFileName = image.getUploadFileName();
-        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", "image/" + uploadFileName);
+        // 인가 여부 확인
+        if(!model.isPublic() && !model.getUserId().equals(userId)){
+            throw new CustomException(ErrorCode.FORBIDDEN_MODEL);
+        }
+
+        String uploadFileName = model.getUploadFileName();
+        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", "model/" + uploadFileName);
         if (presignedUrl.isEmpty()) {
             throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
         }
-        Long modeId = image.getModel().getModelId();
-        Long userId = image.getUserId();
-        return new ImageLoadResponseDto(modeId, userId, presignedUrl, uploadFileName);
+
+        return new ModelLoadResponseDto(model, presignedUrl);
     }
 }

@@ -6,7 +6,9 @@ public enum ErrorCode {
     METADATA_SAVE_FAILED("002", "메타데이터 저장 중 오류가 발생했습니다"),
     MODEL_NOT_FOUND("003", "모델을 찾을 수 없습니다"),
     DELETED_IMAGE("004", "삭제된 이미지입니다"),
-    FORBIDDEN_IMAGE("005", "이미지 접근 권한이 없습니다");
+    FORBIDDEN_IMAGE("005", "이미지 접근 권한이 없습니다"),
+    DELETED_MODEL("006", "삭제된 모델입니다"),
+    FORBIDDEN_MODEL("007", "모델 접근 권한이 없습니다");
 
 
 
