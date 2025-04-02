@@ -80,10 +80,10 @@ public class ImageService {
     }
 
     public List<ImageLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId) {
-        List<Image> imageList = imageRepository.findAll(
+        List<Image> imageList = imageRepository.findByIsPublicTrueAndDeletedAtIsNull(
                 PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
         ).getContent();
-
+        System.out.println(imageList);
         List<ImageLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Image image : imageList) {
             presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId(), userId));
