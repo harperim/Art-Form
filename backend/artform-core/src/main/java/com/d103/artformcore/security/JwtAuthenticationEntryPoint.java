@@ -9,6 +9,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Enumeration;
 
 @Slf4j
 @Component
@@ -16,11 +17,22 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         // Authorization 헤더 확인
-        String authHeader = request.getHeader("Authorization");
-        String errorMessage;
-        log.info("!!!!!!!!authHeader: " + authHeader);
+        String uri = request.getRequestURI();
+        String method = request.getMethod();
+        String bearerToken = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        log.info("인증 실패 요청 정보: URI={}, METHOD={}", uri, method);
+        log.info("인증 실패 시 Authorization 헤더: {}", bearerToken);
+
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            log.info("헤더 {}: {}", headerName, request.getHeader(headerName));
+        }
+        // 헤더확인 끝
+
+        String errorMessage;
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
             errorMessage = "액세스 토큰이 없거나 유효한 형식이 아닙니다.";
             log.error("인증 실패: 액세스 토큰 없음");
         } else {

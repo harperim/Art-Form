@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 
 @Slf4j
 @Component
@@ -32,6 +33,7 @@ public class JwtTokenValidator {
 
     // 액세스 토큰 검증
     public Boolean validateAccessToken(String token) {
+        log.info("토큰 검증 시작: {}...", token.substring(0, Math.min(20, token.length())));
 
         try {
             Claims claims = Jwts.parserBuilder()
@@ -41,18 +43,24 @@ public class JwtTokenValidator {
                     .getBody();
 
             String auth = claims.get("auth", String.class);
-            log.info("auth={}", auth);
+            String sub = claims.getSubject();
+            Date expiration = claims.getExpiration();
+
+            log.info("토큰 파싱 성공: subject={}, auth={}, expiration={}", sub, auth, expiration);
+
             return auth != null;
         } catch (SignatureException e) {
-            log.error("Invalid JWT Signature");
+            log.error("Invalid JWT Signature: {}", e.getMessage());
         } catch (SecurityException | MalformedJwtException e) {
-            log.warn("Invalid JWT Token", e);
+            log.warn("Invalid JWT Token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
-            log.warn("Expired JWT Token", e);
+            log.warn("Expired JWT Token: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            log.warn("Unsupported JWT Token", e);
+            log.warn("Unsupported JWT Token: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            log.warn("JWT claims string is empty", e);
+            log.warn("JWT claims string is empty: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("기타 예외 발생: {}", e.getMessage());
         }
         return false;
     }

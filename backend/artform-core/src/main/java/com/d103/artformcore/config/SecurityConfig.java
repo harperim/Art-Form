@@ -50,7 +50,6 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception ->{
-                    System.out.println("exception 발생");
                     exception.authenticationEntryPoint(jwtAuthenticationEntryPoint);
                 })
                 .authorizeHttpRequests(authorize ->
