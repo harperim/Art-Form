@@ -11,10 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,14 +21,14 @@ public class LikeController {
 
     private final LikeService likeService;
 
-    @Operation(summary = "좋아요 등록",
+    @Operation(summary = "좋아요 클릭",
             responses = {
                     @ApiResponse(responseCode = "200", description = "처리 성공!"),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청"),
                     @ApiResponse(responseCode = "404", description = "사용자 또는 모델을 찾을 수 없음")
             })
-    @PostMapping
-    public ResponseEntity<ResponseDto> toggleLike(@Valid @RequestBody Long modelId, Authentication authentication) {
+    @PostMapping("/{modelId}")
+    public ResponseEntity<ResponseDto> toggleLike(@PathVariable Long modelId, Authentication authentication) {
         Long userId = Long.valueOf(authentication.getName());
         ResponseDto responseDto = likeService.toggleLike(userId, modelId);// 서비스로 전달
         return ResponseEntity.ok(responseDto);
