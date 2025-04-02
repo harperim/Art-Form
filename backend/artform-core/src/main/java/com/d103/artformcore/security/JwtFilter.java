@@ -1,18 +1,18 @@
 package com.d103.artformcore.security;
 
-import jakarta.persistence.Entity;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
+@Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -20,16 +20,29 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String uri = request.getRequestURI();
+        String method = request.getMethod();
+        String bearerToken = request.getHeader("Authorization");
+
+        log.info("요청 정보: URI={}, METHOD={}", uri, method);
+        log.info("원본 Authorization 헤더: {}", bearerToken);
+
         String accessToken = getJwtFromRequest(request);
-        System.out.println("!!!!!!!!!accessToken: " + accessToken);
+        log.info("추출된 토큰: {}", accessToken);
+
         // 토큰 가지고 있을 경우
         if (accessToken != null) {
-            // 토큰 검증
+            log.info("토큰 검증 시작");
             if (jwtTokenValidator.validateAccessToken(accessToken)) {
-                // Authentication 객체를 가져와 SecurityContext에 저장
+                log.info("토큰 검증 성공");
                 Authentication authentication = jwtTokenValidator.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.info("인증 컨텍스트에 인증 정보 저장 완료");
+            } else {
+                log.warn("토큰 검증 실패");
             }
+        } else {
+            log.warn("토큰이 없음");
         }
         filterChain.doFilter(request, response);
     }

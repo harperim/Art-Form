@@ -1,10 +1,12 @@
 package com.d103.artformcore.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -19,8 +21,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex) {
-        ErrorResponse error = new ErrorResponse("서버 오류", ex.getMessage());
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR); // 500 에러로 처리
+    public ResponseEntity<String> handleAllExceptions(Exception e) {
+        log.info(e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 }
