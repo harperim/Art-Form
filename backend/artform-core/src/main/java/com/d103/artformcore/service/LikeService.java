@@ -1,5 +1,8 @@
 package com.d103.artformcore.service;
 
+import com.d103.artformcore.dto.ImageLoadResponseDto;
+import com.d103.artformcore.dto.LikeListResponseDto;
+import com.d103.artformcore.dto.LikeResponseDto;
 import com.d103.artformcore.dto.ResponseDto;
 import com.d103.artformcore.entity.Like;
 import com.d103.artformcore.entity.Model;
@@ -9,9 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class LikeService {
 
     private final LikeRepository likeRepository;
     private final ModelRepository modelRepository;
+    private final ImageService imageService;
 
     @Transactional
     public ResponseDto toggleLike(Long userId, Long modelId) {
@@ -57,18 +60,40 @@ public class LikeService {
         }
     }
 
-//    public ResponseDto getLikeList(Long userId) {
-//
-//        List<Like> likeList = likeRepository.findByUserId(userId);
-//        if (likeList.isEmpty()) {
-//            return new ResponseDto("success", false);
-//        }
-//
-//
-//
-//
-//
-//
-//
-//    }
+    public LikeListResponseDto getLikeList(Long userId) {
+
+        List<Like> likeList = likeRepository.findByUserId(userId);
+        // 좋아요 리스트가 없으면
+        if (likeList.isEmpty()) {
+            return new LikeListResponseDto("success", null);
+        }
+
+        // 썸네일 ID 받아오기
+        List<Long> thumbnailIdList = likeList.stream()
+                .map(like -> like.getModel().getThumbnailId())
+                .toList();
+
+        List<String> imageUrlList = imageService.getPresignedGetUrlLikedList(thumbnailIdList, userId);
+
+        List<LikeResponseDto> likeResponseList = getLikeResponseDtoList(userId, likeList, imageUrlList);
+
+        return new LikeListResponseDto("조회 성공", likeResponseList);
+    }
+
+    private static List<LikeResponseDto> getLikeResponseDtoList(Long userId, List<Like> likeList, List<String> imageUrlList) {
+        List<LikeResponseDto> likeResponseList = new ArrayList<>();
+
+        for (int i = 0; i < likeList.size(); i++) {
+            Like like = likeList.get(i);
+            String imageSrc = i < imageUrlList.size() ? imageUrlList.get(i) : "";
+
+            LikeResponseDto responseDto = new LikeResponseDto();
+            responseDto.setImageSrc(imageSrc);
+            responseDto.setUserId(userId.toString());
+            responseDto.setModelId(like.getModel().getModelId().toString());
+
+            likeResponseList.add(responseDto);
+        }
+        return likeResponseList;
+    }
 }

@@ -1,6 +1,7 @@
 package com.d103.artformcore.controller;
 
 
+import com.d103.artformcore.dto.LikeListResponseDto;
 import com.d103.artformcore.dto.ResponseDto;
 import com.d103.artformcore.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,13 +37,14 @@ public class LikeController {
         return ResponseEntity.ok(responseDto);
     }
 
+    @Operation(summary = "좋아요 리스트",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "처리 성공!"),
+            })
     @PostMapping
-    public ResponseEntity<ResponseDto> likeList(Authentication authentication) {
+    public ResponseEntity<LikeListResponseDto> likeList(Authentication authentication) {
         Long userId = Long.valueOf(authentication.getName());
-        ResponseDto likeList = likeService.getLikeList(userId);
-
+        LikeListResponseDto likeList = likeService.getLikeList(userId);
         return ResponseEntity.ok(likeList);
     }
-
-
 }
