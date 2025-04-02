@@ -9,7 +9,6 @@ import {
   View,
   TouchableOpacity,
   FlatList,
-  Pressable,
   BackHandler,
 } from 'react-native';
 import { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -154,7 +153,7 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
         {/* 대표 이미지 */}
         <View style={styles.mainImageWrapper}>
           <Image source={model.image} style={styles.mainImage} />
-          <Pressable
+          <TouchableOpacity
             style={styles.heartButton}
             onPress={() => {
               setLiked((prev) => !prev);
@@ -167,7 +166,7 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
               <ICONS.heart.outline width={24} height={24} />
             )}
             <Text style={{ marginLeft: 4 }}>{likes}</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
 
         {/* 관련 이미지 */}
@@ -183,7 +182,7 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
         </View>
 
         {/* 사용 버튼 */}
-        <Pressable
+        <TouchableOpacity
           style={styles.useButton}
           onPress={() => {
             if (!model.image) return;
@@ -191,7 +190,7 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
           }}
         >
           <Text style={styles.useButtonText}>사용해 보기</Text>
-        </Pressable>
+        </TouchableOpacity>
 
         <View style={styles.divider} />
 
