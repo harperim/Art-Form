@@ -8,7 +8,7 @@ import shutil
 import os
 import mimetypes
 os.environ.pop("SSL_CERT_FILE", None)
-
+import requests
 from ai.train.augment import run_augmentation
 from ai.train.train import run_training
 from ai.apply.apply import run_inference
@@ -30,9 +30,11 @@ def cleanup_files_in_directory(directory_path):
 app = FastAPI()
 
 CORE_SERVER_BASE = "http://j12d103.p.ssafy.io:8081"
+USER_SERVER_BASE = "http://j12d103.p.ssafy.io:8080"
 
 @app.post("/train/")
 async def train_endpoint(
+    token: str = Form(...),
     images: List[UploadFile] = File(...),
     user_id: str = Form(...),
     model_name: str = Form(...)
@@ -91,6 +93,20 @@ async def train_endpoint(
     # 종료 boundary 추가
     parts.append(f"--{boundary}--\r\n".encode())
     body = b"".join(parts)
+
+    url = f"{USER_SERVER_BASE}/fcm/send"
+
+    payload = {
+    "token": token,
+    "title": "모델 학습 완료",
+    "body": "사용자님의 모델이 성공적으로 학습되었습니다!"
+    }
+    try:
+        fcm_response = requests.post(url, json=payload)
+        print(f"FCM 응답 코드: {fcm_response.status_code}")
+    except Exception as e:
+        print("FCM 전송 실패:", e)
+
     
     headers = {"Content-Type": f"multipart/mixed; boundary={boundary}"}
     return Response(content=body, headers=headers)
