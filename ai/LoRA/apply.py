@@ -22,7 +22,7 @@ pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
     low_cpu_mem_usage=False  # low mem 옵션 제거 가능
 )
 
-# ✅ UNet에만 LoRA 적용
+# UNet에만 LoRA 적용
 pipe.load_lora_weights(os.path.join(output_dir, "unet"))
 
 # CUDA로 이동
@@ -49,4 +49,4 @@ with torch.autocast("cuda"):
 
 # 저장
 result.images[0].save(output_image_path)
-print(f"✅ 생성 완료: {output_image_path}")
+print(f"생성 완료: {output_image_path}")
