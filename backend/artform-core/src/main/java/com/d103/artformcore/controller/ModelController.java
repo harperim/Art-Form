@@ -44,4 +44,16 @@ public class ModelController {
         }
     }
 
+    @DeleteMapping("/{modelId}")
+    public ResponseEntity<?> deleteModel(@PathVariable Long modelId) {
+        try {
+            modelService.deleteModel(modelId);
+            return ResponseEntity.ok(ApiResponse.success("모델 삭제 처리 성공"));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
+        }
+    }
+
 }
