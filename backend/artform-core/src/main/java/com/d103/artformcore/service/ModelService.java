@@ -1,8 +1,8 @@
 package com.d103.artformcore.service;
 
+import com.d103.artformcore.dto.ModelLoadResponseDto;
 import com.d103.artformcore.dto.ModelSaveDto;
 import com.d103.artformcore.dto.ModelSaveResponseDto;
-import com.d103.artformcore.entity.Image;
 import com.d103.artformcore.entity.Model;
 import com.d103.artformcore.exception.CustomException;
 import com.d103.artformcore.exception.ErrorCode;
@@ -69,5 +69,26 @@ public class ModelService {
         });
         model.setDeletedAt(LocalDateTime.now());
         return modelRepository.save(model);
+    }
+
+    public ModelLoadResponseDto getPresignedGetUrl(long modelId, long userId) {
+        Model model = modelRepository.findById(modelId)
+                .orElseThrow(()-> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+        // 삭제 여부 확인
+        if (model.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.DELETED_MODEL);
+        }
+        // 인가 여부 확인
+        if(!model.isPublic() && !model.getUserId().equals(userId)){
+            throw new CustomException(ErrorCode.FORBIDDEN_MODEL);
+        }
+
+        String uploadFileName = model.getUploadFileName();
+        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", "model/" + uploadFileName);
+        if (presignedUrl.isEmpty()) {
+            throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
+        }
+
+        return new ModelLoadResponseDto(model, presignedUrl);
     }
 }

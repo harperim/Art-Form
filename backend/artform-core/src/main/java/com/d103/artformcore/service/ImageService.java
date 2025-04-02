@@ -59,13 +59,13 @@ public class ImageService {
 
     public ImageLoadResponseDto getPresignedGetUrl(long imageId, long userId) {
         Image image = imageRepository.findById(imageId)
-                .orElseThrow(()-> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
         // 삭제 여부 확인
         if (image.getDeletedAt() != null) {
             throw new CustomException(ErrorCode.DELETED_IMAGE);
         }
         // 인가 ㅠ여부 확인
-        if(!image.isPublic() && !image.getUserId().equals(userId)){
+        if (!image.isPublic() && !image.getUserId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN_IMAGE);
         }
 
@@ -103,8 +103,12 @@ public class ImageService {
         return presignedUrlDtoList;
     }
 
-    public List<ImageLoadResponseDto> getPresignedGetUrlLikedList(List<Long> imageIdList, long userId) {
-        return null;
+    public List<String> getPresignedGetUrlLikedList(List<Long> imageIdList, long userId) {
+        List<String> presignedUrlList = new ArrayList<>();
+        for (long imageId : imageIdList) {
+            presignedUrlList.add(getPresignedGetUrl(imageId, userId).getPresignedUrl());
+        }
+        return presignedUrlList;
     }
 
     public Image deleteImage(Long imageId) {
