@@ -2,6 +2,7 @@ package com.d103.artformcore.service;
 
 import com.d103.artformcore.dto.ModelSaveDto;
 import com.d103.artformcore.dto.ModelSaveResponseDto;
+import com.d103.artformcore.entity.Image;
 import com.d103.artformcore.entity.Model;
 import com.d103.artformcore.exception.CustomException;
 import com.d103.artformcore.exception.ErrorCode;
@@ -11,6 +12,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -35,6 +37,7 @@ public class ModelService {
                 .modelName(modelSaveDto.getModelName())
                 .userId(modelSaveDto.getUserId())
                 .isPublic(modelSaveDto.isPublic())
+                .description(modelSaveDto.getDescription())
                 .uploadFileName(modelSaveDto.getUploadFileName())
                 .build();
         try {
@@ -58,5 +61,13 @@ public class ModelService {
             model.setLikeCount(model.getLikeCount() - 1);
             modelRepository.save(model);
         }
+    }
+
+    public Model deleteModel(Long modelId) {
+        Model model = modelRepository.findById(modelId).orElseThrow(() -> {
+            throw new CustomException(ErrorCode.MODEL_NOT_FOUND);
+        });
+        model.setDeletedAt(LocalDateTime.now());
+        return modelRepository.save(model);
     }
 }
