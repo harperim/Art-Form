@@ -35,6 +35,7 @@ public class ModelService {
                 .modelName(modelSaveDto.getModelName())
                 .userId(modelSaveDto.getUserId())
                 .isPublic(modelSaveDto.isPublic())
+                .description(modelSaveDto.getDescription())
                 .uploadFileName(modelSaveDto.getUploadFileName())
                 .build();
         try {
