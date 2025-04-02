@@ -1,5 +1,7 @@
 package com.d103.artformcore.service;
 
+import com.d103.artformcore.dto.ImageLoadResponseDto;
+import com.d103.artformcore.dto.ModelLoadResponseDto;
 import com.d103.artformcore.dto.ModelSaveDto;
 import com.d103.artformcore.dto.ModelSaveResponseDto;
 import com.d103.artformcore.entity.Image;
@@ -69,5 +71,20 @@ public class ModelService {
         });
         model.setDeletedAt(LocalDateTime.now());
         return modelRepository.save(model);
+    }
+
+    public ModelLoadResponseDto getPresignedGetUrl(long imageId, long userId) {
+        Model model = modelRepository.findById(imageId).orElse(null);
+        if (image == null) {
+            throw new CustomException(ErrorCode.IMAGE_NOT_FOUND);
+        }
+        String uploadFileName = image.getUploadFileName();
+        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", "image/" + uploadFileName);
+        if (presignedUrl.isEmpty()) {
+            throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
+        }
+        Long modeId = image.getModel().getModelId();
+        Long userId = image.getUserId();
+        return new ImageLoadResponseDto(modeId, userId, presignedUrl, uploadFileName);
     }
 }
