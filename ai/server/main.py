@@ -103,8 +103,9 @@ async def apply_endpoint(
     producer_id: str = Form(...),
     model_name: str = Form(...),
     strength: str = Form("0.33"),
-    authorization: str = Header(...)
+    # authorization: str = Header(...)
 ):
+    authorization = 'Bearer '
     # 업로드된 이미지를 임시 저장할 디렉토리 생성
     input_dir = Path("ai/apply/input")
     input_dir.mkdir(parents=True, exist_ok=True)
@@ -183,23 +184,30 @@ async def apply_endpoint(
     if upload_result_resp.status_code not in (200, 201):
         raise HTTPException(status_code=500, detail="변환 이미지 업로드에 실패했습니다.")
     
-    # Core 서버에 업로드 완료 등록 요청 (두 이미지 정보 함께 전송)
-    register_payload = {
+    # Core 서버에 업로드 완료 등록 요청
+    register_payloads = [{
         "modelId": model_id,
         "userId": user_id,
         "isPublic": "true",
-        "originalUploadFileName": orig_upload_filename,
-        "resultUploadFileName": result_upload_filename
-    }
-    async with httpx.AsyncClient() as client:
-        register_resp = await client.post(
-            f"{CORE_SERVER_BASE}/core/image/metadata",
-            json=register_payload,
-            headers={"Authorization": authorization}
-        )
-    if register_resp.status_code != 200:
-        raise HTTPException(status_code=500, detail="이미지 등록에 실패했습니다.")
-    register_data = register_resp.json()
+        "uploadFileName": orig_upload_filename
+    },
+    {
+        "modelId": model_id,
+        "userId": user_id,
+        "isPublic": "true",
+        "uploadFileName": result_upload_filename
+    }]
+
+    for register_payload in register_payloads:
+        async with httpx.AsyncClient() as client:
+            register_resp = await client.post(
+                f"{CORE_SERVER_BASE}/core/image/metadata",
+                json=register_payload,
+                headers={"Authorization": authorization}
+            )
+        if register_resp.status_code != 200:
+            raise HTTPException(status_code=500, detail="이미지 등록에 실패했습니다.")
+        register_data = register_resp.json()
 
     # 원본 이미지와 변환 이미지 각각을 읽어 multipart 메시지 구성
     boundary = "myboundary"
