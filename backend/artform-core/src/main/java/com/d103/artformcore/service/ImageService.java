@@ -64,8 +64,9 @@ public class ImageService {
         if (image.getDeletedAt() != null) {
             throw new CustomException(ErrorCode.DELETED_IMAGE);
         }
-        // 인가 ㅠ여부 확인
+        // 인가 여부 확인
         if (!image.isPublic() && !image.getUserId().equals(userId)) {
+            System.out.println(image.isPublic() + " " + image.getUserId());
             throw new CustomException(ErrorCode.FORBIDDEN_IMAGE);
         }
 

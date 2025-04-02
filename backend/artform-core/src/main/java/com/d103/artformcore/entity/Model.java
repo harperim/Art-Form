@@ -37,6 +37,9 @@ public class Model {
     private String uploadFileName;
 
     @Column(nullable = false)
+    private Long thumbnailId;
+
+    @Column(nullable = false)
     @CreationTimestamp
     private LocalDateTime createdAt = LocalDateTime.now();
 
