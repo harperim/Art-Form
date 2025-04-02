@@ -85,6 +85,18 @@ public class ImageController {
         }
     }
 
+    @PostMapping("/liked")
+    public ResponseEntity<?> getPresignedGetUrlLikedList(@RequestBody List<Long> imageIdList, @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlLikedList(imageIdList, Long.parseLong(userDetails.getUsername()));
+            return ResponseEntity.ok(ApiResponse.success(imageLoadResponseDtoList));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
+        }
+    }
+
     @DeleteMapping("/{imageId}")
     public ResponseEntity<?> deleteImage(@PathVariable Long imageId) {
         try {
