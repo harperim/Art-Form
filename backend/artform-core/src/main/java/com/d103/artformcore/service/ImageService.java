@@ -57,34 +57,40 @@ public class ImageService {
         }
     }
 
-    public ImageLoadResponseDto getPresignedGetUrl(long imageId) {
-        Image image = imageRepository.findById(imageId).orElse(null);
-        if (image == null) {
-            throw new CustomException(ErrorCode.IMAGE_NOT_FOUND);
+    public ImageLoadResponseDto getPresignedGetUrl(long imageId, long userId) {
+        Image image = imageRepository.findById(imageId)
+                .orElseThrow(()-> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+        // 삭제 여부 확인
+        if (image.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.DELETED_IMAGE);
         }
+        // 인가 ㅠ여부 확인
+        if(!image.isPublic() && !image.getUserId().equals(userId)){
+            throw new CustomException(ErrorCode.FORBIDDEN_IMAGE);
+        }
+
         String uploadFileName = image.getUploadFileName();
         String presignedUrl = s3Service.createPresignedGetUrl("artform-data", "image/" + uploadFileName);
         if (presignedUrl.isEmpty()) {
             throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
         }
-        Long modeId = image.getModel().getModelId();
-        Long userId = image.getUserId();
-        return new ImageLoadResponseDto(modeId, userId, presignedUrl, uploadFileName);
+        Long modelId = image.getModel().getModelId();
+        return new ImageLoadResponseDto(modelId, userId, presignedUrl, uploadFileName);
     }
 
-    public List<ImageLoadResponseDto> getPresignedGetUrlRecentList(int page) {
+    public List<ImageLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId) {
         List<Image> imageList = imageRepository.findAll(
                 PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
         ).getContent();
 
         List<ImageLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Image image : imageList) {
-            presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId()));
+            presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId(), userId));
         }
         return presignedUrlDtoList;
     }
 
-    public List<ImageLoadResponseDto> getPresignedGetUrlMyList(int page, Long userId) {
+    public List<ImageLoadResponseDto> getPresignedGetUrlMyList(int page, long userId) {
         List<Image> imageList = imageRepository.findByUserId(
                 userId,
                 PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
@@ -92,9 +98,13 @@ public class ImageService {
 
         List<ImageLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Image image : imageList) {
-            presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId()));
+            presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId(), userId));
         }
         return presignedUrlDtoList;
+    }
+
+    public List<ImageLoadResponseDto> getPresignedGetUrlLikedList(List<Long> imageIdList, long userId) {
+        return null;
     }
 
     public Image deleteImage(Long imageId) {
@@ -105,36 +115,4 @@ public class ImageService {
         return imageRepository.save(image);
     }
 
-
-//    @Transactional
-//    public boolean saveImage(ImageSaveDto imageSaveDto) {
-//        try {
-//            // 서버에 파일을 저장하지 않고, 요청 데이터를 S3로 바로 보냄(stream)
-//            MultipartFile image = imageSaveDto.getImage();
-//            String imageUuid = UUID.randomUUID().toString();    // s3에 저장되는 key
-//
-//            // ObjectMetadata 설정(stream을 위해 필요)
-//            S3ObjectMetadata metadata = new ObjectMetadata();
-//            metadata.setContentLength(image.getSize());
-//            metadata.setContentType(image.getContentType());
-//
-//            PutObjectRequest putObjectRequest =
-//
-//            // S3에 저장
-//            s3Client.putObject("artform-data", imageUuid, image.getInputStream(), metadata);
-//
-//            // 메타데이터 저장
-//            imageRepository.save(Image.builder()
-//                    .isPublic(imageSaveDto.isPublic())
-//                    .uuid(imageUuid)
-//                    .userId(imageSaveDto.getUserId())
-//                    .modelId(imageSaveDto.getModelId())
-//                    .build());
-//
-//            //TODO: 메타데이터 저장 실패 시 S3에 저장한 이미지 롤백
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        return true;
-//    }
 }
