@@ -1,5 +1,5 @@
 // app/(app)/store.tsx
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,16 +11,8 @@ import colors from '~/constants/colors';
 import type { Model } from '~/types/model';
 import ModelBottomSheet from '~/components/ModelBottomSheet';
 import { useModel } from '~/context/ModelContext';
-import { useFocusEffect } from 'expo-router';
-
-const dummyData: Model[] = [
-  { id: '1', title: '기억의 지속', image: require('~/assets/images/1.png') },
-  { id: '2', title: '그랑드자트섬의 일요일 오후', image: require('~/assets/images/2.png') },
-  { id: '3', title: '물랭 드 라 갈레트의 무도회', image: require('~/assets/images/3.png') },
-  { id: '4', title: '절규', image: require('~/assets/images/4.png') },
-  { id: '5', title: '파리 거리, 비오는 날', image: require('~/assets/images/5.png') },
-  { id: '6', title: '우산 든 여인', image: require('~/assets/images/6.png') },
-];
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { mockModels } from '~/constants/mockModels';
 
 function AnimatedCard({
   item,
@@ -55,6 +47,7 @@ function AnimatedCard({
 }
 
 export default function StoreScreen() {
+  const { sort: sortParam } = useLocalSearchParams();
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'latest' | 'popular'>('latest');
   const { selectedModel, setSelectedModel } = useModel();
@@ -68,13 +61,28 @@ export default function StoreScreen() {
     });
   };
 
+  useEffect(() => {
+    if (sortParam === 'latest' || sortParam === 'popular') {
+      setSort(sortParam);
+    }
+  }, [sortParam]);
+
   useFocusEffect(() => {
     if (selectedModel) {
       bottomSheetModalRef.current?.present();
     }
   });
 
-  const filtered = dummyData.filter((item) =>
+  const sortedData = [...mockModels].sort((a, b) => {
+    if (sort === 'popular') {
+      // likes 높은 순으로 정렬 (내림차순)
+      return (b.likes ?? 0) - (a.likes ?? 0);
+    }
+    // 최신순은 id 기준 내림차순 (문자열이지만 id가 시간순이라면)
+    return Number(b.id) - Number(a.id);
+  });
+
+  const filtered = sortedData.filter((item) =>
     item.title.toLowerCase().includes(search.toLowerCase()),
   );
 
@@ -118,32 +126,38 @@ export default function StoreScreen() {
         </View>
 
         {/* 카드 */}
-        <Animated.ScrollView contentContainerStyle={styles.scrollContainer}>
-          <View style={styles.columns}>
-            <View style={styles.column}>
-              {leftColumn.map((item, index) => (
-                <AnimatedCard
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  onPress={() => openModal(item)}
-                  selectedModel={selectedModel}
-                />
-              ))}
-            </View>
-            <View style={[styles.column, { marginTop: 40 }]}>
-              {rightColumn.map((item, index) => (
-                <AnimatedCard
-                  key={item.id}
-                  item={item}
-                  index={index + 0.5}
-                  onPress={() => openModal(item)}
-                  selectedModel={selectedModel}
-                />
-              ))}
-            </View>
+        {filtered.length === 0 ? (
+          <View style={styles.emptyView}>
+            <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
           </View>
-        </Animated.ScrollView>
+        ) : (
+          <Animated.ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.columns}>
+              <View style={styles.column}>
+                {leftColumn.map((item, index) => (
+                  <AnimatedCard
+                    key={`${item.id}-${sort}`}
+                    item={item}
+                    index={index}
+                    onPress={() => openModal(item)}
+                    selectedModel={selectedModel}
+                  />
+                ))}
+              </View>
+              <View style={[styles.column, { marginTop: 40 }]}>
+                {rightColumn.map((item, index) => (
+                  <AnimatedCard
+                    key={`${item.id}-${sort}`}
+                    item={item}
+                    index={index + 0.5}
+                    onPress={() => openModal(item)}
+                    selectedModel={selectedModel}
+                  />
+                ))}
+              </View>
+            </View>
+          </Animated.ScrollView>
+        )}
       </SafeAreaView>
 
       {/* 바텀시트 */}
@@ -202,6 +216,15 @@ const styles = StyleSheet.create({
   activeSortText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  emptyView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: '#999',
+    fontSize: 16,
   },
   scrollContainer: {
     paddingBottom: 100,

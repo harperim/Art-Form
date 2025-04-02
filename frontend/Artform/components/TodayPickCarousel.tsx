@@ -1,3 +1,4 @@
+// components/TodayPickCarousel.tsx
 import type { ImageSourcePropType } from 'react-native';
 import { Text, StyleSheet, ImageBackground, Dimensions, View } from 'react-native';
 import React from 'react';
@@ -38,7 +39,7 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
     const translate = interpolate(
       scrollX.value,
       inputRange,
-      [-ITEM_WIDTH * 0.2, 0, ITEM_WIDTH * 0.4],
+      [-ITEM_WIDTH * 0.2, 0, ITEM_WIDTH * 0.2],
       Extrapolation.CLAMP,
     );
     return {
@@ -66,7 +67,7 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
       ]}
     >
       <Animated.View style={translateImageStyle}>
-        <ImageBackground source={item.image} style={styles.imageBackground}>
+        <ImageBackground source={item.image} style={styles.imageBackground} resizeMode="cover">
           <Animated.View
             style={[styles.posterInfoView, translateTextStyle, { width: ITEM_WIDTH - OFFSET * 4 }]}
           >
@@ -88,7 +89,6 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
 
 const styles = StyleSheet.create({
   imageBackground: {
-    resizeMode: 'cover',
     borderRadius: 15,
     overflow: 'hidden',
     width: '100%',
@@ -103,8 +103,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: 15,
+    minWidth: 200,
   },
   heartBox: {
     flexDirection: 'row',
@@ -118,11 +120,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   likesCount: {
-    justifyContent: 'center',
-    fontSize: 18,
-
-    fontFamily: 'Freesentation',
+    fontSize: 16,
+    marginLeft: 4,
     fontWeight: '700',
+    fontFamily: 'Freesentation',
   },
 });
 

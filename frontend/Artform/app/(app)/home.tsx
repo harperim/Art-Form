@@ -1,11 +1,20 @@
 // app/(app)/home.tsx
-import { Image, View, StyleSheet, Text, Dimensions } from 'react-native';
-import Animated, { useSharedValue } from 'react-native-reanimated';
+import {
+  Image,
+  View,
+  StyleSheet,
+  Text,
+  Dimensions,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
 
 import TodayPickCarousel from '~/components/TodayPickCarousel';
 import ArtCarouselSection from '~/components/ArtCarouselSection';
 import ParallaxCarouselPagination from '~/components/ParallaxCarouselPagination';
 import { mockModels } from '~/constants/mockModels';
+import { router } from 'expo-router';
 
 export default function Home() {
   const OFFSET = 20;
@@ -13,23 +22,16 @@ export default function Home() {
 
   const scrollX = useSharedValue(0);
 
-  const todayData = mockModels.slice(0, 4); // 첫 4개만 사용
+  const todayData = mockModels;
 
   const modelData = todayData.map((model) => ({
-    id: model.id,
-    image: model.image,
-    title: model.title,
-    artist: `♥ ${model.likes}`,
-  }));
-
-  const modelData2 = todayData.map((model) => ({
     id: model.id,
     image: model.image,
     title: model.title,
   }));
 
   return (
-    <Animated.ScrollView style={styles.main}>
+    <ScrollView style={styles.main}>
       {/* logo */}
       <Image source={require('../../assets/logo.png')} style={styles.logo} />
 
@@ -37,7 +39,7 @@ export default function Home() {
       <View style={styles.todayRecommend}>
         <Text style={styles.title}>오늘의 추천</Text>
         <View style={styles.parallaxCarouselView}>
-          <Animated.ScrollView
+          <ScrollView
             horizontal
             decelerationRate="fast"
             snapToInterval={ITEM_WIDTH}
@@ -52,25 +54,33 @@ export default function Home() {
             {todayData.map((item, index) => (
               <TodayPickCarousel item={item} key={index} id={index} scrollX={scrollX} />
             ))}
-          </Animated.ScrollView>
+          </ScrollView>
           <ParallaxCarouselPagination data={todayData} scrollX={scrollX} />
         </View>
       </View>
 
       {/* 인기 모델 */}
       <View style={styles.popularModelView}>
-        <Text style={styles.title}>인기모델</Text>
-        <Text style={styles.seeMoreBtn}>더 보기</Text>
-        <ArtCarouselSection data={modelData2} />
+        <View style={styles.sectionHeader}>
+          <Text style={styles.title}>인기모델</Text>
+          <TouchableOpacity onPress={() => router.push('/store?sort=popular')}>
+            <Text style={styles.seeMoreBtn}>더 보기</Text>
+          </TouchableOpacity>
+        </View>
+        <ArtCarouselSection data={modelData} />
       </View>
 
       {/* 최신 모델 */}
       <View style={styles.newModelView}>
-        <Text style={styles.title}>최신모델</Text>
-        <Text style={styles.seeMoreBtn}>더 보기</Text>
-        <ArtCarouselSection data={modelData2} />
+        <View style={styles.sectionHeader}>
+          <Text style={styles.title}>최신모델</Text>
+          <TouchableOpacity onPress={() => router.push('/store?sort=latest')}>
+            <Text style={styles.seeMoreBtn}>더 보기</Text>
+          </TouchableOpacity>
+        </View>
+        <ArtCarouselSection data={modelData} />
       </View>
-    </Animated.ScrollView>
+    </ScrollView>
   );
 }
 
@@ -80,7 +90,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F4F1',
   },
   logo: {
-    marginTop: 40,
     width: 132,
     height: 45,
   },
@@ -103,12 +112,16 @@ const styles = StyleSheet.create({
     marginTop: 28,
     marginBottom: 120,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
   seeMoreBtn: {
-    position: 'absolute',
-    right: 0,
-    top: 5,
     fontFamily: 'Freesentation',
     fontWeight: '700',
     color: '#59799B',
+    fontSize: 13,
   },
 });
