@@ -13,6 +13,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/model")
 @RequiredArgsConstructor
@@ -48,6 +50,31 @@ public class ModelController {
         try {
             ModelLoadResponseDto modelLoadResponseDto = modelService.getPresignedGetUrl(modelId, Long.parseLong(userDetails.getUsername()));
             return ResponseEntity.ok(ApiResponse.success(modelLoadResponseDto));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
+        }
+    }
+
+    @GetMapping("/recent")
+    public ResponseEntity<?> getPresignedGetUrlRecentList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlRecentList(page, Long.parseLong(userDetails.getUsername()));
+            return ResponseEntity.ok(ApiResponse.success(modelLoadResponseDtoList));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
+        }
+    }
+
+    @GetMapping("/my-model")
+    public ResponseEntity<?> getPresignedGetUrlMyList(@AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            // userDetail.getUserName()은 sub값을 불러옴.
+            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlMyList(Long.parseLong(userDetails.getUsername()));
+            return ResponseEntity.ok(ApiResponse.success(modelLoadResponseDtoList));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

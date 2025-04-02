@@ -10,4 +10,5 @@ import java.net.ContentHandler;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
     Page<Image> findByUserId(Long userId, Pageable pageable);
+    Page<Image> findByIsPublicTrueAndDeletedAtIsNull(Pageable pageable);
 }
