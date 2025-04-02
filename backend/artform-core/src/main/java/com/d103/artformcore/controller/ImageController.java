@@ -40,6 +40,8 @@ public class ImageController {
     public ResponseEntity<ApiResponse<Image>> saveMetadata(@RequestBody ImageSaveDto imageSaveDto) {
         try {
             Image image = imageService.saveMetadata(imageSaveDto);
+            System.out.println(imageSaveDto);
+            System.out.println("!!!!!!!!!!!!" + imageSaveDto.isPublic());
             return ResponseEntity.ok(ApiResponse.success(image));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
@@ -49,9 +51,9 @@ public class ImageController {
     }
 
     @GetMapping("/{imageId}/presigned-url")
-    public ResponseEntity<ApiResponse<ImageLoadResponseDto>> getPresignedGetUrl(@PathVariable long imageId) {
+    public ResponseEntity<ApiResponse<ImageLoadResponseDto>> getPresignedGetUrl(@PathVariable long imageId, @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            ImageLoadResponseDto imageLoadResponseDto = imageService.getPresignedGetUrl(imageId);
+            ImageLoadResponseDto imageLoadResponseDto = imageService.getPresignedGetUrl(imageId, Long.parseLong(userDetails.getUsername()));
             return ResponseEntity.ok(ApiResponse.success(imageLoadResponseDto));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
@@ -61,9 +63,9 @@ public class ImageController {
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<?> getPresignedGetUrlRecentList(@RequestParam int page) {
+    public ResponseEntity<?> getPresignedGetUrlRecentList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlRecentList(page);
+            List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlRecentList(page, Long.parseLong(userDetails.getUsername()));
             return ResponseEntity.ok(ApiResponse.success(imageLoadResponseDtoList));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
@@ -77,6 +79,18 @@ public class ImageController {
         try {
             // userDetail.getUserName()은 sub값을 불러옴.
             List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlMyList(page, Long.parseLong(userDetails.getUsername()));
+            return ResponseEntity.ok(ApiResponse.success(imageLoadResponseDtoList));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
+        }
+    }
+
+    @PostMapping("/liked")
+    public ResponseEntity<?> getPresignedGetUrlLikedList(@RequestBody List<Long> imageIdList, @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlLikedList(imageIdList, Long.parseLong(userDetails.getUsername()));
             return ResponseEntity.ok(ApiResponse.success(imageLoadResponseDtoList));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
