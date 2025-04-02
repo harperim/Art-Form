@@ -6,6 +6,7 @@ import httpx
 from pathlib import Path
 import shutil
 import os
+import mimetypes
 os.environ.pop("SSL_CERT_FILE", None)
 
 from ai.train.augment import run_augmentation
@@ -105,7 +106,7 @@ async def apply_endpoint(
     strength: str = Form("0.33"),
     # authorization: str = Header(...)
 ):
-    authorization = 'Bearer '
+    authorization = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTc0MzY0MjM3MH0.dTbECMukFIJIcLWpUUYXXmkVPupjKRPwdZK7M1Vwm74'
     # 업로드된 이미지를 임시 저장할 디렉토리 생성
     input_dir = Path("ai/apply/input")
     input_dir.mkdir(parents=True, exist_ok=True)
@@ -137,13 +138,21 @@ async def apply_endpoint(
         raise HTTPException(status_code=404, detail="모델을 찾을 수 없습니다.")
     result_image_path = run_inference(str(input_image_path), model_dir, strength_str=strength, model_name=str(model_name))
 
+    mime_type, _ = mimetypes.guess_type(input_image_path)
+    if not mime_type:
+        mime_type = "application/octet-stream"
+
     # Core 서버에 presigned URL 요청 (원본 이미지)
+    url = f"{CORE_SERVER_BASE}/image/presigned-url"
     async with httpx.AsyncClient() as client:
-        presigned_orig_resp = await client.post(
-            f"{CORE_SERVER_BASE}/core/image/presigned-url?filetype=jpg&fileName=test.jpg",
-            headers={"Authorization": authorization},
-            json={"fileType": "original"}
+        presigned_orig_resp = await client.get(
+            f"{CORE_SERVER_BASE}/image/presigned-url",
+            headers={"Authorization": authorization,
+                     "accept": "application/json"
+                     },
+            params={"fileType": mime_type, "fileName": Path(input_image_path).name}
         )
+
     if presigned_orig_resp.status_code != 200:
         raise HTTPException(status_code=500, detail="원본 이미지 presigned URL 요청에 실패했습니다.")
     orig_presigned_data = presigned_orig_resp.json()
@@ -154,10 +163,12 @@ async def apply_endpoint(
 
     # Core 서버에 presigned URL 요청 (변환 이미지)
     async with httpx.AsyncClient() as client:
-        presigned_result_resp = await client.post(
-            f"{CORE_SERVER_BASE}/core/image/presigned-url?filetype=jpg&fileName=test.jpg",
-            headers={"Authorization": authorization},
-            json={"fileType": "result"}
+        presigned_result_resp = await client.get(
+            f"{CORE_SERVER_BASE}/image/presigned-url",
+            headers={"Authorization": authorization,
+                    "accept": "application/json"
+                    },
+            params={"fileType": mime_type, "fileName": Path(input_image_path).name}
         )
   
     if presigned_result_resp.status_code != 200:
@@ -167,23 +178,29 @@ async def apply_endpoint(
         raise HTTPException(status_code=500, detail="변환 이미지 presigned URL 발급 실패")
     result_presigned_url = result_presigned_data["data"]["presignedUrl"]
     result_upload_filename = result_presigned_data["data"]["uploadFileName"]
-
+   
     # presigned URL을 사용하여 원본 이미지 업로드 (HTTP PUT)
     with open(input_image_path, "rb") as f:
         orig_file_content = f.read()
     async with httpx.AsyncClient() as client:
-        upload_orig_resp = await client.put(orig_presigned_url, content=orig_file_content)
+        upload_orig_resp = await client.put(
+            orig_presigned_url,
+            content=orig_file_content,
+            headers={"Content-Type": mime_type})
     if upload_orig_resp.status_code not in (200, 201):
         raise HTTPException(status_code=500, detail="원본 이미지 업로드에 실패했습니다.")
-
+   
     # presigned URL을 사용하여 변환 이미지 업로드 (HTTP PUT)
     with open(result_image_path, "rb") as f:
         result_file_content = f.read()
     async with httpx.AsyncClient() as client:
-        upload_result_resp = await client.put(result_presigned_url, content=result_file_content)
+        upload_result_resp = await client.put(
+            result_presigned_url, 
+            content=result_file_content,
+            headers={"Content-Type": mime_type})
     if upload_result_resp.status_code not in (200, 201):
         raise HTTPException(status_code=500, detail="변환 이미지 업로드에 실패했습니다.")
-    
+   
     # Core 서버에 업로드 완료 등록 요청
     register_payloads = [{
         "modelId": model_id,
@@ -197,11 +214,11 @@ async def apply_endpoint(
         "isPublic": "true",
         "uploadFileName": result_upload_filename
     }]
-
+    
     for register_payload in register_payloads:
         async with httpx.AsyncClient() as client:
             register_resp = await client.post(
-                f"{CORE_SERVER_BASE}/core/image/metadata",
+                f"{CORE_SERVER_BASE}/image/metadata",
                 json=register_payload,
                 headers={"Authorization": authorization}
             )
