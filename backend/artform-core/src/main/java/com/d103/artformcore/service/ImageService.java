@@ -36,13 +36,6 @@ public class ImageService {
         }
         return new ImageSaveResponseDto(presignedUrl, uploadFileName);
     }
-    public ImageSaveResponseDto getPresignedPutUrlByUploadFileName(String uploadFileName, String service) {
-        String presignedUrl = s3Service.createPresignedPutUrl("artform-data", service + "/" + uploadFileName, fileType);
-        if (presignedUrl.isEmpty()) {
-            throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
-        }
-        return new ImageSaveResponseDto(presignedUrl, uploadFileName);
-    }
 
     public Image saveMetadata(ImageSaveDto imageSaveDto) {
         // TODO: model service에서 model 정보 불러와야 함.
@@ -62,6 +55,11 @@ public class ImageService {
         } catch (Exception e) {
             throw new CustomException(ErrorCode.METADATA_SAVE_FAILED);
         }
+    }
+
+    public ImageLoadResponseDto getPresignedGetUrlByUploadFileName(String uploadFileName,, long userId, String service) {
+        long imageId = imageRepository.findByUploadFileName(uploadFileName).getImageId();
+        return getPresignedGetUrl(imageId, userId, service);
     }
 
     public ImageLoadResponseDto getPresignedGetUrl(long imageId, long userId, String service) {
