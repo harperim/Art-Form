@@ -25,13 +25,8 @@ export default function ArtCarouselSection({ data, onPress }: Props) {
       style={styles.scroll}
     >
       {data.map((item) => (
-        <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(item)}>
-          <ArtCarouselCard
-            key={item.id}
-            image={item.image}
-            title={item.title}
-            subtitle={item.artist}
-          />
+        <TouchableOpacity key={item.id} activeOpacity={0.9} onPress={() => onPress(item)}>
+          <ArtCarouselCard image={item.image} title={item.title} subtitle={item.artist} />
         </TouchableOpacity>
       ))}
     </ScrollView>
