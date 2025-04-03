@@ -11,7 +11,12 @@ const customFonts = {
   'SansitaSwashed-Regular': require('../assets/fonts/SansitaSwashed-Regular.ttf'),
   'SansitaSwashed-Bold': require('../assets/fonts/SansitaSwashed-Bold.ttf'),
   'SansitaSwashed-Medium': require('../assets/fonts/SansitaSwashed-Medium.ttf'),
-  'Freesentation-6SemiBold': require('~/assets/fonts/Freesentation-6SemiBold.ttf'),
+  'Freesentation-5Medium': require('~/assets/fonts/Freesentation-5Medium.ttf'),
+  Freesentation4: require('~/assets/fonts/Freesentation-4Regular.ttf'),
+  Freesentation5: require('~/assets/fonts/Freesentation-5Medium.ttf'),
+  Freesentation6: require('~/assets/fonts/Freesentation-6SemiBold.ttf'),
+  Freesentation7: require('~/assets/fonts/Freesentation-7Bold.ttf'),
+  Freesentation8: require('~/assets/fonts/Freesentation-8ExtraBold.ttf'),
 };
 
 export default function RootLayout() {

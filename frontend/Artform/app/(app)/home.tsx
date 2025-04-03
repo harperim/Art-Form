@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     color: '#2C2D26',
     fontSize: 22,
     fontFamily: 'Freesentation',
-    fontWeight: '800',
+    fontWeight: '700',
   },
   parallaxCarouselView: {
     marginTop: 12,
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   },
   seeMoreBtn: {
     fontFamily: 'Freesentation',
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#59799B',
     fontSize: 13,
   },
