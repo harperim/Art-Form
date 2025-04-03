@@ -57,7 +57,7 @@ public class ImageService {
         }
     }
 
-    public ImageLoadResponseDto getPresignedGetUrlByUploadFileName(String uploadFileName,, long userId, String service) {
+    public ImageLoadResponseDto getPresignedGetUrlByUploadFileName(String uploadFileName, long userId, String service) {
         long imageId = imageRepository.findByUploadFileName(uploadFileName).getImageId();
         return getPresignedGetUrl(imageId, userId, service);
     }
