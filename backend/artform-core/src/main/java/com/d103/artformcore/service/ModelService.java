@@ -146,4 +146,14 @@ public class ModelService {
 
         return modelRepository.save(model);
     }
+
+    public List<ModelLoadResponseDto> getPresignedGetUrlRandomList(int count, long userId) {
+        List<Model> randomModels = modelRepository.findRandomModels(count);
+
+        List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
+        for (Model model : randomModels) {
+            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId));
+        }
+        return presignedUrlDtoList;
+    }
 }

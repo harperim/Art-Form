@@ -96,6 +96,20 @@ public class ModelController {
         }
     }
 
+    @GetMapping("/random")
+    public ResponseEntity<?> getPresignedGetUrlRandomList(@AuthenticationPrincipal UserDetails userDetails,
+                                                       @RequestParam int count) {
+        try {
+            // userDetail.getUserName()은 sub값을 불러옴.
+            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlRandomList(count, Long.parseLong(userDetails.getUsername()));
+            return ResponseEntity.ok(ApiResponse.success(modelLoadResponseDtoList));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
+        }
+    }
+
     @PostMapping("/edit/{modelId}")
     public ResponseEntity<?> updateModelMetadata(@AuthenticationPrincipal UserDetails userDetails, @PathVariable long modelId, @RequestBody ModelEditDto modelEditDto) {
         try {
