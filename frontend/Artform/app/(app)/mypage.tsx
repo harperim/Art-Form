@@ -91,9 +91,7 @@ export default function MyPageScreen() {
         <Text style={styles.mainContentTitle}>전체 그림 3개</Text>
         <Animated.ScrollView style={{ display: 'flex' }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            <Text style={{ fontSize: '300' }}>ff</Text>
-            <Text style={{ fontSize: '300' }}>ff</Text>
-            <Text style={{ fontSize: '400' }}>ff</Text>
+            <Text>ff</Text>
           </View>
         </Animated.ScrollView>
       </View>
@@ -167,7 +165,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   unselectedTab: {
-    fontFamily: 'Freesentation',
+    fontFamily: 'Freesentation5',
     fontSize: 20,
     color: '#F2D7D0',
   },
