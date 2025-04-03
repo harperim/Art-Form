@@ -1,9 +1,6 @@
 package com.d103.artformcore.service;
 
-import com.d103.artformcore.dto.ImageLoadResponseDto;
-import com.d103.artformcore.dto.ModelLoadResponseDto;
-import com.d103.artformcore.dto.ModelSaveDto;
-import com.d103.artformcore.dto.ModelSaveResponseDto;
+import com.d103.artformcore.dto.*;
 import com.d103.artformcore.entity.Image;
 import com.d103.artformcore.entity.Model;
 import com.d103.artformcore.exception.CustomException;
@@ -131,4 +128,22 @@ public class ModelService {
         }
     }
 
+    public Model updateModelMetadata(long userId, long modelId, ModelEditDto modelEditDto) {
+        Model model = modelRepository.findById(modelId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+        // 삭제 여부 확인
+        if (model.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.DELETED_MODEL);
+        }
+        // 인가 여부 확인
+        if (!model.isPublic() && !model.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_MODEL);
+        }
+
+        model.setModelName(modelEditDto.getModelName());
+        model.setDescription(modelEditDto.getDescription());
+        model.setPublic(modelEditDto.isPublic());
+
+        return modelRepository.save(model);
+    }
 }
