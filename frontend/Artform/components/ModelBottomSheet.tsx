@@ -1,5 +1,5 @@
 // components/ModelBottomSheet.tsx
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import { Keyboard, TextInput } from 'react-native';
 import {
@@ -18,70 +18,43 @@ import colors from '~/constants/colors';
 import { useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { mockModels } from '~/constants/mockModels';
-import type { Model } from '~/types/model';
 
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
+import { useModel } from '~/context/ModelContext';
 
-const shadowStyle = {
-  shadowColor: '#000',
-  shadowOffset: {
-    width: 0,
-    height: 1,
-  },
-  shadowOpacity: 0.2,
-  shadowRadius: 1.41,
-
-  elevation: 2,
-};
-
-type Props = {
-  selected: Model;
-  onDismiss: () => void;
-};
-
-const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDismiss }, ref) => {
+export default function ModelBottomSheet() {
   const snapPoints = useMemo(() => ['85%'], []);
+  const { selectedModel, setSelectedModel } = useModel();
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(0);
   const [comment, setComment] = useState('');
-
   const [commentImage, setCommentImage] = useState<ImageSourcePropType | null>(null);
-  // const [visibleReviews, setVisibleReviews] = useState<Review[]>([]);
-  // const [reviewPage, setReviewPage] = useState(1);
-  // const REVIEWS_PER_PAGE = 2;
 
-  const innerRef = useRef<BottomSheetModal>(null);
-  const inputRef = useRef<TextInput>(null);
   const router = useRouter();
+  const inputRef = useRef<TextInput>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  useImperativeHandle(ref, () => innerRef.current!);
+  const model = mockModels.find((m) => m.id === selectedModel?.id);
 
   useEffect(() => {
-    if (!selected) return;
-    const found = mockModels.find((m) => m.id === selected.id);
-    if (found) {
-      setLiked(found.liked);
-      setLikes(found.likes);
+    if (!model) return;
+    setLiked(model.liked);
+    setLikes(model.likes);
+  }, [model]);
+
+  useEffect(() => {
+    if (selectedModel) {
+      bottomSheetRef.current?.present();
     }
-  }, [selected]);
+  }, [selectedModel]);
 
   useEffect(() => {
     const hideSub = Keyboard.addListener('keyboardDidHide', () => {
       inputRef.current?.blur(); // 키보드 내려가면 확실히 blur
     });
-
     return () => hideSub.remove();
   }, []);
-
-  // Lazy Load 리뷰 함수
-  // useEffect(() => {
-  //   if (model) {
-  //     const start = 0;
-  //     const end = REVIEWS_PER_PAGE;
-  //     setVisibleReviews(model.reviews.slice(start, end));
-  //   }
-  // }, [selected]);
 
   useFocusEffect(
     useCallback(() => {
@@ -91,8 +64,8 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
           return true; // 이벤트 소비
         }
 
-        if (innerRef.current) {
-          innerRef.current.close(); // 바텀시트를 닫음
+        if (bottomSheetRef.current) {
+          bottomSheetRef.current.close(); // 바텀시트를 닫음
           return true; // 뒤로가기 이벤트 소비
         }
         return false;
@@ -102,19 +75,7 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
     }, []),
   );
 
-  if (!selected) return null;
-  const model = mockModels.find((model) => model.id === selected.id);
   if (!model) return null;
-
-  // const loadMoreReviews = () => {
-  //   if (!model) return;
-  //   const nextPage = reviewPage + 1;
-  //   const newReviews = model.reviews.slice(0, nextPage * REVIEWS_PER_PAGE);
-  //   if (newReviews.length > visibleReviews.length) {
-  //     setVisibleReviews(newReviews);
-  //     setReviewPage(nextPage);
-  //   }
-  // };
 
   // 이미지 선택 함수
   const pickImage = async () => {
@@ -130,10 +91,10 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
 
   return (
     <BottomSheetModal
-      ref={innerRef}
+      ref={bottomSheetRef}
       snapPoints={snapPoints}
       enablePanDownToClose
-      onDismiss={onDismiss}
+      onDismiss={() => setSelectedModel(null)}
       keyboardBehavior="interactive"
       android_keyboardInputMode="adjustResize"
       backdropComponent={(props) => (
@@ -186,6 +147,10 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
           style={styles.useButton}
           onPress={() => {
             if (!model.image) return;
+
+            bottomSheetRef.current?.dismiss();
+            setSelectedModel(null);
+
             router.push({ pathname: '/convert', params: { modelId: model.id } });
           }}
         >
@@ -253,9 +218,19 @@ const ModelBottomSheet = forwardRef<BottomSheetModal, Props>(({ selected, onDism
       </BottomSheetScrollView>
     </BottomSheetModal>
   );
-});
+}
 
-export default ModelBottomSheet;
+const shadowStyle = {
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 1,
+  },
+  shadowOpacity: 0.2,
+  shadowRadius: 1.41,
+
+  elevation: 2,
+};
 
 const styles = StyleSheet.create({
   container: {

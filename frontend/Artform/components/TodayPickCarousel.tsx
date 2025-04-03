@@ -1,6 +1,13 @@
 // components/TodayPickCarousel.tsx
 import type { ImageSourcePropType } from 'react-native';
-import { Text, StyleSheet, ImageBackground, Dimensions, View } from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  ImageBackground,
+  Dimensions,
+  View,
+  TouchableOpacity,
+} from 'react-native';
 import React from 'react';
 import type { SharedValue } from 'react-native-reanimated';
 import Animated, { useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
@@ -12,6 +19,7 @@ const ITEM_HEIGHT = Dimensions.get('window').height * 0.36;
 
 // props 타입 정의
 interface CarouselItem {
+  id: string;
   image: ImageSourcePropType;
   title: string;
   likes: number;
@@ -21,9 +29,10 @@ interface ParallaxCarouselCardProps {
   item: CarouselItem;
   id: number;
   scrollX: SharedValue<number>;
+  onPress: (item: CarouselItem) => void;
 }
 
-const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scrollX }) => {
+const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scrollX, onPress }) => {
   const inputRange = [(id - 1) * ITEM_WIDTH, id * ITEM_WIDTH, (id + 1) * ITEM_WIDTH];
 
   const translateStyle = useAnimatedStyle(() => {
@@ -55,35 +64,41 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
   });
 
   return (
-    <Animated.View
-      style={[
-        {
-          width: ITEM_WIDTH,
-          height: ITEM_HEIGHT,
-          overflow: 'hidden',
-          borderRadius: 15,
-        },
-        translateStyle,
-      ]}
-    >
-      <Animated.View style={translateImageStyle}>
-        <ImageBackground source={item.image} style={styles.imageBackground} resizeMode="cover">
-          <Animated.View
-            style={[styles.posterInfoView, translateTextStyle, { width: ITEM_WIDTH - OFFSET * 4 }]}
-          >
-            <Text style={styles.posterTitle}>{item.title}</Text>
-            <View style={styles.heartBox}>
-              <ICONS.heart.filled
-                width={20}
-                height={20}
-                style={[{ position: 'relative', top: 1 }]}
-              />
-              <Text style={styles.likesCount}>{item.likes}</Text>
-            </View>
-          </Animated.View>
-        </ImageBackground>
+    <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(item)}>
+      <Animated.View
+        style={[
+          {
+            width: ITEM_WIDTH,
+            height: ITEM_HEIGHT,
+            overflow: 'hidden',
+            borderRadius: 15,
+          },
+          translateStyle,
+        ]}
+      >
+        <Animated.View style={translateImageStyle}>
+          <ImageBackground source={item.image} style={styles.imageBackground} resizeMode="cover">
+            <Animated.View
+              style={[
+                styles.posterInfoView,
+                translateTextStyle,
+                { width: ITEM_WIDTH - OFFSET * 4 },
+              ]}
+            >
+              <Text style={styles.posterTitle}>{item.title}</Text>
+              <View style={styles.heartBox}>
+                <ICONS.heart.filled
+                  width={20}
+                  height={20}
+                  style={[{ position: 'relative', top: 1 }]}
+                />
+                <Text style={styles.likesCount}>{item.likes}</Text>
+              </View>
+            </Animated.View>
+          </ImageBackground>
+        </Animated.View>
       </Animated.View>
-    </Animated.View>
+    </TouchableOpacity>
   );
 };
 

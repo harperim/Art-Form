@@ -15,10 +15,18 @@ import ArtCarouselSection from '~/components/ArtCarouselSection';
 import ParallaxCarouselPagination from '~/components/ParallaxCarouselPagination';
 import { mockModels } from '~/constants/mockModels';
 import { router } from 'expo-router';
+import { useModel } from '~/context/ModelContext';
+import type { Model } from '~/types/model';
 
 export default function Home() {
   const OFFSET = 20;
   const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
+
+  const { setSelectedModel } = useModel();
+
+  const handleCardPress = (item: Model) => {
+    setSelectedModel(item);
+  };
 
   const scrollX = useSharedValue(0);
 
@@ -52,7 +60,13 @@ export default function Home() {
             }}
           >
             {todayData.map((item, index) => (
-              <TodayPickCarousel item={item} key={index} id={index} scrollX={scrollX} />
+              <TodayPickCarousel
+                item={item}
+                key={index}
+                id={index}
+                scrollX={scrollX}
+                onPress={handleCardPress}
+              />
             ))}
           </ScrollView>
           <ParallaxCarouselPagination data={todayData} scrollX={scrollX} />
@@ -67,7 +81,7 @@ export default function Home() {
             <Text style={styles.seeMoreBtn}>더 보기</Text>
           </TouchableOpacity>
         </View>
-        <ArtCarouselSection data={modelData} />
+        <ArtCarouselSection data={modelData} onPress={handleCardPress} />
       </View>
 
       {/* 최신 모델 */}
@@ -78,7 +92,7 @@ export default function Home() {
             <Text style={styles.seeMoreBtn}>더 보기</Text>
           </TouchableOpacity>
         </View>
-        <ArtCarouselSection data={modelData} />
+        <ArtCarouselSection data={modelData} onPress={handleCardPress} />
       </View>
     </ScrollView>
   );
@@ -87,7 +101,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   main: {
     padding: 20,
-    backgroundColor: '#F7F4F1',
+    backgroundColor: '#fff',
   },
   logo: {
     width: 132,

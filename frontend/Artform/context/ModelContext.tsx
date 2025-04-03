@@ -1,6 +1,6 @@
 // context/ModelContext.tsx
 import type { ReactNode } from 'react';
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import type { Model } from '~/types/model';
 
 type ModelContextType = {

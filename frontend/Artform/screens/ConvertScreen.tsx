@@ -34,7 +34,7 @@ export default function ConvertScreen({ model }: Props) {
   useEffect(() => {
     const onBackPress = () => {
       setSelectedModel(model);
-      router.replace('/store');
+      router.back();
       return true;
     };
 
@@ -139,7 +139,7 @@ export default function ConvertScreen({ model }: Props) {
               <Pressable
                 onPress={() => {
                   setSelectedModel(model);
-                  router.replace('/store');
+                  router.back();
                 }}
               >
                 <Ionicons name="chevron-back" size={24} color="#000" />
