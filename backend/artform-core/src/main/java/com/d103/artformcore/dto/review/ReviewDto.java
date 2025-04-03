@@ -15,6 +15,7 @@ public class ReviewDto {
     private Long modelId;
     private String modelName; // 모델 이름 추가 (필요시)
     private String reviewImageName;
+    private String presignedUrl;
     private Long userId;
     private String content;
     private LocalDateTime createdAt;

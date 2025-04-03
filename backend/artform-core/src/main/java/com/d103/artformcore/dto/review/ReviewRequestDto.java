@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 public class ReviewRequestDto {
 
-    private Long id;
     private String content;
-    private String author;
+    private String uploadFileName;
+
 }
