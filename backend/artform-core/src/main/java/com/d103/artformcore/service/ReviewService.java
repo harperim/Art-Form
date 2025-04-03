@@ -153,5 +153,17 @@ public class ReviewService {
                 .build();
     }
 
+    public ReviewListDto deleteReview(Long reviewId, Long userId) {
+
+
+
+
+        return ReviewListDto.builder()
+                .msg("삭제 성공")
+                .data(new ReviewDto)
+                .build();
+    }
+
+
 
 }
