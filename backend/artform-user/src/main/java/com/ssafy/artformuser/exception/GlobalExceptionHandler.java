@@ -9,18 +9,34 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(JwtAuthenticationException.class)
-    public ResponseEntity<String> handleInvalidateTokenException(Exception e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰입니다: " + e.getMessage());
+    public ResponseEntity<Map<String, String>> handleInvalidateTokenException(Exception e) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "token_expired");
+        response.put("message", "인증 토큰이 만료되었습니다: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-    @ExceptionHandler({AuthenticationException.class, InvalidTokenException.class} )
-    public ResponseEntity<String> handleAuthenticationException(AuthenticationException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 실패" + e.getMessage());
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidTokenException(InvalidTokenException e) {
+        Map<String, String> response = new HashMap<>();
+        response.put("msg", "유효하지 않은 토큰입니다: " + e.getMessage());
+        response.put("error", "invalid_token");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, String>> handleAuthenticationException(AuthenticationException e) {
+        Map<String, String> response = new HashMap<>();
+        response.put("msg", "인증 실패: " + e.getMessage());
+        response.put("error", "authentication_failed");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -43,8 +59,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디 또는 비밀번호가 일치하지 않습니다.");
+    public ResponseEntity<Map<String, String>> handleBadCredentialsException(BadCredentialsException e) {
+        Map<String, String> response = new HashMap<>();
+        response.put("msg", "아이디 또는 비밀번호가 일치하지 않습니다.");
+        response.put("error", "invalid_credentials");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(UserNotFoundException.class)

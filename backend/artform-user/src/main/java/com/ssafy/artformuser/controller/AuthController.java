@@ -49,7 +49,6 @@ public class AuthController {
 
     @PostMapping("/oauth/accesstoken")
     public ResponseEntity<TokenRefreshResponseDto> refreshAccessToken(@Valid @RequestBody TokenRefreshRequestDto requestDto) {
-        System.out.println("확인");
         TokenRefreshResponseDto responseDto = authService.refreshAccessToken(requestDto.getRefreshToken());
         return ResponseEntity.ok(responseDto);
     }
