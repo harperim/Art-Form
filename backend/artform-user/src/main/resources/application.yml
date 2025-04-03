@@ -16,12 +16,26 @@ spring:
   jpa:
     database: postgresql
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
 
   data:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
+
+  rabbitmq:
+    host: ${SERVER_DOMAIN}
+    port: ${MQ_PORT}
+    username: ${MQ_NAME}
+    password: ${MQ_PASS}
+    virtual-host: /
+    connection-timeout: 5000
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 3
+        multiplier: 1.0
 
 jwt:
   secret: ${JWT_SECRET}
@@ -30,3 +44,8 @@ jwt:
   refresh-token:
     expire-time: 604800000 # 7일
 
+springdoc:
+  swagger-ui:
+    path: /user/swagger-ui.html  # 원하는 경로로 변경
+  api-docs:
+    path: /user/v3/api-docs # API 문서 경로도 변경 가능

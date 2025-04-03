@@ -46,6 +46,9 @@ services:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PORT=${REDIS_PORT}
       - JWT_SECRET=${JWT_SECRET}
+      - MQ_PORT=${MQ_PORT}
+      - MQ_NAME=${MQ_NAME}
+      - MQ_PASS=${MQ_PASS}
     networks:
       - user-network
       - nginx-network
