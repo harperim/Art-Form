@@ -96,6 +96,18 @@ public class ModelController {
         }
     }
 
+    @PostMapping("/edit/{modelId}")
+    public ResponseEntity<?> updateModelMetadata(@AuthenticationPrincipal UserDetails userDetails, @PathVariable long modelId, @RequestBody ModelEditDto modelEditDto) {
+        try {
+            Model model = modelService.updateModelMetadata(Long.parseLong(userDetails.getUsername()), modelId, modelEditDto);
+            return ResponseEntity.ok(ApiResponse.success(model));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
+        }
+    }
+
     @DeleteMapping("/{modelId}")
     public ResponseEntity<?> deleteModel(@PathVariable Long modelId) {
         try {
