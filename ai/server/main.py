@@ -11,7 +11,8 @@ os.environ.pop("SSL_CERT_FILE", None)
 import requests
 from ai.train.augment import run_augmentation
 from ai.train.train import run_training
-from ai.apply.apply import run_inference
+from ai.apply.apply_img2img import run_inference
+from ai.apply.apply_text2img import run_inference_t2i
 
 
 def cleanup_files_in_directory(directory_path):
@@ -32,13 +33,29 @@ app = FastAPI()
 CORE_SERVER_BASE = "http://j12d103.p.ssafy.io:8081"
 USER_SERVER_BASE = "http://j12d103.p.ssafy.io:8080"
 
+authorization = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTc0MzkxMzc4MH0.d9ho84eCf1ea_Vh-f2PjpoeOb12Xlm1fhIg2hFfo7mk'
+
+
 @app.post("/train/")
 async def train_endpoint(
     token: str = Form(...),
     images: List[UploadFile] = File(...),
-    user_id: str = Form(...),
-    model_name: str = Form(...)
+    model_name: str = Form(...),
+    # authorization: str = Header(...)
 ):
+    # user정보 조회
+    async with httpx.AsyncClient() as client:
+        user_info_resp = await client.get(
+            f"{USER_SERVER_BASE}/user",
+            headers={"Authorization": authorization}
+        )
+    if user_info_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="유저 정보 조회에 실패했습니다.")
+    user_info = user_info_resp.json().get("data")
+    if not user_info:
+        raise HTTPException(status_code=404, detail="유저저 정보를 찾을 수 없습니다.")
+    user_id = user_info.get("userId")
+
     # 디렉토리 설정
     img_dir = Path("ai/train/img")
     aug_dir = Path("ai/train/aug_img")
@@ -47,6 +64,7 @@ async def train_endpoint(
     img_dir.mkdir(parents=True, exist_ok=True)
     aug_dir.mkdir(parents=True, exist_ok=True)
     model_dir.mkdir(parents=True, exist_ok=True)
+
 
     # 업로드된 이미지를 ai/train/img에 저장
     for image in images:
@@ -111,18 +129,29 @@ async def train_endpoint(
     headers = {"Content-Type": f"multipart/mixed; boundary={boundary}"}
     return Response(content=body, headers=headers)
 
-
-@app.post("/apply/")
+# img2img 추론
+@app.post("/apply/img2img/")
 async def apply_endpoint(
     image: UploadFile = File(...),
-    user_id: str = Form(...),
     model_id: str = Form(...),
     producer_id: str = Form(...),
     model_name: str = Form(...),
     strength: str = Form("0.33"),
     # authorization: str = Header(...)
 ):
-    authorization = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTc0MzY0MjM3MH0.dTbECMukFIJIcLWpUUYXXmkVPupjKRPwdZK7M1Vwm74'
+    # user정보 조회
+    async with httpx.AsyncClient() as client:
+        user_info_resp = await client.get(
+            f"{USER_SERVER_BASE}/user",
+            headers={"Authorization": authorization}
+        )
+    if user_info_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="유저 정보 조회에 실패했습니다.")
+    user_info = user_info_resp.json().get("data")
+    if not user_info:
+        raise HTTPException(status_code=404, detail="유저 정보를 찾을 수 없습니다.")
+    user_id = user_info.get("userId")
+
     # 업로드된 이미지를 임시 저장할 디렉토리 생성
     input_dir = Path("ai/apply/input")
     input_dir.mkdir(parents=True, exist_ok=True)
@@ -145,8 +174,8 @@ async def apply_endpoint(
     # model_info = model_info_resp.json().get("data")
     # if not model_info:
     #     raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
-    # producer_id = model_info.get("user_id")
-    # model_name = model_info.get("model_name")
+    # producer_id = model_info.get("userId")
+    # model_name = model_info.get("modelName")
 
     # 로컬 모델 디렉토리 확인 및 inference 실행
     model_dir = os.path.join("ai", "img_model", producer_id, model_name)
@@ -177,6 +206,9 @@ async def apply_endpoint(
     orig_presigned_url = orig_presigned_data["data"]["presignedUrl"]
     orig_upload_filename = orig_presigned_data["data"]["uploadFileName"]
 
+    result_mime_type, _ = mimetypes.guess_type(result_image_path)
+    if not mime_type:
+        mime_type = "application/octet-stream"
     # Core 서버에 presigned URL 요청 (변환 이미지)
     async with httpx.AsyncClient() as client:
         presigned_result_resp = await client.get(
@@ -184,7 +216,7 @@ async def apply_endpoint(
             headers={"Authorization": authorization,
                     "accept": "application/json"
                     },
-            params={"fileType": mime_type, "fileName": Path(input_image_path).name}
+            params={"fileType": result_mime_type, "fileName": Path(result_image_path).name}
         )
   
     if presigned_result_resp.status_code != 200:
@@ -213,7 +245,7 @@ async def apply_endpoint(
         upload_result_resp = await client.put(
             result_presigned_url, 
             content=result_file_content,
-            headers={"Content-Type": mime_type})
+            headers={"Content-Type": result_mime_type})
     if upload_result_resp.status_code not in (200, 201):
         raise HTTPException(status_code=500, detail="변환 이미지 업로드에 실패했습니다.")
    
@@ -252,7 +284,7 @@ async def apply_endpoint(
     orig_filename = Path(input_image_path).name
     parts.append(f"--{boundary}\r\n".encode())
     parts.append(f'Content-Disposition: form-data; name="original_image"; filename="{orig_filename}"\r\n'.encode())
-    parts.append(b"Content-Type: image/jpeg\r\n\r\n")
+    parts.append(f"Content-Type: {mime_type}\r\n\r\n".encode())
     parts.append(orig_data)
     parts.append(b"\r\n")
     
@@ -262,7 +294,7 @@ async def apply_endpoint(
     result_filename = Path(result_image_path).name
     parts.append(f"--{boundary}\r\n".encode())
     parts.append(f'Content-Disposition: form-data; name="result_image"; filename="{result_filename}"\r\n'.encode())
-    parts.append(b"Content-Type: image/jpeg\r\n\r\n")
+    parts.append(f"Content-Type: {result_mime_type}\r\n\r\n".encode())
     parts.append(result_data)
     parts.append(b"\r\n")
     
@@ -272,6 +304,126 @@ async def apply_endpoint(
     
     # 임시 파일 삭제
     os.remove(input_image_path)
+    os.remove(result_image_path)
+    
+    # multipart 응답 전송
+    headers = {"Content-Type": f"multipart/mixed; boundary={boundary}"}
+    return Response(content=body, headers=headers)
+
+# text2img 추론
+@app.post("/apply/text2img/")
+async def apply_endpoint(
+    prompt: str = Form(...),
+    model_id: str = Form(...),
+    producer_id: str = Form(...),
+    model_name: str = Form(...),
+    strength: str = Form("0.33"),
+    # authorization: str = Header(...)
+):
+    # user정보 조회
+    async with httpx.AsyncClient() as client:
+        user_info_resp = await client.get(
+            f"{USER_SERVER_BASE}/user",
+            headers={"Authorization": authorization}
+        )
+    if user_info_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="유저저 정보 조회에 실패했습니다.")
+    user_info = user_info_resp.json().get("data")
+    if not user_info:
+        raise HTTPException(status_code=404, detail="유저저 정보를 찾을 수 없습니다.")
+    user_id = user_info.get("userId")
+    
+    # # model정보 조회
+    # async with httpx.AsyncClient() as client:
+    #     model_info_resp = await client.get(
+    #         f"{CORE_SERVER_BASE}/model/{model_id}",
+    #         params={"model_id": model_id},
+    #         headers={"Authorization": authorization}
+    #     )
+    # if model_info_resp.status_code != 200:
+    #     raise HTTPException(status_code=500, detail="모델 정보 조회에 실패했습니다.")
+    # model_info = model_info_resp.json().get("data")
+    # if not model_info:
+    #     raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
+    # producer_id = model_info.get("userId")
+    # model_name = model_info.get("model_name")
+
+    # 로컬 모델 디렉토리 확인 및 inference 실행
+    model_dir = os.path.join("ai", "img_model", producer_id, model_name)
+    if not os.path.exists(model_dir):
+        raise HTTPException(status_code=404, detail="모델을 찾을 수 없습니다.")
+    result_image_path = run_inference_t2i(model_dir, prompt=str(prompt), model_name=str(model_name), strength_str=strength)
+
+    result_mime_type, _ = mimetypes.guess_type(result_image_path)
+    if not mime_type:
+        mime_type = "application/octet-stream"
+    # Core 서버에 presigned URL 요청 (변환 이미지)
+    async with httpx.AsyncClient() as client:
+        presigned_result_resp = await client.get(
+            f"{CORE_SERVER_BASE}/image/presigned-url",
+            headers={"Authorization": authorization,
+                    "accept": "application/json"
+                    },
+            params={"fileType": result_mime_type, "fileName": Path(result_image_path).name}
+        )
+  
+    if presigned_result_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="변환 이미지 presigned URL 요청에 실패했습니다.")
+    result_presigned_data = presigned_result_resp.json()
+    if not result_presigned_data.get("success"):
+        raise HTTPException(status_code=500, detail="변환 이미지 presigned URL 발급 실패")
+    result_presigned_url = result_presigned_data["data"]["presignedUrl"]
+    result_upload_filename = result_presigned_data["data"]["uploadFileName"]
+   
+    # presigned URL을 사용하여 변환 이미지 업로드 (HTTP PUT)
+    with open(result_image_path, "rb") as f:
+        result_file_content = f.read()
+    async with httpx.AsyncClient() as client:
+        upload_result_resp = await client.put(
+            result_presigned_url, 
+            content=result_file_content,
+            headers={"Content-Type": result_mime_type})
+    if upload_result_resp.status_code not in (200, 201):
+        raise HTTPException(status_code=500, detail="변환 이미지 업로드에 실패했습니다.")
+   
+    # Core 서버에 업로드 완료 등록 요청
+    register_payload = {
+        "modelId": model_id,
+        "userId": user_id,
+        "isPublic": "true",
+        "uploadFileName": result_upload_filename
+    }
+    
+    
+    async with httpx.AsyncClient() as client:
+        register_resp = await client.post(
+            f"{CORE_SERVER_BASE}/image/metadata",
+            json=register_payload,
+            headers={"Authorization": authorization}
+        )
+    if register_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="이미지 등록에 실패했습니다.")
+    register_data = register_resp.json()
+
+    # multipart 메시지 구성
+    boundary = "myboundary"
+    parts = []
+    
+    # 추론 이미지 파트
+    with open(result_image_path, "rb") as f:
+        result_data = f.read()
+    result_filename = Path(result_image_path).name
+    parts.append(f"--{boundary}\r\n".encode())
+    parts.append(f'Content-Disposition: form-data; name="result_image"; filename="{result_filename}"\r\n'.encode())
+    parts.append(f"Content-Type: {result_mime_type}\r\n\r\n".encode())
+    parts.append(result_data)
+    parts.append(b"\r\n")
+    
+    # multipart 종료
+    parts.append(f"--{boundary}--\r\n".encode())
+    body = b"".join(parts)
+    
+    # 임시 파일 삭제
     os.remove(result_image_path)
     
     # multipart 응답 전송
