@@ -5,6 +5,8 @@ import CustomTabBar from '~/components/CustomTabBar';
 export default function AppTabLayout() {
   return (
     <Tabs
+      initialRouteName="home"
+      backBehavior="history"
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
@@ -15,6 +17,12 @@ export default function AppTabLayout() {
       <Tabs.Screen name="store" />
       <Tabs.Screen name="model" />
       <Tabs.Screen name="mypage" />
+      <Tabs.Screen
+        name="convert"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

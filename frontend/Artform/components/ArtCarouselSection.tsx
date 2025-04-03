@@ -1,6 +1,6 @@
 // components/ArtCarouselSection.tsx
 import type { ImageSourcePropType } from 'react-native';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import ArtCarouselCard from './ArtCarouselCard';
 
 type Item = {
@@ -12,9 +12,10 @@ type Item = {
 
 type Props = {
   data: Item[];
+  onPress: (item: Item) => void;
 };
 
-export default function ArtCarouselSection({ data }: Props) {
+export default function ArtCarouselSection({ data, onPress }: Props) {
   return (
     <ScrollView
       horizontal
@@ -24,12 +25,14 @@ export default function ArtCarouselSection({ data }: Props) {
       style={styles.scroll}
     >
       {data.map((item) => (
-        <ArtCarouselCard
-          key={item.id}
-          image={item.image}
-          title={item.title}
-          subtitle={item.artist}
-        />
+        <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(item)}>
+          <ArtCarouselCard
+            key={item.id}
+            image={item.image}
+            title={item.title}
+            subtitle={item.artist}
+          />
+        </TouchableOpacity>
       ))}
     </ScrollView>
   );
