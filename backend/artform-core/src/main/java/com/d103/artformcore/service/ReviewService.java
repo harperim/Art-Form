@@ -7,6 +7,7 @@ import com.d103.artformcore.dto.review.ReviewRequestDto;
 import com.d103.artformcore.entity.Model;
 import com.d103.artformcore.entity.Review;
 import com.d103.artformcore.exception.ModelNotFoundException;
+import com.d103.artformcore.exception.ReviewNotFoundException;
 import com.d103.artformcore.repository.ModelRepository;
 import com.d103.artformcore.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +66,36 @@ public class ReviewService {
                 .msg("조회 성공")
                 .data(reviewDtos)
                 .build();
+    }
+
+
+    public ReviewListDto deleteModelReviews(Long reviewId){
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다: " + reviewId));
+
+
+        Long modelId = review.getModel().getModelId();
+
+        reviewRepository.deleteById(reviewId);
+
+        List<Review> reviewList = reviewRepository.findReviewByModel(review.getModel());
+
+        List<ReviewDto> reviewDtos = reviewList.stream()
+                .map(r -> ReviewDto.builder()
+                        .reviewId(r.getReviewId())
+                        .content(r.getContent())
+                        .reviewImageName(r.getReviewImageName())
+                        .createdAt(r.getCreatedAt())
+                        .build())
+                .toList();
+
+
+        return ReviewListDto.builder()
+                .msg("삭제 성공")
+                .data(reviewDtos)
+                .build();
+
     }
 
 }
