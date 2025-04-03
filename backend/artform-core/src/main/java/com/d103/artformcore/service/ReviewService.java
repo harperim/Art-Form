@@ -38,51 +38,9 @@ public class ReviewService {
                     .data(List.of())
                     .build();
         }
+        // 리뷰 DTO 리스트 기져오기
+        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId);
 
-
-        List<ReviewDto> reviewDtos = reviewList.stream()
-                .map(review -> ReviewDto.builder()
-                        .reviewId(review.getReviewId())
-                        .modelId(model.getModelId())
-                        .modelName(model.getModelName()) // 모델명 추가
-                        .content(review.getContent())
-                        .reviewImageName(review.getReviewImageName())
-                        .userId(review.getUserId()) // 사용자 ID 추가
-                        .createdAt(review.getCreatedAt())
-                        .build())
-                .toList();
-
-        // 2. 이미지가 있는 리뷰만 필터링하여 이미지 이름 목록 생성
-        List<String> imageFileNames = reviewDtos.stream()
-                .map(ReviewDto::getReviewImageName)
-                .filter(name -> name != null && !name.isEmpty())
-                .toList();
-
-        // 3. 이미지가 있는 경우 프리사인드 URL 한 번에 요청 및 처리
-        if (!imageFileNames.isEmpty()) {
-            // 이미지 서비스에서 모든 이미지의 presigned URL을 한 번에 요청
-            List<ImageLoadResponseDto> responseList = imageService.getPresignedGetUrlByUploadFileName(
-                    imageFileNames, userId, "review");
-
-            // 응답 목록에서 이미지 이름과 URL 매핑 생성
-            Map<String, String> imageUrlMap = new HashMap<>();
-            for (ImageLoadResponseDto response : responseList) {
-                // ImageLoadResponseDto에서 이미지 이름과 URL을 가져오는 방식은 실제 구현에 맞게 조정
-                String imageName = response.getUploadFileName();
-                String presignedUrl = response.getPresignedUrl();
-                imageUrlMap.put(imageName, presignedUrl);
-            }
-
-            // 각 DTO에 해당하는 URL 매핑
-            for (ReviewDto dto : reviewDtos) {
-                String imageName = dto.getReviewImageName();
-                if (imageName != null && !imageName.isEmpty() && imageUrlMap.containsKey(imageName)) {
-                    dto.setPresignedUrl(imageUrlMap.get(imageName)); // presignedUrl 설정
-                }
-            }
-        }
-
-        // 4. 결과 반환
         return ReviewListDto.builder()
                 .msg("조회 성공")
                 .data(reviewDtos)
@@ -106,45 +64,7 @@ public class ReviewService {
         List<Review> reviewList = reviewRepository.findReviewByModel(model);
 
         // dto 변환
-        List<ReviewDto> reviewDtos = reviewList.stream()
-                .map(review -> ReviewDto.builder()
-                        .reviewId(review.getReviewId())
-                        .modelId(model.getModelId())
-                        .modelName(model.getModelName())
-                        .content(review.getContent())
-                        .reviewImageName(review.getReviewImageName())
-                        .userId(review.getUserId())
-                        .createdAt(review.getCreatedAt())
-                        .build())
-                .toList();
-
-        // 5. 이미지가 있는 리뷰의 presigned URL 처리
-        List<String> imageFileNames = reviewDtos.stream()
-                .map(ReviewDto::getReviewImageName)
-                .filter(name -> name != null && !name.isEmpty())
-                .toList();
-
-        if (!imageFileNames.isEmpty()) {
-            // 이미지 서비스에서 presigned URL 요청
-            List<ImageLoadResponseDto> responseList = imageService.getPresignedGetUrlByUploadFileName(
-                    imageFileNames, userId, "review");
-
-            // URL 매핑 생성
-            Map<String, String> imageUrlMap = new HashMap<>();
-            for (ImageLoadResponseDto response : responseList) {
-                String imageName = response.getUploadFileName();
-                String presignedUrl = response.getPresignedUrl();
-                imageUrlMap.put(imageName, presignedUrl);
-            }
-
-            // 각 DTO에 URL 설정
-            for (ReviewDto dto : reviewDtos) {
-                String imageName = dto.getReviewImageName();
-                if (imageName != null && !imageName.isEmpty() && imageUrlMap.containsKey(imageName)) {
-                    dto.setPresignedUrl(imageUrlMap.get(imageName));
-                }
-            }
-        }
+        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId);
 
         // 6. 결과 반환
         return ReviewListDto.builder()
@@ -154,14 +74,84 @@ public class ReviewService {
     }
 
     public ReviewListDto deleteReview(Long reviewId, Long userId) {
+        // 리뷰 존재 여부 확인
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
+        // 리뷰 작성자 확인
+        if (!review.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("리뷰 삭제 권한이 없습니다.");
+        }
 
+        // 리뷰에 연관된 모델 가져오기
+        Model model = review.getModel();
 
+        // 리뷰 삭제
+        reviewRepository.delete(review);
 
+        // 해당 모델의 모든 리뷰 가져오기
+        List<Review> reviewList = reviewRepository.findReviewByModel(model);
+
+        // 리뷰 DTO 변환
+        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId);
+        
         return ReviewListDto.builder()
                 .msg("삭제 성공")
-                .data(new ReviewDto)
+                .data(reviewDtos)
                 .build();
+    }
+    
+    // DTO 변환 및 이미지 처리
+    private List<ReviewDto> convertToReviewDtoListAndProcessImages(List<Review> reviewList, Long userId) {
+        // Entity를 DTO로 변환
+        List<ReviewDto> reviewDtos = reviewList.stream()
+                .map(review -> ReviewDto.builder()
+                        .reviewId(review.getReviewId())
+                        .modelId(review.getModel().getModelId())
+                        .modelName(review.getModel().getModelName())
+                        .content(review.getContent())
+                        .reviewImageName(review.getReviewImageName())
+                        .userId(review.getUserId())
+                        .createdAt(review.getCreatedAt())
+                        .build())
+                .toList();
+
+
+        // 이미지가 있는 리뷰만 필터링하여 이미지 이름 목록 생성
+        List<String> imageFileNames = reviewDtos.stream()
+                .map(ReviewDto::getReviewImageName)
+                .filter(name -> name != null && !name.isEmpty())
+                .toList();
+
+        // 이미지가 있는 경우 프리사인드 URL 처리
+        if (!imageFileNames.isEmpty()) {
+            processPresignedUrls(reviewDtos, imageFileNames, userId);
+        }
+
+        return reviewDtos;
+    }
+    
+    // Presigned url 받아오기
+    private void processPresignedUrls(List<ReviewDto> reviewDtos, List<String> imageFileNames, Long userId) {
+        // 이미지 서비스에서 presigned URL 요청
+            List<ImageLoadResponseDto> responseList = imageService.getPresignedGetUrlByUploadFileName(
+                    imageFileNames, userId, "review");
+
+        // URL 매핑 생성
+        Map<String, String> imageUrlMap = new HashMap<>();
+        for (ImageLoadResponseDto response : responseList) {
+            String imageName = response.getUploadFileName();
+            String presignedUrl = response.getPresignedUrl();
+            imageUrlMap.put(imageName, presignedUrl);
+        }
+
+        // 각 DTO에 URL 설정
+        for (ReviewDto dto : reviewDtos) {
+            String imageName = dto.getReviewImageName();
+            if (imageName != null && !imageName.isEmpty() && imageUrlMap.containsKey(imageName)) {
+                dto.setPresignedUrl(imageUrlMap.get(imageName));
+            }
+        }
     }
 
 
