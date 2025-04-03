@@ -27,7 +27,7 @@ public class ImageController {
     @GetMapping("/presigned-url")
     public ResponseEntity<?> getPresignedPutUrl(@RequestParam String fileType, @RequestParam String fileName) {
         try {
-            ImageSaveResponseDto imageSaveResponseDto = imageService.getPresignedPutUrl(fileType, fileName);
+            ImageSaveResponseDto imageSaveResponseDto = imageService.getPresignedPutUrl(fileType, fileName, "image");
             return ResponseEntity.ok(ApiResponse.success(imageSaveResponseDto));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
@@ -53,7 +53,7 @@ public class ImageController {
     @GetMapping("/{imageId}/presigned-url")
     public ResponseEntity<ApiResponse<ImageLoadResponseDto>> getPresignedGetUrl(@PathVariable long imageId, @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            ImageLoadResponseDto imageLoadResponseDto = imageService.getPresignedGetUrl(imageId, Long.parseLong(userDetails.getUsername()));
+            ImageLoadResponseDto imageLoadResponseDto = imageService.getPresignedGetUrl(imageId, Long.parseLong(userDetails.getUsername()), "image");
             return ResponseEntity.ok(ApiResponse.success(imageLoadResponseDto));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());

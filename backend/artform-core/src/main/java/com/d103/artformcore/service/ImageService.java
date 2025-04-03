@@ -27,10 +27,10 @@ public class ImageService {
     private final S3Service s3Service;
 
     @Transactional
-    public ImageSaveResponseDto getPresignedPutUrl(String fileType, String fileName) {
+    public ImageSaveResponseDto getPresignedPutUrl(String fileType, String fileName, String service) {
         String uploadFileName = fileName.substring(0, fileName.lastIndexOf("."))
                 + "_" + UUID.randomUUID().toString() + fileName.substring(fileName.lastIndexOf("."));
-        String presignedUrl = s3Service.createPresignedPutUrl("artform-data", "image/" + uploadFileName, fileType);
+        String presignedUrl = s3Service.createPresignedPutUrl("artform-data", service + "/" + uploadFileName, fileType);
         if (presignedUrl.isEmpty()) {
             throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
         }
@@ -57,7 +57,7 @@ public class ImageService {
         }
     }
 
-    public ImageLoadResponseDto getPresignedGetUrl(long imageId, long userId) {
+    public ImageLoadResponseDto getPresignedGetUrl(long imageId, long userId, String service) {
         Image image = imageRepository.findById(imageId)
                 .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
         // 삭제 여부 확인
@@ -71,7 +71,7 @@ public class ImageService {
         }
 
         String uploadFileName = image.getUploadFileName();
-        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", "image/" + uploadFileName);
+        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", service + "/" + uploadFileName);
         if (presignedUrl.isEmpty()) {
             throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
         }
@@ -86,7 +86,7 @@ public class ImageService {
         System.out.println(imageList);
         List<ImageLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Image image : imageList) {
-            presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId(), userId));
+            presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId(), userId, "image"));
         }
         return presignedUrlDtoList;
     }
@@ -99,7 +99,7 @@ public class ImageService {
 
         List<ImageLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Image image : imageList) {
-            presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId(), userId));
+            presignedUrlDtoList.add(getPresignedGetUrl(image.getImageId(), userId, "image"));
         }
         return presignedUrlDtoList;
     }
@@ -107,7 +107,7 @@ public class ImageService {
     public List<String> getPresignedGetUrlLikedList(List<Long> imageIdList, long userId) {
         List<String> presignedUrlList = new ArrayList<>();
         for (long imageId : imageIdList) {
-            presignedUrlList.add(getPresignedGetUrl(imageId, userId).getPresignedUrl());
+            presignedUrlList.add(getPresignedGetUrl(imageId, userId, "image").getPresignedUrl());
         }
         return presignedUrlList;
     }
