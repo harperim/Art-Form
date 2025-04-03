@@ -74,6 +74,38 @@ public class ModelService {
         return new ModelLoadResponseDto(model, presignedUrl);
     }
 
+    public List<ModelLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId) {
+        List<Model> modelList = modelRepository.findByIsPublicTrueAndDeletedAtIsNull(
+                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
+        ).getContent();
+
+        List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
+        for (Model model : modelList) {
+            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId));
+        }
+        return presignedUrlDtoList;
+    }
+
+    public List<ModelLoadResponseDto> getPresignedGetUrlMyList(long userId) {
+        List<Model> modelList = modelRepository.findByUserIdAndDeletedAtIsNull(userId);
+
+        List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
+        for (Model model : modelList) {
+            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId));
+        }
+        return presignedUrlDtoList;
+    }
+
+    public List<ModelLoadResponseDto> getPresignedGetUrlHotList(int page, long userId) {
+        List<Model> modelList = modelRepository.findByIsPublicTrueAndDeletedAtIsNull(
+                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "likeCount"))
+        ).getContent();
+        List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
+        for (Model model : modelList) {
+            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId));
+        }
+        return presignedUrlDtoList;
+    }
 
     public Model deleteModel(Long modelId) {
         Model model = modelRepository.findById(modelId).orElseThrow(() -> {
@@ -99,25 +131,4 @@ public class ModelService {
         }
     }
 
-    public List<ModelLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId) {
-        List<Model> modelList = modelRepository.findByIsPublicTrueAndDeletedAtIsNull(
-                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
-        ).getContent();
-
-        List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
-        for (Model model : modelList) {
-            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId));
-        }
-        return presignedUrlDtoList;
-    }
-
-    public List<ModelLoadResponseDto> getPresignedGetUrlMyList(long userId) {
-        List<Model> modelList = modelRepository.findByUserIdAndDeletedAtIsNull(userId);
-
-        List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
-        for (Model model : modelList) {
-            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId));
-        }
-        return presignedUrlDtoList;
-    }
 }

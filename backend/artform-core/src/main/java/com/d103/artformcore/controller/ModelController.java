@@ -82,6 +82,20 @@ public class ModelController {
         }
     }
 
+    @GetMapping("/hot")
+    public ResponseEntity<?> getPresignedGetUrlHotList(@AuthenticationPrincipal UserDetails userDetails,
+                                                       @RequestParam int page) {
+        try {
+            // userDetail.getUserName()은 sub값을 불러옴.
+            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlHotList(page, Long.parseLong(userDetails.getUsername()));
+            return ResponseEntity.ok(ApiResponse.success(modelLoadResponseDtoList));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(errorResponse));
+        }
+    }
+
     @DeleteMapping("/{modelId}")
     public ResponseEntity<?> deleteModel(@PathVariable Long modelId) {
         try {
