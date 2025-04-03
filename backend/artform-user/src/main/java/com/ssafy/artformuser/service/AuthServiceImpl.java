@@ -1,6 +1,7 @@
 package com.ssafy.artformuser.service;
 
 import com.ssafy.artformuser.dao.RedisDao;
+import com.ssafy.artformuser.dto.JwtTokenDto;
 import com.ssafy.artformuser.dto.LoginRequestDto;
 import com.ssafy.artformuser.dto.ResponseDto;
 import com.ssafy.artformuser.dto.TokenRefreshResponseDto;
@@ -49,6 +50,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public TokenRefreshResponseDto refreshAccessToken(String refreshToken) {
 
+        if (tokenBlackListService.isBlacklisted(refreshToken)) {
+            throw new JwtAuthenticationException("이미 무효화된 토큰입니다. 다시 로그인해주세요.");
+        }
+
         if (refreshToken == null || !jwtTokenProvider.validateRefreshToken(refreshToken)) {
             throw new InvalidTokenException("유효하지 않은 Refresh Token입니다");
         }
@@ -73,9 +78,22 @@ public class AuthServiceImpl implements AuthService {
         long now = System.currentTimeMillis();
         Date accessTokenExpireDate = new Date(now + jwtTokenProvider.getAccessTokenExpireTime());
         String accessToken = jwtTokenProvider.generateAccessToken(String.valueOf(userId), authorities, accessTokenExpireDate);
+
+        // 새 리프래시 토큰 생성
+        Date refreshTokenExpireDate = new Date(now + jwtTokenProvider.getRefreshTokenExpireTime());
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(String.valueOf(userId), refreshTokenExpireDate);
+
+        // 기존 리프래시 토큰 블랙리스트에 추가 (선택적)
+        tokenBlackListService.addBlacklist(refreshToken);
+
+        JwtTokenDto jwtTokenDto = JwtTokenDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(newRefreshToken)
+                .build();
+
         return TokenRefreshResponseDto.builder()
                 .msg("재발급 성공")
-                .refreshToken(accessToken)
+                .data(jwtTokenDto)
                 .build();
 
     }
