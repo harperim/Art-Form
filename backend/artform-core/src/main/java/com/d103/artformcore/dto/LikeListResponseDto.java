@@ -2,12 +2,14 @@ package com.d103.artformcore.dto;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class PresignedUrlDto {
-    String presignedUrl;
-    String uploadFileName;
+public class LikeListResponseDto {
+    String msg;
+    List<LikeResponseDto> data;
 }
