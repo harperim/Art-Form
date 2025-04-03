@@ -38,6 +38,7 @@ public class SecurityConfig {
         MvcRequestMatcher[] permitAllList = {
                 mvc.pattern("/user/auth/login"), mvc.pattern("/user/signup"),
                 mvc.pattern("/user/email-check/*"),mvc.pattern("/user/nickname-check/*"),
+                mvc.pattern("/user/auth/oauth/accesstoken")
         };
 
         MvcRequestMatcher[] swaggerPatterns = {
