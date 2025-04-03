@@ -57,9 +57,13 @@ public class ImageService {
         }
     }
 
-    public ImageLoadResponseDto getPresignedGetUrlByUploadFileName(String uploadFileName, long userId, String service) {
-        long imageId = imageRepository.findByUploadFileName(uploadFileName).getImageId();
-        return getPresignedGetUrl(imageId, userId, service);
+    public List<ImageLoadResponseDto> getPresignedGetUrlByUploadFileName(List<String> uploadFileNameList, long userId, String service) {
+        List<ImageLoadResponseDto> imageLoadResponseDtoList = new ArrayList<>();
+        for (String upfile : uploadFileNameList) {
+            ImageLoadResponseDto imageLoadResponseDto = getPresignedGetUrl(imageRepository.findByUploadFileName(upfile).getImageId(), userId, service);
+            imageLoadResponseDtoList.add(imageLoadResponseDto);
+        }
+        return imageLoadResponseDtoList;
     }
 
     public ImageLoadResponseDto getPresignedGetUrl(long imageId, long userId, String service) {
