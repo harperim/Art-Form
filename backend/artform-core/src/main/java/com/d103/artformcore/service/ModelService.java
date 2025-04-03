@@ -36,16 +36,18 @@ public class ModelService {
     }
 
     public Model saveMetadata(ModelSaveDto modelSaveDto) {
-        Model model = Model.builder()
-                .modelName(modelSaveDto.getModelName())
-                .userId(modelSaveDto.getUserId())
-                .isPublic(modelSaveDto.isPublic())
-                .description(modelSaveDto.getDescription())
-                .uploadFileName(modelSaveDto.getUploadFileName())
-                .build();
         try {
+            Model model = Model.builder()
+                    .modelName(modelSaveDto.getModelName())
+                    .userId(modelSaveDto.getUserId())
+                    .isPublic(modelSaveDto.isPublic())
+                    .description(modelSaveDto.getDescription())
+                    .uploadFileName(modelSaveDto.getUploadFileName())
+                    .createdAt(LocalDateTime.now())
+                    .build();
             return modelRepository.save(model);
         } catch (Exception e) {
+            System.out.println(e);
             throw new CustomException(ErrorCode.METADATA_SAVE_FAILED);
         }
     }

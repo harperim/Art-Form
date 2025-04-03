@@ -22,22 +22,17 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
         String method = request.getMethod();
-        String bearerToken = request.getHeader("Authorization");
 
         log.info("요청 정보: URI={}, METHOD={}", uri, method);
-        log.info("원본 Authorization 헤더: {}", bearerToken);
 
         String accessToken = getJwtFromRequest(request);
-        log.info("추출된 토큰: {}", accessToken);
 
         // 토큰 가지고 있을 경우
         if (accessToken != null) {
-            log.info("토큰 검증 시작");
             if (jwtTokenValidator.validateAccessToken(accessToken)) {
                 log.info("토큰 검증 성공");
                 Authentication authentication = jwtTokenValidator.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("인증 컨텍스트에 인증 정보 저장 완료");
             } else {
                 log.warn("토큰 검증 실패");
             }

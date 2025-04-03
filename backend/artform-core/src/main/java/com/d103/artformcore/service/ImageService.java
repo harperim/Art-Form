@@ -67,12 +67,8 @@ public class ImageService {
     }
 
     public ImageLoadResponseDto getPresignedGetUrl(long imageId, long userId, String service) {
-        Image image = imageRepository.findById(imageId)
+        Image image = imageRepository.findByImageIdAndDeletedAtIsNull(imageId)
                 .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
-        // 삭제 여부 확인
-        if (image.getDeletedAt() != null) {
-            throw new CustomException(ErrorCode.DELETED_IMAGE);
-        }
         // 인가 여부 확인
         if (!image.isPublic() && !image.getUserId().equals(userId)) {
             System.out.println(image.isPublic() + " " + image.getUserId());
@@ -85,7 +81,7 @@ public class ImageService {
             throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
         }
         Long modelId = image.getModel().getModelId();
-        return new ImageLoadResponseDto(modelId, userId, presignedUrl, uploadFileName);
+        return new ImageLoadResponseDto(image, presignedUrl);
     }
 
     public List<ImageLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId) {

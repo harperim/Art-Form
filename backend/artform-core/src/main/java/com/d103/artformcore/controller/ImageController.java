@@ -41,7 +41,6 @@ public class ImageController {
         try {
             Image image = imageService.saveMetadata(imageSaveDto);
             System.out.println(imageSaveDto);
-            System.out.println("!!!!!!!!!!!!" + imageSaveDto.isPublic());
             return ResponseEntity.ok(ApiResponse.success(image));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());

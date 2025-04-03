@@ -1,5 +1,6 @@
 package com.d103.artformcore.dto;
 
+import com.d103.artformcore.entity.Image;
 import lombok.*;
 
 @Getter
@@ -8,8 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ImageLoadResponseDto {
-    private Long modelId;
-    private Long userId;
+    private Image image;
     private String presignedUrl;
-    private String uploadFileName;
 }
