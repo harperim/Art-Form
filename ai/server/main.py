@@ -12,7 +12,7 @@ import requests
 from ai.train.augment import run_augmentation
 from ai.train.train import run_training
 from ai.apply.apply_img2img import run_inference
-from ai.apply.apply_text2img import run_inference_t2i
+from ai.apply.apply_text2img import run_text2img
 
 
 def cleanup_files_in_directory(directory_path):
@@ -31,7 +31,7 @@ def cleanup_files_in_directory(directory_path):
 app = FastAPI()
 
 CORE_SERVER_BASE = "http://j12d103.p.ssafy.io:8081"
-USER_SERVER_BASE = "http://j12d103.p.ssafy.io:8080"
+USER_SERVER_BASE = "http://j12d103.p.ssafy.io:8082"
 
 authorization = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTc0MzkxMzc4MH0.d9ho84eCf1ea_Vh-f2PjpoeOb12Xlm1fhIg2hFfo7mk'
 
@@ -207,8 +207,8 @@ async def apply_endpoint(
     orig_upload_filename = orig_presigned_data["data"]["uploadFileName"]
 
     result_mime_type, _ = mimetypes.guess_type(result_image_path)
-    if not mime_type:
-        mime_type = "application/octet-stream"
+    if not result_mime_type:
+        result_mime_type = "application/octet-stream"
     # Core 서버에 presigned URL 요청 (변환 이미지)
     async with httpx.AsyncClient() as client:
         presigned_result_resp = await client.get(
@@ -352,58 +352,58 @@ async def apply_endpoint(
     model_dir = os.path.join("ai", "img_model", producer_id, model_name)
     if not os.path.exists(model_dir):
         raise HTTPException(status_code=404, detail="모델을 찾을 수 없습니다.")
-    result_image_path = run_inference_t2i(model_dir, prompt=str(prompt), model_name=str(model_name), strength_str=strength)
+    result_image_path = run_text2img(model_dir, prompt=str(prompt), model_name=str(model_name), strength_str=strength)
 
     result_mime_type, _ = mimetypes.guess_type(result_image_path)
-    if not mime_type:
-        mime_type = "application/octet-stream"
-    # Core 서버에 presigned URL 요청 (변환 이미지)
-    async with httpx.AsyncClient() as client:
-        presigned_result_resp = await client.get(
-            f"{CORE_SERVER_BASE}/image/presigned-url",
-            headers={"Authorization": authorization,
-                    "accept": "application/json"
-                    },
-            params={"fileType": result_mime_type, "fileName": Path(result_image_path).name}
-        )
+    if not result_mime_type:
+        result_mime_type = "application/octet-stream"
+    # # Core 서버에 presigned URL 요청 (변환 이미지)
+    # async with httpx.AsyncClient() as client:
+    #     presigned_result_resp = await client.get(
+    #         f"{CORE_SERVER_BASE}/image/presigned-url",
+    #         headers={"Authorization": authorization,
+    #                 "accept": "application/json"
+    #                 },
+    #         params={"fileType": result_mime_type, "fileName": Path(result_image_path).name}
+    #     )
   
-    if presigned_result_resp.status_code != 200:
-        raise HTTPException(status_code=500, detail="변환 이미지 presigned URL 요청에 실패했습니다.")
-    result_presigned_data = presigned_result_resp.json()
-    if not result_presigned_data.get("success"):
-        raise HTTPException(status_code=500, detail="변환 이미지 presigned URL 발급 실패")
-    result_presigned_url = result_presigned_data["data"]["presignedUrl"]
-    result_upload_filename = result_presigned_data["data"]["uploadFileName"]
+    # if presigned_result_resp.status_code != 200:
+    #     raise HTTPException(status_code=500, detail="변환 이미지 presigned URL 요청에 실패했습니다.")
+    # result_presigned_data = presigned_result_resp.json()
+    # if not result_presigned_data.get("success"):
+    #     raise HTTPException(status_code=500, detail="변환 이미지 presigned URL 발급 실패")
+    # result_presigned_url = result_presigned_data["data"]["presignedUrl"]
+    # result_upload_filename = result_presigned_data["data"]["uploadFileName"]
    
-    # presigned URL을 사용하여 변환 이미지 업로드 (HTTP PUT)
-    with open(result_image_path, "rb") as f:
-        result_file_content = f.read()
-    async with httpx.AsyncClient() as client:
-        upload_result_resp = await client.put(
-            result_presigned_url, 
-            content=result_file_content,
-            headers={"Content-Type": result_mime_type})
-    if upload_result_resp.status_code not in (200, 201):
-        raise HTTPException(status_code=500, detail="변환 이미지 업로드에 실패했습니다.")
+    # # presigned URL을 사용하여 변환 이미지 업로드 (HTTP PUT)
+    # with open(result_image_path, "rb") as f:
+    #     result_file_content = f.read()
+    # async with httpx.AsyncClient() as client:
+    #     upload_result_resp = await client.put(
+    #         result_presigned_url, 
+    #         content=result_file_content,
+    #         headers={"Content-Type": result_mime_type})
+    # if upload_result_resp.status_code not in (200, 201):
+    #     raise HTTPException(status_code=500, detail="변환 이미지 업로드에 실패했습니다.")
    
-    # Core 서버에 업로드 완료 등록 요청
-    register_payload = {
-        "modelId": model_id,
-        "userId": user_id,
-        "isPublic": "true",
-        "uploadFileName": result_upload_filename
-    }
+    # # Core 서버에 업로드 완료 등록 요청
+    # register_payload = {
+    #     "modelId": model_id,
+    #     "userId": user_id,
+    #     "isPublic": "true",
+    #     "uploadFileName": result_upload_filename
+    # }
     
     
-    async with httpx.AsyncClient() as client:
-        register_resp = await client.post(
-            f"{CORE_SERVER_BASE}/image/metadata",
-            json=register_payload,
-            headers={"Authorization": authorization}
-        )
-    if register_resp.status_code != 200:
-        raise HTTPException(status_code=500, detail="이미지 등록에 실패했습니다.")
-    register_data = register_resp.json()
+    # async with httpx.AsyncClient() as client:
+    #     register_resp = await client.post(
+    #         f"{CORE_SERVER_BASE}/image/metadata",
+    #         json=register_payload,
+    #         headers={"Authorization": authorization}
+    #     )
+    # if register_resp.status_code != 200:
+    #     raise HTTPException(status_code=500, detail="이미지 등록에 실패했습니다.")
+    # register_data = register_resp.json()
 
     # multipart 메시지 구성
     boundary = "myboundary"
@@ -424,7 +424,7 @@ async def apply_endpoint(
     body = b"".join(parts)
     
     # 임시 파일 삭제
-    os.remove(result_image_path)
+    # os.remove(result_image_path)
     
     # multipart 응답 전송
     headers = {"Content-Type": f"multipart/mixed; boundary={boundary}"}
