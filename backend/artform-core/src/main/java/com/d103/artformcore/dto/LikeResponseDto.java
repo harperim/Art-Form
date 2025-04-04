@@ -11,4 +11,5 @@ public class LikeResponseDto {
     private String imageSrc;
     private String userId;
     private String modelId;
+    private String modelName;
 }
