@@ -1,9 +1,6 @@
 package com.d103.artformcore.service;
 
 import com.d103.artformcore.dto.ImageLoadResponseDto;
-import com.d103.artformcore.dto.ImageSaveResponseDto;
-import com.d103.artformcore.dto.PutReviewResponseDto;
-import com.d103.artformcore.dto.ResponseDto;
 import com.d103.artformcore.dto.review.ReviewDto;
 import com.d103.artformcore.dto.review.ReviewListDto;
 import com.d103.artformcore.dto.review.ReviewRequestDto;
@@ -134,13 +131,13 @@ public class ReviewService {
     // Presigned url 받아오기
     private void processPresignedUrls(List<ReviewDto> reviewDtos, List<String> imageFileNames, Long userId) {
         // 이미지 서비스에서 presigned URL 요청
-            List<ImageLoadResponseDto> responseList = imageService.getPresignedGetUrlByUploadFileName(
-                    imageFileNames, userId, "review");
+        List<ImageLoadResponseDto> responseList = imageService.getPresignedGetUrlByUploadFileName(
+                imageFileNames, userId, "review");
 
         // URL 매핑 생성
         Map<String, String> imageUrlMap = new HashMap<>();
         for (ImageLoadResponseDto response : responseList) {
-            String imageName = response.getUploadFileName();
+            String imageName = response.getImage().getUploadFileName();
             String presignedUrl = response.getPresignedUrl();
             imageUrlMap.put(imageName, presignedUrl);
         }

@@ -1,6 +1,5 @@
 package com.d103.artformcore.config;
 
-import com.d103.artformcore.filter.RequestLoggingFilter;
 import com.d103.artformcore.security.JwtAuthenticationEntryPoint;
 import com.d103.artformcore.security.JwtFilter;
 import com.d103.artformcore.security.JwtTokenValidator;
