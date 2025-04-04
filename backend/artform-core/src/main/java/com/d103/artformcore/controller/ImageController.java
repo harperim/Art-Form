@@ -114,6 +114,23 @@ public class ImageController {
         }
     }
 
+    @Operation(summary = "모델로 만든 이미지 Presigned URL 요청", description = "특정 모델로 만든 이미지의 Presigned URL List를 요청합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "처리 성공!"),
+                    @ApiResponse(responseCode = "500", description = "오류 발생!"),
+            })
+    @GetMapping("/model/{modelId}/presigned-url")
+    public ResponseEntity<ApiResponses<List<ImageLoadResponseDto>>> getPresignedGetUrlList(@PathVariable long modelId, @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlList(modelId, Long.parseLong(userDetails.getUsername()));
+            return ResponseEntity.ok(ApiResponses.success(imageLoadResponseDtoList));
+        } catch (CustomException e) {
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponses.error(errorResponse));
+        }
+    }
+
     @Operation(summary = "이미지 삭제",
             description = "특정 이미지를 삭제 처리합니다",
             responses = {

@@ -8,6 +8,7 @@ import com.d103.artformcore.entity.Model;
 import com.d103.artformcore.exception.CustomException;
 import com.d103.artformcore.exception.ErrorCode;
 import com.d103.artformcore.repository.ImageRepository;
+import com.d103.artformcore.repository.ModelRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ImageService {
     private final ImageRepository imageRepository;
+    private final ModelRepository modelRepository;
     private final S3Service s3Service;
 
     @Transactional
@@ -125,4 +127,15 @@ public class ImageService {
         return imageRepository.save(image);
     }
 
+    public List<ImageLoadResponseDto> getPresignedGetUrlList(long modelId, long userId) {
+        modelRepository.findById(modelId).orElseThrow(() -> {
+            throw new CustomException(ErrorCode.MODEL_NOT_FOUND);
+        });
+        List<Image> imageList = imageRepository.findByModel_ModelIdAndDeletedAtIsNullAndIsPublicTrue(modelId);
+        List<ImageLoadResponseDto> imageLoadResponseDtoList = new ArrayList<>();
+        for (Image image : imageList) {
+            imageLoadResponseDtoList.add(getPresignedGetUrl(image.getImageId(), userId, "image"));
+        }
+        return imageLoadResponseDtoList;
+    }
 }
