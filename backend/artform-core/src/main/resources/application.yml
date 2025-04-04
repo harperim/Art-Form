@@ -51,4 +51,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "prometheus"
+        include: "*"
+  server:
+    port: 1111 # 접근 포트 설정
+#    base-path: # 접근 경로 설정
