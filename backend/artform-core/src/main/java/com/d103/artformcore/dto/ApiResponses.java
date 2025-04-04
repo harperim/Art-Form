@@ -6,20 +6,20 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ApiResponse<T> {
+public class ApiResponses<T> {
     private boolean success;
     private T data;
     private ErrorResponse error;
 
-    public static <T> ApiResponse<T> success(T data) {
-        ApiResponse<T> response = new ApiResponse<>();
+    public static <T> ApiResponses<T> success(T data) {
+        ApiResponses<T> response = new ApiResponses<>();
         response.success = true;
         response.data = data;
         return response;
     }
 
-    public static <T> ApiResponse<T> error(ErrorResponse errorResponse) {
-        ApiResponse<T> response = new ApiResponse<>();
+    public static <T> ApiResponses<T> error(ErrorResponse errorResponse) {
+        ApiResponses<T> response = new ApiResponses<>();
         response.success = false;
         response.error = errorResponse;
         return response;
