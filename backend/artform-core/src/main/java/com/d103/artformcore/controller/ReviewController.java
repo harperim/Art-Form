@@ -24,9 +24,13 @@ public class ReviewController {
                     @ApiResponse(responseCode = "200", description = "처리 성공!"),
             })
     @GetMapping("/{modelId}")
-    public ResponseEntity<ReviewListDto> getModelReviews(@PathVariable("modelId") Long modelId, Authentication authentication) {
+    public ResponseEntity<ReviewListDto> getModelReviews(@PathVariable("modelId") Long modelId, Authentication authentication,
+                                                         @RequestHeader("Authorization") String authHeader) {
+
         Long userId = Long.valueOf(authentication.getName());
-        ReviewListDto reviews = reviewService.getModelReviews(modelId, userId);
+        String accessToken = authHeader.substring(7);
+
+        ReviewListDto reviews = reviewService.getModelReviews(modelId, userId, accessToken);
         return ResponseEntity.ok(reviews);
     }
 
@@ -35,10 +39,11 @@ public class ReviewController {
                     @ApiResponse(responseCode = "200", description = "처리 성공!"),
             })
     @PostMapping("/{modelId}")
-    public ResponseEntity<ReviewListDto> createReview(@PathVariable("modelId") Long modelId, @RequestBody ReviewRequestDto reviewDto, Authentication authentication) {
-
+    public ResponseEntity<ReviewListDto> createReview(@PathVariable("modelId") Long modelId, @RequestBody ReviewRequestDto reviewDto, Authentication authentication,
+                                                      @RequestHeader("Authorization") String authHeader) {
         Long userId = Long.valueOf(authentication.getName());
-        ReviewListDto responseDto = reviewService.addReview(modelId, reviewDto, userId);
+        String accessToken = authHeader.substring(7);
+        ReviewListDto responseDto = reviewService.addReview(modelId, reviewDto, userId, accessToken);
         return ResponseEntity.ok(responseDto);
     }
 
@@ -47,9 +52,11 @@ public class ReviewController {
                     @ApiResponse(responseCode = "200", description = "처리 성공!"),
             })
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<ReviewListDto> deleteReview(@PathVariable("reviewId") Long reviewId, Authentication authentication) {
+    public ResponseEntity<ReviewListDto> deleteReview(@PathVariable("reviewId") Long reviewId, Authentication authentication,
+                                                      @RequestHeader("Authorization") String authHeader) {
         Long userId = Long.valueOf(authentication.getName());
-        ReviewListDto reviewListDto = reviewService.deleteReview(reviewId,userId);
+        String accessToken = authHeader.substring(7);
+        ReviewListDto reviewListDto = reviewService.deleteReview(reviewId,userId,accessToken);
         return ResponseEntity.ok(reviewListDto);
     }
 }
