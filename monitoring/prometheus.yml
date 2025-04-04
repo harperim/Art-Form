@@ -3,4 +3,4 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
     static_configs:
-      - targets: ['j12d103.p.ssay.io:1111']
+      - targets: ['j12d103.p.ssafy.io:1111']
