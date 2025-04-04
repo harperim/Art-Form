@@ -6,10 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 
 import colors from '~/constants/colors';
-import type { Model } from '~/types/model';
+import type { ModelWithThumbnail } from '~/types/model';
 import { useModel } from '~/context/ModelContext';
 import { useLocalSearchParams } from 'expo-router';
 import { mockModels } from '~/constants/mockModels';
+
 import AnimatedModelCard from '~/components/AnimatedModelCard';
 
 export default function StoreScreen() {
@@ -18,7 +19,7 @@ export default function StoreScreen() {
   const [sort, setSort] = useState<'latest' | 'popular'>('latest');
   const { selectedModel, setSelectedModel } = useModel();
 
-  const openModal = (item: Model) => {
+  const handleCardPress = (item: ModelWithThumbnail) => {
     setSelectedModel(item);
   };
 
@@ -93,7 +94,7 @@ export default function StoreScreen() {
                   key={`${item.id}-${sort}`}
                   item={item}
                   index={index}
-                  onPress={() => openModal(item)}
+                  onPress={() => handleCardPress(item)}
                   disableAnimation={selectedModel}
                 />
               ))}
@@ -104,7 +105,7 @@ export default function StoreScreen() {
                   key={`${item.id}-${sort}`}
                   item={item}
                   index={index + 0.5}
-                  onPress={() => openModal(item)}
+                  onPress={() => handleCardPress(item)}
                   disableAnimation={selectedModel}
                 />
               ))}
