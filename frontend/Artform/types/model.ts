@@ -1,23 +1,23 @@
-import type { ImageSourcePropType } from 'react-native';
+// types/model.ts
+
+export type RawModel = {
+  modelId: number;
+  userId: number;
+  modelName: string;
+  description: string;
+  likeCount: number;
+  uploadFileName: string;
+  thumbnailId: number;
+  createdAt: string;
+  deletedAt: string | null;
+  public: boolean;
+};
 
 export type Model = {
-  id: string;
-  title: string;
-  image: ImageSourcePropType;
+  model: RawModel;
+  userName: string;
 };
 
-export type Review = {
-  id: string;
-  nickname: string;
-  comment: string;
-  date: string;
-  image: ImageSourcePropType;
-};
-
-export type ModelDetail = Model & {
-  artist: string;
-  liked: boolean;
-  likes: number;
-  relatedImages: ImageSourcePropType[];
-  reviews: Review[];
+export type ModelWithThumbnail = Model & {
+  thumbnailUrl: string;
 };

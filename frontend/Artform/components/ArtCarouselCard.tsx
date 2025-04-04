@@ -1,9 +1,7 @@
-// components/ArtCarouselCard.tsx
-import type { ImageSourcePropType } from 'react-native';
 import { View, Image, Text, StyleSheet } from 'react-native';
 
 type Props = {
-  image: ImageSourcePropType; // ImageSourcePropType
+  image: string;
   title: string;
   subtitle?: string;
 };
@@ -11,7 +9,7 @@ type Props = {
 export default function ArtCarouselCard({ image, title, subtitle }: Props) {
   return (
     <View style={styles.card}>
-      <Image source={image} style={styles.image} />
+      <Image source={{ uri: image }} style={styles.image} />
       <Text style={styles.title} numberOfLines={1}>
         {title}
       </Text>
@@ -33,6 +31,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 6,
     resizeMode: 'cover',
+    backgroundColor: '#eee', // ✅ 썸네일 없을 때 깜빡임 방지용
   },
   title: {
     fontSize: 14,
