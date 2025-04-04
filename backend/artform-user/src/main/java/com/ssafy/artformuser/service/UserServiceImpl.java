@@ -39,22 +39,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean checkEmailAvailability(String email) {
-        return userRepository.findByEmail(email).isPresent();
+    public ResponseCheckDto checkEmailAvailability(String email) {
+        return new ResponseCheckDto("체크 완료",userRepository.findByEmail(email).isEmpty());
     }
 
     @Override
-    public boolean checkNicknameAvailability(String nickname) {
-        return userRepository.findByNickname(nickname).isPresent();
+    public ResponseCheckDto checkNicknameAvailability(String nickname) {
+        return new ResponseCheckDto("체크 완료",userRepository.findByNickname(nickname).isEmpty());
     }
 
     @Override
     public UserResponseDto getMyUserInfo() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AuthenticationException("인증 정보가 없습니다.");
-        }
 
         // accessToken에서 추출한 userId 가져오기
         Long userId = Long.valueOf(authentication.getName());

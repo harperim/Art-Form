@@ -27,38 +27,63 @@ public class UserController {
     @Operation(summary = "회원가입",
             responses = {
                     @ApiResponse(responseCode = "200", description = "회원가입 성공"),
-                    @ApiResponse(responseCode = "400", description = "회원가입 실패")
+                    @ApiResponse(responseCode = "500", description = "회원가입 실패"),
+                    @ApiResponse(responseCode = "409", description = "중복된 이메일 / 닉네임")
             })
     @PostMapping("/signup")
     public ResponseEntity<ResponseDto> signup(@Valid @RequestBody SignupRequestDto signupRequestDto) {
         userService.signup(signupRequestDto);
         return ResponseEntity.ok(new ResponseDto("회원가입 성공"));
     }
-
+    @Operation(summary = "회원탈퇴",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "회원탈퇴"),
+                    @ApiResponse(responseCode = "500", description = "회원탈퇴 실패"),
+            })
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteParent(@PathVariable("userId") Long userId) {
+    public ResponseEntity<ResponseDto> deleteUser(@PathVariable("userId") Long userId) {
         userService.deleteUser(userId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new ResponseDto("회원 탈퇴 성공"));
     }
 
+    @Operation(summary = "이메일 중복 체크",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "중복체크 성공"),
+                    @ApiResponse(responseCode = "500", description = "중복체크 실패"),
+            })
     @GetMapping("/email-check/{email}")
-    public ResponseEntity<Boolean> emailCheck(@PathVariable("email") String email) {
-        Boolean isAvailable = userService.checkEmailAvailability(email);
-        return ResponseEntity.ok(isAvailable);
+    public ResponseEntity<ResponseCheckDto> emailCheck(@PathVariable("email") String email) {
+        return ResponseEntity.ok(userService.checkEmailAvailability(email));
     }
 
+    @Operation(summary = "닉네임 중복 체크",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "중복체크 성공"),
+                    @ApiResponse(responseCode = "500", description = "중복체크 실패"),
+            })
     @GetMapping("/nickname-check/{nickname}")
-    public ResponseEntity<Boolean> nicknameCheck(@PathVariable("nickname") String nickname) {
-        Boolean isAvailable = userService.checkNicknameAvailability(nickname);
-        return ResponseEntity.ok(isAvailable);
+    public ResponseEntity<ResponseCheckDto> nicknameCheck(@PathVariable("nickname") String nickname) {
+        return ResponseEntity.ok(userService.checkNicknameAvailability(nickname));
     }
 
+    @Operation(summary = "내 정보 조회",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "유저 정보를 찾을 수 없습니다."),
+                    @ApiResponse(responseCode = "500", description = "조회 실패"),
+            })
     @GetMapping
     public ResponseEntity<UserResponseDto> getMyInfo() {
         UserResponseDto myUserInfo = userService.getMyUserInfo();
         return ResponseEntity.ok(myUserInfo);
     }
 
+    @Operation(summary = "유저 정보 조회",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공"),
+                    @ApiResponse(responseCode = "404", description = "유저 정보를 찾을 수 없습니다."),
+                    @ApiResponse(responseCode = "500", description = "조회 실패"),
+            })
     @GetMapping("/{userId}")
     public ResponseEntity<UserResponseDto> getUser(@PathVariable("userId") Long userId) {
         UserResponseDto userInfo = userService.getUserInfo(userId);

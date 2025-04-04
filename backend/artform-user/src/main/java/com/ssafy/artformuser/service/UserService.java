@@ -8,9 +8,9 @@ public interface UserService {
 
     void deleteUser(Long userId);
 
-    boolean checkEmailAvailability(String email);
+    ResponseCheckDto checkEmailAvailability(String email);
 
-    boolean checkNicknameAvailability(String nickname);
+    ResponseCheckDto checkNicknameAvailability(String nickname);
 
     UserResponseDto getMyUserInfo();
 
