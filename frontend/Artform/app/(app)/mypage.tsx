@@ -1,21 +1,21 @@
 // app/(app)/mypage.tsx
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '~/lib/auth-context';
+import { useAuthActions } from '~/hooks/useAuthActions';
 
 export default function MyPageScreen() {
+  const { handleLogout } = useAuthActions();
   const router = useRouter();
-  const { logout } = useAuth();
 
-  const handleLogout = async () => {
-    await logout();
+  const onLogout = async () => {
+    await handleLogout();
     router.replace('/login');
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>마이페이지</Text>
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
+      <TouchableOpacity style={styles.button} onPress={onLogout}>
         <Text style={styles.buttonText}>로그아웃</Text>
       </TouchableOpacity>
     </View>
