@@ -30,7 +30,7 @@ public class ImageController {
     @Operation(summary = "이미지 업로드 Presigned URL 요청",
             description = "S3에 이미지 파일을 업로드하기 위한 Presigned URL을 요청합니다")
     @GetMapping("/presigned-url")
-    public ResponseEntity<?> getPresignedPutUrl(@RequestParam String fileType, @RequestParam String fileName) {
+    public ResponseEntity<ApiResponses<ImageSaveResponseDto>> getPresignedPutUrl(@RequestParam String fileType, @RequestParam String fileName) {
         try {
             ImageSaveResponseDto imageSaveResponseDto = imageService.getPresignedPutUrl(fileType, fileName, "image");
             return ResponseEntity.ok(ApiResponses.success(imageSaveResponseDto));
@@ -84,7 +84,7 @@ public class ImageController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @GetMapping("/recent")
-    public ResponseEntity<?> getPresignedGetUrlRecentList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponses<List<ImageLoadResponseDto>>> getPresignedGetUrlRecentList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails) {
         try {
             List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlRecentList(page, Long.parseLong(userDetails.getUsername()));
             return ResponseEntity.ok(ApiResponses.success(imageLoadResponseDtoList));
@@ -102,7 +102,7 @@ public class ImageController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @GetMapping("/my-gallery")
-    public ResponseEntity<?> getPresignedGetUrlMyList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponses<List<ImageLoadResponseDto>>> getPresignedGetUrlMyList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails) {
         try {
             // userDetail.getUserName()은 sub값을 불러옴.
             List<ImageLoadResponseDto> imageLoadResponseDtoList = imageService.getPresignedGetUrlMyList(page, Long.parseLong(userDetails.getUsername()));
@@ -121,7 +121,7 @@ public class ImageController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @DeleteMapping("/{imageId}")
-    public ResponseEntity<?> deleteImage(@PathVariable Long imageId) {
+    public ResponseEntity<ApiResponses<String>> deleteImage(@PathVariable Long imageId) {
         try {
             imageService.deleteImage(imageId);
             return ResponseEntity.ok(ApiResponses.success("이미지 삭제 처리 성공"));

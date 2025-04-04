@@ -84,7 +84,7 @@ public class ModelController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @GetMapping("/recent")
-    public ResponseEntity<?> getPresignedGetUrlRecentList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponses<List<ModelLoadResponseDto>>> getPresignedGetUrlRecentList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails) {
         try {
             List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlRecentList(page, Long.parseLong(userDetails.getUsername()));
             return ResponseEntity.ok(ApiResponses.success(modelLoadResponseDtoList));
@@ -101,7 +101,7 @@ public class ModelController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @GetMapping("/my-model")
-    public ResponseEntity<?> getPresignedGetUrlMyList(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponses<List<ModelLoadResponseDto>>> getPresignedGetUrlMyList(@AuthenticationPrincipal UserDetails userDetails) {
         try {
             // userDetail.getUserName()은 sub값을 불러옴.
             List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlMyList(Long.parseLong(userDetails.getUsername()));
@@ -119,7 +119,7 @@ public class ModelController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @GetMapping("/hot")
-    public ResponseEntity<?> getPresignedGetUrlHotList(@AuthenticationPrincipal UserDetails userDetails,
+    public ResponseEntity<ApiResponses<List<ModelLoadResponseDto>>> getPresignedGetUrlHotList(@AuthenticationPrincipal UserDetails userDetails,
                                                        @RequestParam int page) {
         try {
             // userDetail.getUserName()은 sub값을 불러옴.
@@ -138,7 +138,7 @@ public class ModelController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @GetMapping("/random")
-    public ResponseEntity<?> getPresignedGetUrlRandomList(@AuthenticationPrincipal UserDetails userDetails,
+    public ResponseEntity<ApiResponses<List<ModelLoadResponseDto>>> getPresignedGetUrlRandomList(@AuthenticationPrincipal UserDetails userDetails,
                                                        @RequestParam int count) {
         try {
             // userDetail.getUserName()은 sub값을 불러옴.
@@ -157,7 +157,7 @@ public class ModelController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @PostMapping("/edit/{modelId}")
-    public ResponseEntity<?> updateModelMetadata(@AuthenticationPrincipal UserDetails userDetails, @PathVariable long modelId, @RequestBody ModelEditDto modelEditDto) {
+    public ResponseEntity<ApiResponses<Model>> updateModelMetadata(@AuthenticationPrincipal UserDetails userDetails, @PathVariable long modelId, @RequestBody ModelEditDto modelEditDto) {
         try {
             Model model = modelService.updateModelMetadata(Long.parseLong(userDetails.getUsername()), modelId, modelEditDto);
             return ResponseEntity.ok(ApiResponses.success(model));
@@ -174,7 +174,7 @@ public class ModelController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @DeleteMapping("/{modelId}")
-    public ResponseEntity<?> deleteModel(@PathVariable Long modelId) {
+    public ResponseEntity<ApiResponses<String>> deleteModel(@PathVariable Long modelId) {
         try {
             modelService.deleteModel(modelId);
             return ResponseEntity.ok(ApiResponses.success("모델 삭제 처리 성공"));
