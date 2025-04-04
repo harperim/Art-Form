@@ -10,11 +10,15 @@ def run_augmentation(input_dir, output_dir, target_num_images):
 
     # 증강 정의
     augmentation = transforms.Compose([
-        transforms.Resize((512, 512)),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.3, hue=0.1),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomApply([transforms.GaussianBlur(kernel_size=3)], p=0.3),
-    ])
+    transforms.Resize((512, 512)),
+    # 좌우 반전
+    transforms.RandomHorizontalFlip(p=0.5),
+    # 약간의 밝기 조정
+    transforms.RandomApply([
+        transforms.ColorJitter(brightness=0.5, contrast=0.5)
+    ], p=0.2),  
+    transforms.ToTensor(),
+])
 
     # 입력 디렉토리의 이미지 목록
     image_paths = [

@@ -73,8 +73,9 @@ async def train_endpoint(
         with image_path.open("wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
 
-    # 데이터 증강 실행 (목표 50장)
-    target_num_images = 50
+    # 데이터 증강 실행 (목표 20장)
+    # LoRA는 데이터 효율성이 좋아서 20장 정도가 적당하다.
+    target_num_images = 20
     run_augmentation(input_dir=str(img_dir), output_dir=str(aug_dir), target_num_images=target_num_images)
 
     # 증강된 이미지로 모델 학습 실행
