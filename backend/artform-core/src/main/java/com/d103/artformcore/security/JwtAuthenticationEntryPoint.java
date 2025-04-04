@@ -17,19 +17,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         // Authorization 헤더 확인
-        String uri = request.getRequestURI();
-        String method = request.getMethod();
         String bearerToken = request.getHeader("Authorization");
-
-        log.info("인증 실패 요청 정보: URI={}, METHOD={}", uri, method);
-        log.info("인증 실패 시 Authorization 헤더: {}", bearerToken);
-
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            log.info("헤더 {}: {}", headerName, request.getHeader(headerName));
-        }
-        // 헤더확인 끝
 
         String errorMessage;
         if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {

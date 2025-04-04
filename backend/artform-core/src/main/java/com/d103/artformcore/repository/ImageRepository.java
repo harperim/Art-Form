@@ -7,10 +7,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.net.ContentHandler;
+import java.util.Optional;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
     Page<Image> findByUserId(Long userId, Pageable pageable);
     Page<Image> findByIsPublicTrueAndDeletedAtIsNull(Pageable pageable);
 
     Image findByUploadFileName(String uploadFileName);
+
+    Optional<Image> findByImageIdAndDeletedAtIsNull(long imageId);
 }

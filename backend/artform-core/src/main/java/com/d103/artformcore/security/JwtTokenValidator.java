@@ -33,8 +33,6 @@ public class JwtTokenValidator {
 
     // 액세스 토큰 검증
     public Boolean validateAccessToken(String token) {
-        log.info("토큰 검증 시작: {}...", token.substring(0, Math.min(20, token.length())));
-
         try {
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(key)

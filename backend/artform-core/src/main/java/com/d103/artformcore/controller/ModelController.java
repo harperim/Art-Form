@@ -36,7 +36,9 @@ public class ModelController {
     @PostMapping("/metadata")
     public ResponseEntity<ApiResponse<Model>> saveMetadata(@RequestBody ModelSaveDto modelSaveDto) {
         try {
+            System.out.println(modelSaveDto);
             Model model = modelService.saveMetadata(modelSaveDto);
+            System.out.println(model);
             return ResponseEntity.ok(ApiResponse.success(model));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());

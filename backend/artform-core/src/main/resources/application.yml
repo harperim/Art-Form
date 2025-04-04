@@ -45,3 +45,10 @@ springdoc:
 logging:
   level:
     com.d103.artformcore: DEBUG
+
+# prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "prometheus"
