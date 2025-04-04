@@ -22,7 +22,10 @@ public class Review {
     @JoinColumn(name = "model_id", nullable = false)
     private Model model;
 
-    @Column
+    @Column(nullable = true)
+    private String reviewImageName;
+
+    @Column(nullable = false)
     private Long userId;
 
     @Column(length = 255)
