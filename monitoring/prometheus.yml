@@ -1,6 +1,12 @@
 scrape_configs:
-  - job_name: 'artform_prometheus'
+  - job_name: 'artform-core-server'
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s
     static_configs:
-      - targets: ['j12d103.p.ssafy.io:1111']
+      - targets: ['artform-core-server:1111']
+  
+  - job_name: 'artform-user-server'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['artform-user-server:1111']
