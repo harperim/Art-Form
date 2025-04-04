@@ -1,13 +1,13 @@
 // app/(app)/mypage.tsx
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuth } from '~/lib/auth-context';
+import { useAuthActions } from '~/hooks/useAuthActions';
 import { useState, useMemo } from 'react';
 import Animated from 'react-native-reanimated';
 
 export default function MyPageScreen() {
   type MyContentFilter = '내가 만든 그림' | '내가 만든 모델' | '내가 좋아요한 모델';
-  const [selectedTab, setSeletedTab] = useState<MyContentFilter>('내가 만든 그림');
+  const [selectedTab, setSelectedTab] = useState<MyContentFilter>('내가 만든 그림');
   const content = useMemo(() => {
     switch (selectedTab) {
       case '내가 만든 그림':
@@ -19,30 +19,33 @@ export default function MyPageScreen() {
     }
   });
 
+  const { handleLogout } = useAuthActions();
   const router = useRouter();
-  const { logout } = useAuth();
 
-  const handleLogout = async () => {
-    await logout();
+  const onLogout = async () => {
+    await handleLogout();
     router.replace('/login');
   };
 
   const data = {
     profileImage: require('~/assets/images/review2.png'),
     username: '부리부리',
-    eamil: 'ssafy@naver.com',
+    email: 'ssafy@naver.com',
     follower: 0,
     following: 1,
   };
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.button} onPress={onLogout}>
+        <Text style={styles.buttonText}>로그아웃</Text>
+      </TouchableOpacity>
       {/* 유저 프로필 */}
       <View style={styles.userProfile}>
         <Image source={data.profileImage} style={styles.userProfileImage} />
         <View style={styles.userProfileInfo}>
           <Text style={styles.userName}>{data.username} 님</Text>
-          <Text style={styles.userEmail}>{data.eamil}</Text>
+          <Text style={styles.userEmail}>{data.email}</Text>
           <View style={styles.userFollowInfo}>
             <Text style={styles.userFollowTextStyle}>following {data.following}</Text>
             <Text style={styles.userFollowTextStyle}>follower {data.follower}</Text>
@@ -53,8 +56,8 @@ export default function MyPageScreen() {
       <View>
         <View style={styles.contentSelector}>
           <TouchableOpacity
-            style={styles.seletorContainner}
-            onPress={() => setSeletedTab('내가 만든 그림')}
+            style={styles.selectorContainer}
+            onPress={() => setSelectedTab('내가 만든 그림')}
           >
             <Text
               style={[styles.unselectedTab, selectedTab === '내가 만든 그림' && styles.selectedTab]}
@@ -63,8 +66,8 @@ export default function MyPageScreen() {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.seletorContainner}
-            onPress={() => setSeletedTab('내가 만든 모델')}
+            style={styles.selectorContainer}
+            onPress={() => setSelectedTab('내가 만든 모델')}
           >
             <Text
               style={[styles.unselectedTab, selectedTab === '내가 만든 모델' && styles.selectedTab]}
@@ -73,8 +76,8 @@ export default function MyPageScreen() {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.seletorContainner}
-            onPress={() => setSeletedTab('내가 좋아요한 모델')}
+            style={styles.selectorContainer}
+            onPress={() => setSelectedTab('내가 좋아요한 모델')}
           >
             <Text
               style={[
@@ -95,10 +98,6 @@ export default function MyPageScreen() {
           </View>
         </Animated.ScrollView>
       </View>
-
-      {/* <TouchableOpacity style={styles.button} onPress={handleLogout}>
-        <Text style={styles.buttonText}>로그아웃</Text>
-      </TouchableOpacity> */}
     </View>
   );
 }
@@ -157,7 +156,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F2D7D0',
     display: 'flex',
   },
-  seletorContainner: {
+  selectorContainer: {
     flex: 1,
     width: '100%',
     height: 50,

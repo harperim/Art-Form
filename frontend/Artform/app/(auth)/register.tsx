@@ -14,8 +14,10 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import FloatingLabelInput from '../../components/FloatingLabelInput';
+import { useAuthActions } from '~/hooks/useAuthActions';
 
 export default function RegisterScreen() {
+  const { handleRegister, checkNickname, checkEmail } = useAuthActions();
   const { width, height } = useWindowDimensions();
   const router = useRouter();
 
@@ -23,14 +25,18 @@ export default function RegisterScreen() {
   const [pw, setPw] = useState('');
   const [pwConfirm, setPwConfirm] = useState('');
   const [nickname, setNickname] = useState('');
+  const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
   const [securePw, setSecurePw] = useState(true);
   const [securePwConfirm, setSecurePwConfirm] = useState(true);
+  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
 
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   // ✅ 애니메이션 for title & subtitle
   const titleOpacity = useRef(new Animated.Value(0)).current;
   const titleTranslateY = useRef(new Animated.Value(20)).current;
   const subtitleOpacity = useRef(new Animated.Value(0)).current;
   const subtitleTranslateX = useRef(new Animated.Value(30)).current;
+  const emailDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     Animated.sequence([
@@ -73,27 +79,58 @@ export default function RegisterScreen() {
     return () => backHandler.remove();
   }, []);
 
-  const handleRegister = () => {
-    const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // 이메일 중복 체크
+  useEffect(() => {
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    if (!isValidEmail(email)) {
-      alert('올바른 이메일 형식이 아닙니다.');
+    if (!isValidEmail) {
+      setEmailAvailable(null);
       return;
     }
-    if (pw !== pwConfirm) {
-      alert('비밀번호가 일치하지 않습니다.');
+
+    if (emailDebounceRef.current) {
+      clearTimeout(emailDebounceRef.current);
+    }
+
+    emailDebounceRef.current = setTimeout(async () => {
+      const result = await checkEmail(email);
+      setEmailAvailable(result);
+    }, 500);
+
+    return () => {
+      if (emailDebounceRef.current) {
+        clearTimeout(emailDebounceRef.current);
+      }
+    };
+  }, [email]);
+
+  // 닉네임 중복 체크
+  useEffect(() => {
+    // 최소 글자 수 이상일 때만 검사
+    if (nickname.length < 2) {
+      setNicknameAvailable(null);
       return;
     }
-    if (nickname.length < 2 || nickname.length > 12) {
-      alert('닉네임은 2~12자 사이로 입력해주세요.');
-      return;
+
+    // 디바운스: 입력 후 500ms 동안 변화 없을 때만 체크
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
-    if (!email || !pw || !nickname) {
-      alert('모든 항목을 입력해주세요.');
-      return;
-    }
-    // TODO: 실제 서버 요청 등 처리
-    alert('회원가입 완료!');
+
+    debounceRef.current = setTimeout(async () => {
+      const isAvailable = await checkNickname(nickname);
+      setNicknameAvailable(isAvailable);
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [nickname]);
+
+  const onSubmit = () => {
+    handleRegister(email, pw, pwConfirm, nickname);
   };
 
   return (
@@ -140,6 +177,11 @@ export default function RegisterScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
         />
+        {email.length >= 5 && emailAvailable !== null && (
+          <Text style={{ color: emailAvailable ? '#00E676' : '#FF5252', marginBottom: 6 }}>
+            {emailAvailable ? '사용 가능한 이메일입니다.' : '사용할 수 없는 이메일입니다.'}
+          </Text>
+        )}
         <FloatingLabelInput
           label="Password"
           value={pw}
@@ -163,8 +205,12 @@ export default function RegisterScreen() {
           }
         />
         <FloatingLabelInput label="Nickname" value={nickname} onChangeText={setNickname} />
-
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        {nickname.length >= 2 && nicknameAvailable !== null && (
+          <Text style={{ color: nicknameAvailable ? '#00E676' : '#FF5252' }}>
+            {nicknameAvailable ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.'}
+          </Text>
+        )}
+        <TouchableOpacity style={styles.button} onPress={onSubmit}>
           <Text style={styles.buttonText}>회원가입</Text>
         </TouchableOpacity>
 

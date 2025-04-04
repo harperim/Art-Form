@@ -12,13 +12,13 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useAuth } from '~/lib/auth-context';
 import FloatingLabelInput from '~/components/FloatingLabelInput';
+import { useAuthActions } from '~/hooks/useAuthActions';
 
 export default function LoginScreen() {
   const { width, height } = useWindowDimensions();
   const router = useRouter();
-  const { login } = useAuth();
+  const { handleLogin } = useAuthActions();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secureText, setSecureText] = useState(true);
@@ -58,11 +58,15 @@ export default function LoginScreen() {
     ]).start();
   }, []);
 
-  const handleLogin = async () => {
-    // TODO: 실제 API 요청으로 대체 가능
-    const fakeToken = 'mocked-token';
-    await login(fakeToken);
-    router.replace('/home'); // ✅ 로그인 후 홈 화면으로 이동
+  const onLogin = async () => {
+    try {
+      await handleLogin(email, password);
+      console.debug('로그인 성공');
+
+      router.replace('/home');
+    } catch (err) {
+      console.debug('home으로 이동 방지');
+    }
   };
 
   return (
@@ -116,7 +120,7 @@ export default function LoginScreen() {
           }
         />
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+        <TouchableOpacity style={styles.loginButton} onPress={onLogin}>
           <Text style={styles.loginText}>로그인</Text>
         </TouchableOpacity>
 
