@@ -58,20 +58,8 @@ def run_training(image_folder, output_dir, model_name):
                 transforms.ToTensor(),
                 transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
             ])
-            self.prompts = [
-                f"a cute animal sitting on the ground, in the style of {model_name}",
-                f"a beautiful sunset over a calm lake, painted by {model_name}",
-                f"a person walking through a forest trail, in the style of {model_name}",
-                f"a cozy village covered in snow, {model_name} style",
-                f"a cup of tea on a wooden table, drawn by {model_name}",
-                f"a magical creature flying in the sky, in the style of {model_name}",
-                f"a portrait of a smiling child, painted by {model_name}",
-                f"a mountain landscape with mist, in the style of {model_name}",
-                f"a black and white ink painting of a crane, {model_name} drawing style",
-                f"a dreamy castle surrounded by clouds, in the style of {model_name}",
-                f"a dog sleeping under a tree, drawn by {model_name}",
-                f"a street at night with glowing lights, in the style of {model_name}"
-            ]
+            self.prompt = f"A drawing, in the style of {model_name}"
+
     
         def __len__(self):
             return len(self.image_paths)
@@ -79,7 +67,7 @@ def run_training(image_folder, output_dir, model_name):
         def __getitem__(self, idx):
             img = Image.open(self.image_paths[idx]).convert("RGB")
             img = self.transform(img)
-            prompt = random.choice(self.prompts)
+            prompt = self.prompts
             return {"pixel_values": img, "prompt": prompt}
     
     # 파이프라인 로딩 (Stable Diffusion)
