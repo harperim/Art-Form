@@ -8,6 +8,7 @@ import com.d103.artformcore.service.ModelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,16 +62,16 @@ public class ModelController {
         }
     }
 
-    @Operation(summary = "모델 상세 조회", description = "특정 모델의 상세 정보와 다운로드 URL을 조회합니다",
+    @Operation(summary = "모델 presigned url 조회", description = "특정 모델의 다운로드 URL을 조회합니다",
             responses = {
                     @ApiResponse(responseCode = "200", description = "처리 성공!"),
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @GetMapping("/{modelId}/presigned-url")
-    public ResponseEntity<ApiResponses<ModelLoadResponseDto>> getPresignedGetUrl(@PathVariable long modelId, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponses<ModelDownloadInfoDto>> getModelDownloadInfo(@PathVariable long modelId, @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            ModelLoadResponseDto modelLoadResponseDto = modelService.getPresignedGetUrl(modelId, Long.parseLong(userDetails.getUsername()));
-            return ResponseEntity.ok(ApiResponses.success(modelLoadResponseDto));
+            ModelDownloadInfoDto modelDownloadInfo = modelService.getModelDownloadInfo(modelId, Long.parseLong(userDetails.getUsername()));
+            return ResponseEntity.ok(ApiResponses.success(modelDownloadInfo));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -84,9 +85,9 @@ public class ModelController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @GetMapping("/recent")
-    public ResponseEntity<ApiResponses<List<ModelLoadResponseDto>>> getPresignedGetUrlRecentList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponses<List<ModelLoadResponseDto>>> getPresignedGetUrlRecentList(@RequestParam int page, @AuthenticationPrincipal UserDetails userDetails, HttpServletRequest request) {
         try {
-            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlRecentList(page, Long.parseLong(userDetails.getUsername()));
+            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlRecentList(page, Long.parseLong(userDetails.getUsername()), request.getHeader("Authorization"));
             return ResponseEntity.ok(ApiResponses.success(modelLoadResponseDtoList));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
@@ -101,10 +102,10 @@ public class ModelController {
                     @ApiResponse(responseCode = "500", description = "오류 발생!"),
             })
     @GetMapping("/my-model")
-    public ResponseEntity<ApiResponses<List<ModelLoadResponseDto>>> getPresignedGetUrlMyList(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponses<List<ModelLoadResponseDto>>> getPresignedGetUrlMyList(@AuthenticationPrincipal UserDetails userDetails, HttpServletRequest request) {
         try {
             // userDetail.getUserName()은 sub값을 불러옴.
-            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlMyList(Long.parseLong(userDetails.getUsername()));
+            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlMyList(Long.parseLong(userDetails.getUsername()), request.getHeader("Authorization"));
             return ResponseEntity.ok(ApiResponses.success(modelLoadResponseDtoList));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
@@ -120,10 +121,10 @@ public class ModelController {
             })
     @GetMapping("/hot")
     public ResponseEntity<ApiResponses<List<ModelLoadResponseDto>>> getPresignedGetUrlHotList(@AuthenticationPrincipal UserDetails userDetails,
-                                                       @RequestParam int page) {
+                                                                                              @RequestParam int page, HttpServletRequest request) {
         try {
             // userDetail.getUserName()은 sub값을 불러옴.
-            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlHotList(page, Long.parseLong(userDetails.getUsername()));
+            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlHotList(page, Long.parseLong(userDetails.getUsername()), request.getHeader("Authorization"));
             return ResponseEntity.ok(ApiResponses.success(modelLoadResponseDtoList));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
@@ -139,10 +140,10 @@ public class ModelController {
             })
     @GetMapping("/random")
     public ResponseEntity<ApiResponses<List<ModelLoadResponseDto>>> getPresignedGetUrlRandomList(@AuthenticationPrincipal UserDetails userDetails,
-                                                       @RequestParam int count) {
+                                                                                                 @RequestParam int count, HttpServletRequest request) {
         try {
             // userDetail.getUserName()은 sub값을 불러옴.
-            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlRandomList(count, Long.parseLong(userDetails.getUsername()));
+            List<ModelLoadResponseDto> modelLoadResponseDtoList = modelService.getPresignedGetUrlRandomList(count, Long.parseLong(userDetails.getUsername()), request.getHeader("Authorization"));
             return ResponseEntity.ok(ApiResponses.success(modelLoadResponseDtoList));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
