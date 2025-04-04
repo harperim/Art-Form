@@ -65,7 +65,7 @@ export default function LoginScreen() {
 
       router.replace('/home');
     } catch (err) {
-      console.debug('home으로 이동 방지');
+      console.debug('로그인 실패', err);
     }
   };
 
