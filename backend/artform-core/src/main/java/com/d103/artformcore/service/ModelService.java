@@ -203,6 +203,6 @@ public class ModelService {
             throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
         }
 
-        return new ModelDownloadInfoDto(presignedUrl, model.getUploadFileName());
+        return new ModelDownloadInfoDto(model, presignedUrl);
     }
 }
