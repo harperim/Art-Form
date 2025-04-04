@@ -13,6 +13,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.ssafy.artformuser.dto.SignupRequestDto;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -85,6 +91,31 @@ public class UserServiceImpl implements UserService {
         return UserResponseDto.builder()
                 .msg("조회 성공")
                 .data(userInfoDto)
+                .build();
+    }
+
+    @Override
+    public ResponseNameList getUserNameList(List<Long> idList) {
+
+        if (idList == null || idList.isEmpty()) {
+            return ResponseNameList.builder()
+                    .build();
+        }
+
+        // 사용자 정보 조회
+        List<User> users = userRepository.findAllById(idList);
+
+        Map<Long, String> userNameMap = users.stream()
+                .collect(Collectors.toMap(User::getId, User::getNickname));
+
+        // 순서보장
+        List<String> orderedNames = idList.stream()
+                .map(userNameMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+
+        return ResponseNameList.builder()
+                .userNameList(orderedNames)
                 .build();
     }
 

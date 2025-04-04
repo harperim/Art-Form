@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @Tag(name = "유저 컨트롤러")
 @RequiredArgsConstructor
@@ -87,6 +89,17 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<UserResponseDto> getUser(@PathVariable("userId") Long userId) {
         UserResponseDto userInfo = userService.getUserInfo(userId);
+        return ResponseEntity.ok(userInfo);
+    }
+
+    @Operation(summary = "유저 이름 목록 조회",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "조회 성공"),
+                    @ApiResponse(responseCode = "500", description = "조회 실패"),
+            })
+    @GetMapping("/name/{reviewUserIdList}")
+    public ResponseEntity<ResponseNameList> getUser(@PathVariable("reviewUserIdList") List<Long> reviewUserIdList) {
+        ResponseNameList userInfo = userService.getUserNameList(reviewUserIdList);
         return ResponseEntity.ok(userInfo);
     }
 }
