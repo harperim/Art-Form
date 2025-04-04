@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header
 from typing import List
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 import uuid
 import httpx
 from pathlib import Path
@@ -87,37 +87,63 @@ async def train_endpoint(
     # 학습된 모델 폴더를 zip으로 압축 (모델은 ai/img_model/{user_id}/{model_name} 에 저장)
     zip_path = f"{model_dir}.zip"
     shutil.make_archive(base_name=str(model_dir), format="zip", root_dir=str(model_dir))
-    
-    # multipart 응답 바디 구성 (각 파트: user_id와 모델 zip 파일)
-    boundary = "myboundary"
-    parts = []
-    
-    # user_id 파트 추가
-    parts.append(f"--{boundary}\r\n".encode())
-    parts.append(b'Content-Disposition: form-data; name="user_id"\r\n\r\n')
-    parts.append(user_id.encode())
-    parts.append(b"\r\n")
-    
-    # 모델 zip 파일 파트 추가
+
+    # Core 서버에 presigned URL 요청 (모델 업로드드)
+    url = f"{CORE_SERVER_BASE}/core/model/presigned-url"
+    async with httpx.AsyncClient() as client:
+        presigned_model_resp = await client.get(
+            f"{CORE_SERVER_BASE}/core/image/presigned-url",
+            headers={"Authorization": authorization,
+                     "accept": "application/json"
+                     },
+            params={"fileType": "zip", "fileName": Path(zip_path).name}
+        )
+
+    if presigned_model_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="모델 presigned URL 요청에 실패했습니다.")
+    orig_presigned_data = presigned_model_resp.json()
+    if not orig_presigned_data.get("success"):
+        raise HTTPException(status_code=500, detail="모델 presigned URL 발급 실패")
+    model_presigned_url = orig_presigned_data["data"]["presignedUrl"]
+    model_upload_filename = orig_presigned_data["data"]["uploadFileName"]
+
+    # presigned URL을 사용하여 원본 이미지 업로드 (HTTP PUT)
     with open(zip_path, "rb") as f:
-        zip_data = f.read()
-    zip_filename = f"{model_name}.zip"
-    parts.append(f"--{boundary}\r\n".encode())
-    parts.append(f'Content-Disposition: form-data; name="model_zip"; filename="{zip_filename}"\r\n'.encode())
-    parts.append(b"Content-Type: application/zip\r\n\r\n")
-    parts.append(zip_data)
-    parts.append(b"\r\n")
+        model_file_content = f.read()
+    async with httpx.AsyncClient() as client:
+        upload_orig_resp = await client.put(
+            model_presigned_url,
+            content=model_file_content,
+            headers={"Content-Type": "zip"})
+    if upload_orig_resp.status_code not in (200, 201):
+        raise HTTPException(status_code=500, detail="모델 업로드에 실패했습니다.")
     
-    # 종료 boundary 추가
-    parts.append(f"--{boundary}--\r\n".encode())
-    body = b"".join(parts)
-
-    url = f"{USER_SERVER_BASE}/fcm/send"
-
+    # Core 서버에 업로드 완료 등록 요청
+    register_payload = {
+        "modelName": model_name,
+        "userId": user_id,
+        "isPublic": "true",
+        "uploadFileName": model_upload_filename
+    }
+    
+    
+    async with httpx.AsyncClient() as client:
+        register_resp = await client.post(
+            f"{CORE_SERVER_BASE}/core/model/metadata",
+            json=register_payload,
+            headers={"Authorization": authorization}
+        )
+    if register_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="모델델 등록에 실패했습니다.")
+    register_data = register_resp.json()
+    model_id = register_data.get("data", {}).get("modelId")
+    
+    # FCM 알림 전송
+    url = f"{USER_SERVER_BASE}/user/fcm/send"
     payload = {
-    "token": token,
-    "title": "모델 학습 완료",
-    "body": "사용자님의 모델이 성공적으로 학습되었습니다!"
+        "token": token,
+        "title": "모델 학습 완료",
+        "body": "사용자님의 모델이 성공적으로 학습되었습니다!"
     }
     try:
         fcm_response = requests.post(url, json=payload)
@@ -125,17 +151,18 @@ async def train_endpoint(
     except Exception as e:
         print("FCM 전송 실패:", e)
 
-    
-    headers = {"Content-Type": f"multipart/mixed; boundary={boundary}"}
-    return Response(content=body, headers=headers)
+    return JSONResponse(
+        content={
+            "model_id": model_id,
+            "message": "모델이 성공적으로 생성되었습니다."
+        }
+    )
 
 # img2img 추론
 @app.post("/apply/img2img/")
 async def apply_endpoint(
     image: UploadFile = File(...),
     model_id: str = Form(...),
-    producer_id: str = Form(...),
-    model_name: str = Form(...),
     strength: str = Form("0.33"),
     # authorization: str = Header(...)
 ):
@@ -162,20 +189,20 @@ async def apply_endpoint(
     with input_image_path.open("wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
     
-    # # model정보 조회
-    # async with httpx.AsyncClient() as client:
-    #     model_info_resp = await client.get(
-    #         f"{CORE_SERVER_BASE}/model/{model_id}",
-    #         params={"model_id": model_id},
-    #         headers={"Authorization": authorization}
-    #     )
-    # if model_info_resp.status_code != 200:
-    #     raise HTTPException(status_code=500, detail="모델 정보 조회에 실패했습니다.")
-    # model_info = model_info_resp.json().get("data")
-    # if not model_info:
-    #     raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
-    # producer_id = model_info.get("userId")
-    # model_name = model_info.get("modelName")
+    # model정보 조회
+    async with httpx.AsyncClient() as client:
+        model_info_resp = await client.get(
+            f"{CORE_SERVER_BASE}/core/model/{model_id}/presigned-url",
+            # params={"model_id": model_id},
+            headers={"Authorization": authorization}
+        )
+    if model_info_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="모델 정보 조회에 실패했습니다.")
+    model_info = model_info_resp.json().get("data")
+    if not model_info:
+        raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
+    producer_id = model_info.get("userId")
+    model_name = model_info.get("modelName")
 
     # 로컬 모델 디렉토리 확인 및 inference 실행
     model_dir = os.path.join("ai", "img_model", producer_id, model_name)
@@ -188,10 +215,9 @@ async def apply_endpoint(
         mime_type = "application/octet-stream"
 
     # Core 서버에 presigned URL 요청 (원본 이미지)
-    url = f"{CORE_SERVER_BASE}/image/presigned-url"
     async with httpx.AsyncClient() as client:
         presigned_orig_resp = await client.get(
-            f"{CORE_SERVER_BASE}/image/presigned-url",
+            f"{CORE_SERVER_BASE}/core/image/presigned-url",
             headers={"Authorization": authorization,
                      "accept": "application/json"
                      },
@@ -212,7 +238,7 @@ async def apply_endpoint(
     # Core 서버에 presigned URL 요청 (변환 이미지)
     async with httpx.AsyncClient() as client:
         presigned_result_resp = await client.get(
-            f"{CORE_SERVER_BASE}/image/presigned-url",
+            f"{CORE_SERVER_BASE}/core/image/presigned-url",
             headers={"Authorization": authorization,
                     "accept": "application/json"
                     },
@@ -266,7 +292,7 @@ async def apply_endpoint(
     for register_payload in register_payloads:
         async with httpx.AsyncClient() as client:
             register_resp = await client.post(
-                f"{CORE_SERVER_BASE}/image/metadata",
+                f"{CORE_SERVER_BASE}/core/image/metadata",
                 json=register_payload,
                 headers={"Authorization": authorization}
             )
@@ -315,8 +341,6 @@ async def apply_endpoint(
 async def apply_endpoint(
     prompt: str = Form(...),
     model_id: str = Form(...),
-    producer_id: str = Form(...),
-    model_name: str = Form(...),
     strength: str = Form("0.33"),
     # authorization: str = Header(...)
 ):
@@ -333,20 +357,20 @@ async def apply_endpoint(
         raise HTTPException(status_code=404, detail="유저저 정보를 찾을 수 없습니다.")
     user_id = user_info.get("userId")
     
-    # # model정보 조회
-    # async with httpx.AsyncClient() as client:
-    #     model_info_resp = await client.get(
-    #         f"{CORE_SERVER_BASE}/model/{model_id}",
-    #         params={"model_id": model_id},
-    #         headers={"Authorization": authorization}
-    #     )
-    # if model_info_resp.status_code != 200:
-    #     raise HTTPException(status_code=500, detail="모델 정보 조회에 실패했습니다.")
-    # model_info = model_info_resp.json().get("data")
-    # if not model_info:
-    #     raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
-    # producer_id = model_info.get("userId")
-    # model_name = model_info.get("model_name")
+    # model정보 조회
+    async with httpx.AsyncClient() as client:
+        model_info_resp = await client.get(
+            f"{CORE_SERVER_BASE}/core/model/{model_id}/presigned-url",
+            # params={"model_id": model_id},
+            headers={"Authorization": authorization}
+        )
+    if model_info_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="모델 정보 조회에 실패했습니다.")
+    model_info = model_info_resp.json().get("data")
+    if not model_info:
+        raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
+    producer_id = model_info.get("userId")
+    model_name = model_info.get("model_name")
 
     # 로컬 모델 디렉토리 확인 및 inference 실행
     model_dir = os.path.join("ai", "img_model", producer_id, model_name)
@@ -360,7 +384,7 @@ async def apply_endpoint(
     # # Core 서버에 presigned URL 요청 (변환 이미지)
     # async with httpx.AsyncClient() as client:
     #     presigned_result_resp = await client.get(
-    #         f"{CORE_SERVER_BASE}/image/presigned-url",
+    #         f"{CORE_SERVER_BASE}/core/image/presigned-url",
     #         headers={"Authorization": authorization,
     #                 "accept": "application/json"
     #                 },
@@ -397,7 +421,7 @@ async def apply_endpoint(
     
     # async with httpx.AsyncClient() as client:
     #     register_resp = await client.post(
-    #         f"{CORE_SERVER_BASE}/image/metadata",
+    #         f"{CORE_SERVER_BASE}/core/image/metadata",
     #         json=register_payload,
     #         headers={"Authorization": authorization}
     #     )
