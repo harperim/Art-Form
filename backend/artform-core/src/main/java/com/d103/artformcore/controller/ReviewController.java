@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name="리뷰")
 @RestController
-@RequestMapping("/model")
+@RequestMapping("/model/review")
 @RequiredArgsConstructor
 public class ReviewController {
 
     private final ReviewService reviewService;
-
 
     @GetMapping("/{modelId}")
     public ResponseEntity<ReviewListDto> getModelReviews(@PathVariable("modelId") Long modelId, Authentication authentication) {
@@ -26,7 +25,7 @@ public class ReviewController {
         return ResponseEntity.ok(reviews);
     }
 
-    @PostMapping("{modelId}")
+    @PostMapping("/{modelId}")
     public ResponseEntity<ReviewListDto> createReview(@PathVariable("modelId") Long modelId, @RequestBody ReviewRequestDto reviewDto, Authentication authentication) {
 
         Long userId = Long.valueOf(authentication.getName());
