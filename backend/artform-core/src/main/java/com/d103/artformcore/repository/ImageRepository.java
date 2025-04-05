@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.net.ContentHandler;
+import java.util.List;
 import java.util.Optional;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
@@ -16,4 +17,6 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     Image findByUploadFileName(String uploadFileName);
 
     Optional<Image> findByImageIdAndDeletedAtIsNull(long imageId);
+
+    List<Image> findByModel_ModelIdAndDeletedAtIsNullAndIsPublicTrue(long modelId);
 }
