@@ -33,7 +33,7 @@ public class ReviewService {
     private final ModelRepository modelRepository;
     private final ImageService imageService;
 
-    public ReviewListDto getModelReviews(Long modelId, Long userId, String accessToken) {
+    public ReviewListDto getModelReviews(Long modelId, Long userId, String authHeader) {
         Model model = modelRepository.findById(modelId).orElseThrow(() -> new ModelNotFoundException("모델 미존재"));
         List<Review> reviewList = reviewRepository.findReviewByModelOrderByCreatedAtDesc(model);
 
@@ -45,7 +45,7 @@ public class ReviewService {
                     .build();
         }
         // 리뷰 DTO 리스트 기져오기
-        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId, accessToken);
+        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId, authHeader);
 
         return ReviewListDto.builder()
                 .msg("조회 성공")
@@ -53,7 +53,7 @@ public class ReviewService {
                 .build();
     }
 
-    public ReviewListDto addReview(Long modelId, ReviewRequestDto reviewRequestDto, Long userId, String accessToken) {
+    public ReviewListDto addReview(Long modelId, ReviewRequestDto reviewRequestDto, Long userId, String authHeader) {
 
         Model model = modelRepository.findById(modelId)
                 .orElseThrow(() -> new ModelNotFoundException("모델을 찾을 수 없습니다."));
@@ -70,7 +70,7 @@ public class ReviewService {
         List<Review> reviewList = reviewRepository.findReviewByModelOrderByCreatedAtDesc(model);
 
         // dto 변환
-        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId, accessToken);
+        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId, authHeader);
 
         // 6. 결과 반환
         return ReviewListDto.builder()
@@ -79,7 +79,7 @@ public class ReviewService {
                 .build();
     }
 
-    public ReviewListDto deleteReview(Long reviewId, Long userId, String accessToken) {
+    public ReviewListDto deleteReview(Long reviewId, Long userId, String authHeader) {
         // 리뷰 존재 여부 확인
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
@@ -99,7 +99,7 @@ public class ReviewService {
         List<Review> reviewList = reviewRepository.findReviewByModelOrderByCreatedAtDesc(model);
 
         // 리뷰 DTO 변환
-        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId, accessToken);
+        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId, authHeader);
         
         return ReviewListDto.builder()
                 .msg("삭제 성공")
@@ -109,7 +109,7 @@ public class ReviewService {
 
 
     // DTO 변환 및 이미지 처리
-    private List<ReviewDto> convertToReviewDtoListAndProcessImages(List<Review> reviewList, Long userId, String token) {
+    private List<ReviewDto> convertToReviewDtoListAndProcessImages(List<Review> reviewList, Long userId, String authHeader) {
         // 리뷰 작성자 ID 목록 가져오기
         List<Long> reviewUserIdList = reviewList.stream()
                 .map(Review::getUserId)
@@ -118,15 +118,22 @@ public class ReviewService {
 
         // 사용자 이름 목록 가져오기
         List<String> userNameList = new ArrayList<>();
+
         if (!reviewUserIdList.isEmpty()) {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", token);
+            headers.set("Authorization", authHeader);
             headers.set("accept", "*/*");
 
+            List<String> stringIds = reviewUserIdList.stream()
+                    .map(Object::toString)
+                    .toList();
+            String idListParam = String.join(",", stringIds);
+
             HttpEntity<String> entity = new HttpEntity<>(headers);
+
             try {
-                String url = "http://j12d103.p.ssafy.io:8082/user/name/" + reviewUserIdList;
+                String url = "http://j12d103.p.ssafy.io:8082/user/name/" + idListParam;
                 ResponseEntity<ResponseNameList> response = restTemplate.exchange(
                         url,
                         HttpMethod.GET,

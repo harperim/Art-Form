@@ -6,6 +6,7 @@ import com.d103.artformcore.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,12 +26,12 @@ public class ReviewController {
             })
     @GetMapping("/{modelId}")
     public ResponseEntity<ReviewListDto> getModelReviews(@PathVariable("modelId") Long modelId, Authentication authentication,
-                                                         @RequestHeader("Authorization") String authHeader) {
+                                                         HttpServletRequest request) {
 
         Long userId = Long.valueOf(authentication.getName());
-        String accessToken = authHeader.substring(7);
+        String authHeader = request.getHeader("Authorization");
 
-        ReviewListDto reviews = reviewService.getModelReviews(modelId, userId, accessToken);
+        ReviewListDto reviews = reviewService.getModelReviews(modelId, userId, authHeader);
         return ResponseEntity.ok(reviews);
     }
 
@@ -40,10 +41,11 @@ public class ReviewController {
             })
     @PostMapping("/{modelId}")
     public ResponseEntity<ReviewListDto> createReview(@PathVariable("modelId") Long modelId, @RequestBody ReviewRequestDto reviewDto, Authentication authentication,
-                                                      @RequestHeader("Authorization") String authHeader) {
+                                                      HttpServletRequest request) {
         Long userId = Long.valueOf(authentication.getName());
-        String accessToken = authHeader.substring(7);
-        ReviewListDto responseDto = reviewService.addReview(modelId, reviewDto, userId, accessToken);
+        String authHeader = request.getHeader("Authorization");
+
+        ReviewListDto responseDto = reviewService.addReview(modelId, reviewDto, userId, authHeader);
         return ResponseEntity.ok(responseDto);
     }
 
@@ -53,10 +55,10 @@ public class ReviewController {
             })
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<ReviewListDto> deleteReview(@PathVariable("reviewId") Long reviewId, Authentication authentication,
-                                                      @RequestHeader("Authorization") String authHeader) {
+                                                      HttpServletRequest request) {
         Long userId = Long.valueOf(authentication.getName());
-        String accessToken = authHeader.substring(7);
-        ReviewListDto reviewListDto = reviewService.deleteReview(reviewId,userId,accessToken);
+        String authHeader = request.getHeader("Authorization");
+        ReviewListDto reviewListDto = reviewService.deleteReview(reviewId,userId,authHeader);
         return ResponseEntity.ok(reviewListDto);
     }
 }
