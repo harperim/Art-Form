@@ -91,6 +91,7 @@ public class LikeService {
             responseDto.setImageSrc(imageSrc);
             responseDto.setUserId(userId.toString());
             responseDto.setModelId(like.getModel().getModelId().toString());
+            responseDto.setModelName(like.getModelName());
 
             likeResponseList.add(responseDto);
         }

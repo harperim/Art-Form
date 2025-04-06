@@ -36,7 +36,6 @@ public class Model {
     @Column(nullable = false, length = 255)
     private String uploadFileName;
 
-    @Column(nullable = false)
     private Long thumbnailId;
 
     @Column(nullable = false)

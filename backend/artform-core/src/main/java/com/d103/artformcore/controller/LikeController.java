@@ -34,7 +34,7 @@ public class LikeController {
         return ResponseEntity.ok(responseDto);
     }
 
-    @Operation(summary = "좋아요 리스트",
+    @Operation(summary = "좋아요한 모델 리스트",
             responses = {
                     @ApiResponse(responseCode = "200", description = "처리 성공!"),
             })

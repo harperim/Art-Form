@@ -1,7 +1,6 @@
 package com.d103.artformcore.service;
 
 import com.d103.artformcore.dto.*;
-import com.d103.artformcore.entity.Image;
 import com.d103.artformcore.entity.Model;
 import com.d103.artformcore.exception.CustomException;
 import com.d103.artformcore.exception.ErrorCode;
@@ -9,14 +8,18 @@ import com.d103.artformcore.exception.ModelNotFoundException;
 import com.d103.artformcore.repository.ModelRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -36,21 +39,23 @@ public class ModelService {
     }
 
     public Model saveMetadata(ModelSaveDto modelSaveDto) {
-        Model model = Model.builder()
-                .modelName(modelSaveDto.getModelName())
-                .userId(modelSaveDto.getUserId())
-                .isPublic(modelSaveDto.isPublic())
-                .description(modelSaveDto.getDescription())
-                .uploadFileName(modelSaveDto.getUploadFileName())
-                .build();
         try {
+            Model model = Model.builder()
+                    .modelName(modelSaveDto.getModelName())
+                    .userId(modelSaveDto.getUserId())
+                    .isPublic(modelSaveDto.isPublic())
+                    .description(modelSaveDto.getDescription())
+                    .uploadFileName(modelSaveDto.getUploadFileName())
+                    .createdAt(LocalDateTime.now())
+                    .build();
             return modelRepository.save(model);
         } catch (Exception e) {
+            System.out.println(e);
             throw new CustomException(ErrorCode.METADATA_SAVE_FAILED);
         }
     }
 
-    public ModelLoadResponseDto getPresignedGetUrl(long modelId, long userId) {
+    public ModelLoadResponseDto getPresignedGetUrl(long modelId, long userId, String token) {
         Model model = modelRepository.findById(modelId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
         // 삭제 여부 확인
@@ -63,43 +68,66 @@ public class ModelService {
         }
 
         String uploadFileName = model.getUploadFileName();
-        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", "model/" + uploadFileName);
-        if (presignedUrl.isEmpty()) {
-            throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
-        }
+        String userName;
+        // userName 조회
+        try {
+            // RestTemplate을 사용하는 경우
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", token ); // 토큰 가져오는 메서드 필요
+            headers.set("accept", "*/*");
 
-        return new ModelLoadResponseDto(model, presignedUrl);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    "http://j12d103.p.ssafy.io:8082/user/" + userId,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map<String, Object> data = (Map<String, Object>) response.getBody().get("data");
+                userName = (String) data.get("nickname");
+            } else {
+                userName = "Unknown User";
+            }
+        } catch (Exception e) {
+            userName = "Unknown User";
+        }
+        // userName 조회 끝
+
+        return new ModelLoadResponseDto(model, userName);
     }
 
-    public List<ModelLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId) {
+    public List<ModelLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId, String token) {
         List<Model> modelList = modelRepository.findByIsPublicTrueAndDeletedAtIsNull(
                 PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
         ).getContent();
 
         List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Model model : modelList) {
-            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId));
+            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId, token));
         }
         return presignedUrlDtoList;
     }
 
-    public List<ModelLoadResponseDto> getPresignedGetUrlMyList(long userId) {
+    public List<ModelLoadResponseDto> getPresignedGetUrlMyList(long userId, String token) {
         List<Model> modelList = modelRepository.findByUserIdAndDeletedAtIsNull(userId);
 
         List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Model model : modelList) {
-            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId));
+            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId, token));
         }
         return presignedUrlDtoList;
     }
 
-    public List<ModelLoadResponseDto> getPresignedGetUrlHotList(int page, long userId) {
+    public List<ModelLoadResponseDto> getPresignedGetUrlHotList(int page, long userId, String token) {
         List<Model> modelList = modelRepository.findByIsPublicTrueAndDeletedAtIsNull(
                 PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "likeCount"))
         ).getContent();
         List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Model model : modelList) {
-            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId));
+            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId, token));
         }
         return presignedUrlDtoList;
     }
@@ -147,13 +175,34 @@ public class ModelService {
         return modelRepository.save(model);
     }
 
-    public List<ModelLoadResponseDto> getPresignedGetUrlRandomList(int count, long userId) {
+    public List<ModelLoadResponseDto> getPresignedGetUrlRandomList(int count, long userId, String token) {
         List<Model> randomModels = modelRepository.findRandomModels(count);
 
         List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Model model : randomModels) {
-            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId));
+            presignedUrlDtoList.add(getPresignedGetUrl(model.getModelId(), userId, token));
         }
         return presignedUrlDtoList;
+    }
+
+    public ModelDownloadInfoDto getModelDownloadInfo(long modelId, long userId) {
+        Model model = modelRepository.findById(modelId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+        // 삭제 여부 확인
+        if (model.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.DELETED_MODEL);
+        }
+        // 인가 여부 확인
+        if (!model.isPublic() && !model.getUserId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN_MODEL);
+        }
+
+        String uploadFileName = model.getUploadFileName();
+        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", "model/" + uploadFileName);
+        if (presignedUrl.isEmpty()) {
+            throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
+        }
+
+        return new ModelDownloadInfoDto(model, presignedUrl);
     }
 }

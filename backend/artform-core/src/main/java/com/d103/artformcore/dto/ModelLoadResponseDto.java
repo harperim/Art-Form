@@ -10,5 +10,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ModelLoadResponseDto {
     private Model model;
-    private String presignedUrl;
+    private String userName;
 }

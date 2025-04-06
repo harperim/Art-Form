@@ -45,3 +45,13 @@ springdoc:
 logging:
   level:
     com.d103.artformcore: DEBUG
+
+# prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 1111 # 접근 포트 설정
+#    base-path: # 접근 경로 설정

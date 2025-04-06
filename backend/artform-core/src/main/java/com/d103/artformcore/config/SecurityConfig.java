@@ -1,6 +1,5 @@
 package com.d103.artformcore.config;
 
-import com.d103.artformcore.filter.RequestLoggingFilter;
 import com.d103.artformcore.security.JwtAuthenticationEntryPoint;
 import com.d103.artformcore.security.JwtFilter;
 import com.d103.artformcore.security.JwtTokenValidator;
@@ -47,13 +46,15 @@ public class SecurityConfig {
         return http
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .exceptionHandling(exception ->{
+                .exceptionHandling(exception -> {
                     exception.authenticationEntryPoint(jwtAuthenticationEntryPoint);
                 })
                 .authorizeHttpRequests(authorize ->
                         authorize.requestMatchers(swaggerPatterns).permitAll()
+                                .requestMatchers("/actuator/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtFilter(validator), UsernamePasswordAuthenticationFilter.class)
@@ -66,7 +67,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("*");
         configuration.setAllowedMethods(Arrays.asList(
-                "GET","POST","DELETE","OPTIONS"
+                "GET", "POST", "DELETE", "OPTIONS"
         ));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
