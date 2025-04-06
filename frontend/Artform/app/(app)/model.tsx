@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ICONS } from '~/constants/icons';
-import { mockModels } from '~/constants/mockModels';
+import { mockModels } from '../../constants/mockModels';
 import ModelCarousel from '~/components/ModelCarousel';
 import AnimatedModelCard from '~/components/AnimatedModelCard';
 import { useModel } from '~/context/ModelContext';
