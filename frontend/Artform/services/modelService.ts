@@ -43,3 +43,28 @@ export const fetchRecentModels = async (page: number = 1): Promise<Model[]> => {
     throw new Error('최신 모델을 불러오지 못했습니다.');
   }
 };
+
+// 내가 만든 모델 조회
+export const fetchMyModels = async (page: number = 1): Promise<Model[]> => {
+  try {
+    const res = await modelApi.get('/model/my-model', {
+      params: { page },
+    });
+    return res.data.data as Model[];
+  } catch (err) {
+    console.error('내 모델 조회 실패:', err);
+    throw new Error('내 모델을 불러오지 못했습니다.');
+  }
+};
+
+export const fetchMyLikeModel = async (page: number = 1): Promise<Model[]> => {
+  try {
+    const res = await modelApi.get('/model/like', {
+      params: { page },
+    });
+    return res.data.data as Model[];
+  } catch (err) {
+    console.error('좋아요한 모델 조회 실패:', err);
+    throw new Error('좋아요한한 모델을 불러오지 못했습니다.');
+  }
+};

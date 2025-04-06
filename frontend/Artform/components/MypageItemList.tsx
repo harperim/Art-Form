@@ -9,16 +9,12 @@ import {
   StyleSheet,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useAuth } from '~/lib/auth-context';
+import type { MyModelItem } from '~/types/model';
 
 type Props = {
-  item: Model[];
-  disableAnimation?: Model | null;
-};
-type Model = {
-  id: string;
-  title: string;
-  artist: string;
-  image: { uri: string };
+  item: MyModelItem[];
+  disableAnimation?: MyModelItem | null;
 };
 
 const width = Dimensions.get('window').width;
@@ -44,16 +40,19 @@ const GRID_ITEM_WIDTH = width / 2;
 //   </Animated.View>
 // );
 
-export default function AnimatedModelCard({ item, disableAnimation = null }: Props) {
-  const renderGridItem = ({ item, index }: { item: Model; index: number }) => (
+export default function MypageItemList({ item, disableAnimation = null }: Props) {
+  const { userInfo } = useAuth();
+  const renderGridItem = ({ item, index }: { item: MyModelItem; index: number }) => (
     <Animated.View
-      entering={disableAnimation ? undefined : FadeInDown.delay(index * 100).springify()}
+      entering={disableAnimation ? undefined : FadeInDown.delay(index * 30).springify()}
       style={styles.card}
     >
       <TouchableOpacity activeOpacity={0.9}>
-        <Image style={styles.cardImage} source={item.image} />
-        <Text style={styles.modelName}>{item.title}</Text>
-        {item.artist ? <Text style={styles.modelArtist}>by {item.artist}</Text> : null}
+        <Image style={styles.cardImage} source={{ uri: item.url }} />
+        <Text style={styles.modelName}>{item.modelName}</Text>
+        {item.userName !== userInfo.nickname ? (
+          <Text style={styles.modelArtist}>by {item.userName}</Text>
+        ) : null}
       </TouchableOpacity>
     </Animated.View>
   );
@@ -63,8 +62,8 @@ export default function AnimatedModelCard({ item, disableAnimation = null }: Pro
       <FlatList
         data={item}
         numColumns={2}
-        keyExtractor={(item) => item.id}
-        columnWrapperStyle={{ gap: 12, marginBottom: 20 }}
+        keyExtractor={(item) => item.modelId.toString()}
+        columnWrapperStyle={{ gap: 12, marginBottom: 16 }}
         renderItem={renderGridItem}
         showsVerticalScrollIndicator={false}
       />
@@ -92,9 +91,9 @@ const styles = StyleSheet.create({
     height: height,
     resizeMode: 'cover',
     borderRadius: 4,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#2C2D26',
   },
-  modelName: { marginTop: 8, fontSize: 18, fontFamily: 'Freesentation7', color: '#2C2D26' },
+  modelName: { marginTop: 4, fontSize: 18, fontFamily: 'Freesentation7', color: '#2C2D26' },
   modelArtist: { fontSize: 14, fontFamily: 'Freesentation6', color: '#6E95BE' },
 });

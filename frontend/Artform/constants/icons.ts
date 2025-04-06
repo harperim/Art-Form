@@ -22,6 +22,7 @@ import CameraIcon from '~/assets/icons/camera.svg';
 import CheckIcon from '~/assets/icons/check.svg';
 import GridIcon from '~/assets/icons/grid.svg';
 import PlusIcon from '~/assets/icons/plus.svg';
+import Menu from '~/assets/icons/menu.svg';
 
 export const ICONS = {
   home: { outline: HomeIcon, filled: HomeIconFilled },
@@ -37,6 +38,7 @@ export const ICONS = {
   check: CheckIcon,
   grid: GridIcon,
   plus: PlusIcon,
+  Menu: Menu,
 };
 
 export const TAB_ICONS = {

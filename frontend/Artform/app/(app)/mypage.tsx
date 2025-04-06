@@ -2,104 +2,133 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthActions } from '~/hooks/useAuthActions';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useAuth } from '~/lib/auth-context';
+import { FlatList } from 'react-native-gesture-handler';
+
 import MyPageItemList from '~/components/MypageItemList';
-import type { Model } from '~/types/model';
+import { fetchPresignedImageUrl } from '~/services/imageService';
+import { fetchMyModels, fetchMyLikeModel } from '~/services/modelService';
+import { ICONS } from '~/constants/icons';
+
+import type { MyModelItem } from '~/types/model';
 
 export default function MyPageScreen() {
   type MyContentFilter = '내가 만든 그림' | '내가 만든 모델' | '내가 좋아요한 모델';
+  type ImageItem = {
+    id: number; // imageId
+    url: string; // presignedUrl
+  };
 
-  const [selectedTab, setSeletedTab] = useState<MyContentFilter>('내가 만든 그림');
-
-  // const mainContentItem = () => (
-  //   <View style={styles.mainContentView}>
-  //     <Text style={styles.mainContentTitle}>{mainContentData.length}개</Text>
-  //     <View style={styles.mainContentItem}>
-  //       <FlatList
-  //         data={mainContentData}
-  //         numColumns={2}
-  //         keyExtractor={(item) => item.id}
-  //         columnWrapperStyle={{ gap: 12 }}
-  //         contentContainerStyle={{ paddingBottom: 100, gap: 12 }}
-  //         renderItem={renderGridItem}
-  //       />
-  //     </View>
-  //   </View>
-  // );
-
-  const mainContentData = [
-    {
-      id: '1',
-      title: '기억의 지속',
-      image: require('~/assets/images/splash1.png'),
-      artist: '살바도르 달리',
-      liked: true,
-      likes: 42,
-    },
-    {
-      id: '2',
-      title: '그랑드자트섬의 일요일 오후',
-      image: require('~/assets/images/splash3.png'),
-      artist: '조르주 쇠라',
-      liked: false,
-      likes: 33,
-    },
-    {
-      id: '3',
-      title: '물랭 드 라 갈레트의 무도회',
-      image: require('~/assets/images/splash4.png'),
-      artist: '르누아르',
-      liked: true,
-      likes: 18,
-      relatedImages: [],
-    },
-    {
-      id: '4',
-      title: '절규',
-      image: require('~/assets/images/splash1.png'),
-      artist: '에드바르 뭉크',
-      liked: false,
-      likes: 25,
-    },
-    {
-      id: '5',
-      title: '파리 거리, 비오는 날',
-      image: require('~/assets/images/splash2.png'),
-      artist: '귀스타브 카유보트',
-      liked: false,
-      likes: 12,
-    },
-    {
-      id: '6',
-      title: '우산 든 여인',
-      image: require('~/assets/images/splash1.png'),
-      artist: '클로드 모네',
-      liked: true,
-      likes: 58,
-    },
-  ];
-
+  const { userInfo } = useAuth();
   const [selectedTab, setSelectedTab] = useState<MyContentFilter>('내가 만든 그림');
+  const [imageUrls, setImageUrls] = useState<ImageItem[]>([]);
+  const [myModels, setMyModels] = useState<MyModelItem[]>([]); // 내가 만든 모델
+  const [myLikeModels, setMyLikeModels] = useState<MyModelItem[]>([]); // 내가 만든 모델
+  const [loading, setLoading] = useState(true);
+
+  // 내 사진 불러오기
+  const loadImages = async () => {
+    const maxId = 10;
+    const newItems: ImageItem[] = [];
+
+    for (let i = 1; i <= maxId; i++) {
+      const url = await fetchPresignedImageUrl(i);
+      if (url) {
+        newItems.push({ id: i, url });
+      } else {
+        break;
+      }
+    }
+    setImageUrls(newItems);
+    setLoading(false); // ✅ 데이터 로딩 완료
+  };
+
+  // 내 모델 불러오기
+  const loadMyModels = async () => {
+    const rawItems = await fetchMyModels();
+    const newModelInfo: MyModelItem[] = [];
+    for (const item of rawItems) {
+      const modelId = item.model.modelId;
+      const userName = item.userName;
+      const thumbnailId = item.model.thumbnailId;
+      const modelName = item.model.modelName;
+      const url = await fetchPresignedImageUrl(thumbnailId);
+      if (!url) {
+        continue;
+      }
+      newModelInfo.push({
+        modelId,
+        userName,
+        modelName,
+        url,
+      });
+    }
+    setMyModels(newModelInfo); // ✅ 상태에 저장
+  };
+
+  const LoadMyLikeModel = async () => {
+    const likeModelInfo = fetchMyLikeModel();
+    console.log(likeModelInfo);
+  };
+
+  useEffect(() => {
+    loadImages();
+    loadMyModels();
+    LoadMyLikeModel();
+  }, []);
+
+  const renderItem = ({ item, index }: { item: ImageItem; index: number }) => (
+    <Animated.View entering={FadeInDown.delay(index * 30).springify()}>
+      <Image
+        source={{ uri: item.url }}
+        style={{
+          flex: 1,
+          width: itemSize,
+          height: itemSize,
+          resizeMode: 'cover',
+          borderRadius: 4,
+          borderWidth: 3,
+          borderColor: '#2C2D26',
+        }}
+      />
+    </Animated.View>
+  );
+
+  const screenWidth = Dimensions.get('window').width;
+  const itemSpacing = 12;
+  const numColumns = 3;
+  const itemSize = (screenWidth - itemSpacing * (numColumns + 1)) / numColumns;
+
   const content = useMemo(() => {
     switch (selectedTab) {
       case '내가 만든 그림':
         return (
           <View style={styles.mainContentView}>
-            <Text style={styles.mainContentTitle}>총 {mainContentData.length - 1}개</Text>
-            <MyPageItemList />
+            <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
+            <FlatList
+              data={imageUrls}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={3}
+              columnWrapperStyle={{ gap: 4, marginBottom: 4 }}
+              showsVerticalScrollIndicator={false}
+              style={{ marginTop: 20, display: 'flex', width: '100%' }}
+            />
           </View>
         );
       case '내가 만든 모델':
         return (
           <View style={styles.mainContentView}>
-            <Text style={styles.mainContentTitle}>총 {mainContentData.length + 1}개</Text>
-            <MyPageItemList item={mainContentData} disableAnimation={null} />
+            <Text style={styles.mainContentTitle}>총 {myModels.length}개</Text>
+            <MyPageItemList item={myModels} disableAnimation={null} />
           </View>
         );
       case '내가 좋아요한 모델':
         return (
           <View style={styles.mainContentView}>
-            <Text style={styles.mainContentTitle}>총 {mainContentData.length}개</Text>
+            <Text style={styles.mainContentTitle}>총 {1}개</Text>
             <MyPageItemList />
           </View>
         );
@@ -117,14 +146,6 @@ export default function MyPageScreen() {
     router.replace('/login');
   };
 
-  const userProfileData = {
-    profileImage: require('~/assets/images/review2.png'),
-    username: '부리부리',
-    email: 'ssafy@naver.com',
-    follower: 0,
-    following: 1,
-  };
-
   const handleCardPress = (item: Model) => {
     // setSelectedModel(item);
     undefined;
@@ -132,18 +153,20 @@ export default function MyPageScreen() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.button} onPress={onLogout}>
-        <Text style={styles.buttonText}>로그아웃</Text>
-      </TouchableOpacity>
       {/* 유저 프로필 */}
+      <View style={styles.menuIconWrapper}>
+        <TouchableOpacity onPress={onLogout}>
+          <ICONS.Menu width={44} height={24} />
+        </TouchableOpacity>
+      </View>
       <View style={styles.userProfile}>
-        <Image source={userProfileData.profileImage} style={styles.userProfileImage} />
+        <Image source={require('~/assets/images/review2.png')} style={styles.userProfileImage} />
         <View style={styles.userProfileInfo}>
-          <Text style={styles.userName}>{data.username} 님</Text>
-          <Text style={styles.userEmail}>{data.email}</Text>
+          <Text style={styles.userName}>{userInfo.nickname} 님</Text>
+          <Text style={styles.userEmail}>{userInfo.email}</Text>
           <View style={styles.userFollowInfo}>
-            <Text style={styles.userFollowTextStyle}>following {userProfileData.following}</Text>
-            <Text style={styles.userFollowTextStyle}>follower {userProfileData.follower}</Text>
+            <Text style={styles.userFollowTextStyle}>following 80</Text>
+            <Text style={styles.userFollowTextStyle}>follower 100+</Text>
           </View>
         </View>
       </View>
@@ -185,14 +208,7 @@ export default function MyPageScreen() {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={styles.mainContent}>
-        <Text style={styles.mainContentTitle}>전체 그림 3개</Text>
-        <Animated.ScrollView style={{ display: 'flex' }}>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            <Text>ff</Text>
-          </View>
-        </Animated.ScrollView>
-      </View>
+      {content}
     </View>
   );
 }
@@ -205,7 +221,12 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     backgroundColor: '#F5F3EF',
   },
-
+  menuIconWrapper: {
+    position: 'absolute',
+    top: 68, // SafeArea 고려
+    right: 20,
+    zIndex: 10, // 프로필보다 위에 표시
+  },
   userProfile: {
     marginTop: 80,
     flexDirection: 'row',

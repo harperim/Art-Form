@@ -22,6 +22,10 @@ import { fetchHotModels, fetchRandomModels, fetchRecentModels } from '~/services
 import type { ModelWithThumbnail } from '~/types/model';
 import { fetchPresignedImageUrl } from '~/services/imageService';
 
+import { useAuth } from '~/lib/auth-context';
+import { fetchMyInfo } from '~/services/userService';
+
+
 export default function Home() {
   const [todayData, setTodayData] = useState<ModelWithThumbnail[]>([]);
   const [hotModels, setHotModels] = useState<ModelWithThumbnail[]>([]);
@@ -77,12 +81,21 @@ export default function Home() {
     }
   };
 
+  const { updateUserInfo } = useAuth();
+  const fetchUserInfo = async () => {
+    const userInfo = await fetchMyInfo();
+    updateUserInfo(userInfo);
+  };
+
   useEffect(() => {
     loadModels();
+
+    fetchUserInfo();
   }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    await fetchUserInfo();
     await loadModels();
     setRefreshing(false);
   }, []);
