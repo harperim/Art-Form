@@ -1,17 +1,17 @@
 // context/ModelContext.tsx
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
-import type { Model } from '~/types/model';
+import type { ModelWithThumbnail } from '~/types/model';
 
 type ModelContextType = {
-  selectedModel: Model | null;
-  setSelectedModel: (model: Model | null) => void;
+  selectedModel: ModelWithThumbnail | null;
+  setSelectedModel: (model: ModelWithThumbnail | null) => void;
 };
 
 const ModelContext = createContext<ModelContextType | undefined>(undefined);
 
 export const ModelProvider = ({ children }: { children: ReactNode }) => {
-  const [selectedModel, setSelectedModel] = useState<Model | null>(null);
+  const [selectedModel, setSelectedModel] = useState<ModelWithThumbnail | null>(null);
   return (
     <ModelContext.Provider value={{ selectedModel, setSelectedModel }}>
       {children}

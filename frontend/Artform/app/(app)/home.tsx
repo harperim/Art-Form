@@ -7,39 +7,91 @@ import {
   Dimensions,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 
 import TodayPickCarousel from '~/components/TodayPickCarousel';
 import ArtCarouselSection from '~/components/ArtCarouselSection';
 import ParallaxCarouselPagination from '~/components/ParallaxCarouselPagination';
-import { mockModels } from '~/constants/mockModels';
 import { router } from 'expo-router';
 import { useModel } from '~/context/ModelContext';
-import type { Model } from '~/types/model';
+
+import { useCallback, useEffect, useState } from 'react';
+import { fetchHotModels, fetchRandomModels, fetchRecentModels } from '~/services/modelService';
+import type { ModelWithThumbnail } from '~/types/model';
+import { fetchPresignedImageUrl } from '~/services/imageService';
 
 export default function Home() {
-  const OFFSET = 20;
-  const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
+  const [todayData, setTodayData] = useState<ModelWithThumbnail[]>([]);
+  const [hotModels, setHotModels] = useState<ModelWithThumbnail[]>([]);
+  const [recentModels, setRecentModels] = useState<ModelWithThumbnail[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const { setSelectedModel } = useModel();
 
-  const handleCardPress = (item: Model) => {
+  const OFFSET = 20;
+  const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
+  const scrollX = useSharedValue(0);
+
+  const handleCardPress = (item: ModelWithThumbnail) => {
     setSelectedModel(item);
   };
 
-  const scrollX = useSharedValue(0);
+  const loadModels = async () => {
+    try {
+      const [random, hot, recent] = await Promise.all([
+        fetchRandomModels(5),
+        fetchHotModels(1),
+        fetchRecentModels(1),
+      ]);
 
-  const todayData = mockModels;
+      const all = [...random, ...hot, ...recent];
+      const urls = await Promise.all(
+        all.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
+      );
 
-  const modelData = todayData.map((model) => ({
-    id: model.id,
-    image: model.image,
-    title: model.title,
-  }));
+      const randomMerged = random.map((model, index) => ({
+        ...model,
+        thumbnailUrl: urls[index] ?? Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+      }));
+
+      const hotMerged = hot.map((model, index) => ({
+        ...model,
+        thumbnailUrl:
+          urls[random.length + index] ?? Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+      }));
+
+      const recentMerged = recent.map((model, index) => ({
+        ...model,
+        thumbnailUrl:
+          urls[random.length + hot.length + index] ??
+          Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+      }));
+
+      setTodayData(randomMerged);
+      setHotModels(hotMerged);
+      setRecentModels(recentMerged);
+    } catch (err) {
+      console.error('모델 데이터 불러오기 실패:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadModels();
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadModels();
+    setRefreshing(false);
+  }, []);
 
   return (
-    <ScrollView style={styles.main}>
+    <ScrollView
+      style={styles.main}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
       {/* logo */}
       <Image source={require('../../assets/logo.png')} style={styles.logo} />
 
@@ -81,7 +133,7 @@ export default function Home() {
             <Text style={styles.seeMoreBtn}>더 보기</Text>
           </TouchableOpacity>
         </View>
-        <ArtCarouselSection data={modelData} onPress={handleCardPress} />
+        <ArtCarouselSection data={hotModels} onPress={handleCardPress} />
       </View>
 
       {/* 최신 모델 */}
@@ -92,7 +144,7 @@ export default function Home() {
             <Text style={styles.seeMoreBtn}>더 보기</Text>
           </TouchableOpacity>
         </View>
-        <ArtCarouselSection data={modelData} onPress={handleCardPress} />
+        <ArtCarouselSection data={recentModels} onPress={handleCardPress} />
       </View>
     </ScrollView>
   );

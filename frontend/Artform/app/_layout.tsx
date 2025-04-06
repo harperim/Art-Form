@@ -1,6 +1,6 @@
 // app/_layout.tsx
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Slot, Stack } from 'expo-router';
+import { Slot } from 'expo-router';
 import { AuthProvider } from '../lib/auth-context';
 import { useFonts } from 'expo-font';
 import { View, Text } from 'react-native';
