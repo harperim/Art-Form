@@ -38,7 +38,7 @@ public class LikeController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "처리 성공!"),
             })
-    @PostMapping
+    @GetMapping
     public ResponseEntity<LikeListResponseDto> likeList(Authentication authentication) {
         Long userId = Long.valueOf(authentication.getName());
         LikeListResponseDto likeList = likeService.getLikeList(userId);
