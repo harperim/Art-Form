@@ -108,7 +108,7 @@ async def train_endpoint(
     model_presigned_url = orig_presigned_data["data"]["presignedUrl"]
     model_upload_filename = orig_presigned_data["data"]["uploadFileName"]
 
-    # presigned URL을 사용하여 원본 이미지 업로드 (HTTP PUT)
+    # presigned URL을 사용하여 모델 업로드 (HTTP PUT)
     with open(zip_path, "rb") as f:
         model_file_content = f.read()
     async with httpx.AsyncClient() as client:
@@ -124,7 +124,8 @@ async def train_endpoint(
         "modelName": model_name,
         "userId": user_id,
         "isPublic": "true",
-        "uploadFileName": model_upload_filename
+        "uploadFileName": model_upload_filename,
+        'description': ""
     }
     
     
