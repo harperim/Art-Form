@@ -19,7 +19,7 @@ export const postModelReview = async (
 
     return res.data;
   } catch (err) {
-    console.error('리뷰 등록 실패:', err);
+    console.debug('리뷰 등록 실패:', err);
     throw new Error('리뷰 등록 중 문제가 발생했습니다.');
   }
 };

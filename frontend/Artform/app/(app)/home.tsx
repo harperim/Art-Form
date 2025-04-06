@@ -28,7 +28,7 @@ export default function Home() {
   const [recentModels, setRecentModels] = useState<ModelWithThumbnail[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const { setSelectedModel } = useModel();
+  const { setSelectedModel, setIsBottomSheetVisible } = useModel();
 
   const OFFSET = 20;
   const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
@@ -36,6 +36,7 @@ export default function Home() {
 
   const handleCardPress = (item: ModelWithThumbnail) => {
     setSelectedModel(item);
+    setIsBottomSheetVisible(true);
   };
 
   const loadModels = async () => {
@@ -73,7 +74,7 @@ export default function Home() {
       setHotModels(hotMerged);
       setRecentModels(recentMerged);
     } catch (err) {
-      console.error('모델 데이터 불러오기 실패:', err);
+      console.debug('모델 데이터 불러오기 실패:', err);
     }
   };
 

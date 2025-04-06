@@ -59,7 +59,7 @@ export const useAuthActions = () => {
           alert('회원가입 중 오류가 발생했습니다.');
         }
       } else {
-        console.error('회원가입 실패:', err);
+        console.debug('회원가입 실패:', err);
         alert('알 수 없는 오류가 발생했습니다.');
       }
     }
@@ -68,12 +68,14 @@ export const useAuthActions = () => {
   const handleLogin = async (email: string, password: string) => {
     if (!email || !password) {
       alert('이메일과 비밀번호를 입력해주세요.');
-      return;
+      return false;
     }
 
     try {
       const { accessToken, refreshToken } = await loginUser(email, password);
       await login(accessToken, refreshToken);
+
+      return true;
     } catch (err: unknown) {
       if (err instanceof AxiosError) {
         const status = err.response?.status;
@@ -84,10 +86,10 @@ export const useAuthActions = () => {
         } else {
           alert('로그인 중 오류가 발생했습니다.');
         }
-        console.error('로그인 실패:', msg);
+        console.debug('로그인 실패:', msg);
       } else {
         alert('알 수 없는 오류가 발생했습니다.');
-        console.error('로그인 실패:', err);
+        console.debug('로그인 실패:', err);
       }
       throw err;
     }
@@ -113,7 +115,7 @@ export const useAuthActions = () => {
         return false;
       }
     } catch (err) {
-      console.error('닉네임 중복 체크 실패:', err);
+      console.debug('닉네임 중복 체크 실패:', err);
       alert('중복 체크 중 오류가 발생했습니다.');
       return false;
     }
@@ -126,7 +128,7 @@ export const useAuthActions = () => {
       const res = await checkEmailDuplicate(email);
       return res.data; // boolean
     } catch (err) {
-      console.error('이메일 중복 체크 실패:', err);
+      console.debug('이메일 중복 체크 실패:', err);
       return null;
     }
   };

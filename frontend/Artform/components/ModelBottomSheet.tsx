@@ -30,7 +30,8 @@ export default function ModelBottomSheet() {
   const inputRef = useRef<TextInput>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const { selectedModel, setSelectedModel } = useModel();
+  const { selectedModel, setSelectedModel, isBottomSheetVisible, setIsBottomSheetVisible } =
+    useModel();
   const model = selectedModel as ModelWithThumbnail;
 
   useEffect(() => {
@@ -41,10 +42,10 @@ export default function ModelBottomSheet() {
   }, [model]);
 
   useEffect(() => {
-    if (selectedModel) {
+    if (selectedModel && isBottomSheetVisible) {
       bottomSheetRef.current?.present();
     }
-  }, [selectedModel]);
+  }, [selectedModel, isBottomSheetVisible]);
 
   useEffect(() => {
     const hideSub = Keyboard.addListener('keyboardDidHide', () => {
@@ -60,7 +61,7 @@ export default function ModelBottomSheet() {
         const data = await fetchModelReviews(model.model.modelId);
         setReviews(data);
       } catch (err) {
-        console.error('리뷰 불러오기 실패:', err);
+        console.debug('리뷰 불러오기 실패:', err);
       }
     };
 
@@ -105,8 +106,8 @@ export default function ModelBottomSheet() {
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       enablePanDownToClose
-      onDismiss={() => setSelectedModel(null)}
       keyboardBehavior="interactive"
+      onDismiss={() => setIsBottomSheetVisible(false)}
       android_keyboardInputMode="adjustResize"
       backdropComponent={(props) => (
         <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} />
@@ -160,9 +161,7 @@ export default function ModelBottomSheet() {
           style={styles.useButton}
           onPress={() => {
             bottomSheetRef.current?.dismiss();
-            setSelectedModel(null);
-
-            router.push({ pathname: '/convert', params: { modelId: model.model.modelId } });
+            router.push('/convert');
           }}
         >
           <Text style={styles.useButtonText}>사용해 보기</Text>
@@ -247,7 +246,7 @@ export default function ModelBottomSheet() {
                 const updated = await fetchModelReviews(model.model.modelId);
                 setReviews(updated);
               } catch (err) {
-                console.error('리뷰 등록 실패:', err);
+                console.debug('리뷰 등록 실패:', err);
                 alert('리뷰 등록 중 오류가 발생했습니다.');
               }
             }}
