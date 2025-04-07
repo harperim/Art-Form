@@ -14,17 +14,11 @@ import {
 import Carousel from 'react-native-reanimated-carousel';
 import ParallaxCarouselPagination from './ParallaxCarouselPagination';
 import { useSharedValue } from 'react-native-reanimated';
-
-export type ModelItem = {
-  id: string;
-  image: ImageSourcePropType;
-  title: string;
-  artist: string;
-};
+import type { ModelWithThumbnail } from '~/types/model';
 
 type Props = {
-  data: ModelItem[];
-  onPress: (item: ModelItem) => void;
+  data: ModelWithThumbnail[];
+  onPress: (item: ModelWithThumbnail) => void;
 };
 
 export default function ModelCarousel({ data, onPress }: Props) {
@@ -53,19 +47,23 @@ export default function ModelCarousel({ data, onPress }: Props) {
           scrollX.value = absoluteProgress * carouselWidth;
         }}
         renderItem={({ item }) => (
-          <Animated.View key={item.id} style={styles.card}>
+          <Animated.View key={item.model.modelId.toString()} style={styles.card}>
             <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(item)}>
-              <Image source={item.image} style={styles.cardImage} resizeMode="cover" />
+              <Image
+                source={{ uri: item.thumbnailUrl }}
+                style={styles.cardImage}
+                resizeMode="cover"
+              />
               <LinearGradient
                 colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.9)']}
                 locations={[0, 0.2, 0.8]}
                 style={styles.cardTitleOverlay}
               >
                 <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
-                  {item.title}
+                  {item.model.modelName}
                 </Text>
                 <Text style={styles.cardArtist} numberOfLines={1} ellipsizeMode="tail">
-                  by {item.artist}
+                  by {item.userName}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>

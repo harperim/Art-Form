@@ -1,53 +1,51 @@
 // components/ModelBottomSheet.tsx
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ImageSourcePropType } from 'react-native';
 import { Keyboard, TextInput } from 'react-native';
-import {
-  Text,
-  Image,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  FlatList,
-  BackHandler,
-} from 'react-native';
+import { Text, Image, StyleSheet, View, TouchableOpacity, BackHandler } from 'react-native';
 import { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { ICONS } from '~/constants/icons';
 import colors from '~/constants/colors';
 import { useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { mockModels } from '~/constants/mockModels';
+import type { ModelWithThumbnail } from '~/types/model';
 
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useModel } from '~/context/ModelContext';
+import type { Review } from '~/types/review';
+import { fetchModelReviews, postModelReview } from '~/services/reviewService';
+
+import { getImageUploadUrl, uploadToS3, getMimeTypeFromUri } from '~/utils/uploadImageToS3';
 
 export default function ModelBottomSheet() {
   const snapPoints = useMemo(() => ['85%'], []);
-  const { selectedModel, setSelectedModel } = useModel();
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(0);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [comment, setComment] = useState('');
-  const [commentImage, setCommentImage] = useState<ImageSourcePropType | null>(null);
+  const [commentImage, setCommentImage] = useState<{ uri: string } | null>(null);
 
   const router = useRouter();
   const inputRef = useRef<TextInput>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const model = mockModels.find((m) => m.id === selectedModel?.id);
+  const { selectedModel, setSelectedModel, isBottomSheetVisible, setIsBottomSheetVisible } =
+    useModel();
+  const model = selectedModel as ModelWithThumbnail;
 
   useEffect(() => {
-    if (!model) return;
-    setLiked(model.liked);
-    setLikes(model.likes);
+    if (model) {
+      setLikes(model.model.likeCount);
+      setLiked(false);
+    }
   }, [model]);
 
   useEffect(() => {
-    if (selectedModel) {
+    if (selectedModel && isBottomSheetVisible) {
       bottomSheetRef.current?.present();
     }
-  }, [selectedModel]);
+  }, [selectedModel, isBottomSheetVisible]);
 
   useEffect(() => {
     const hideSub = Keyboard.addListener('keyboardDidHide', () => {
@@ -55,6 +53,20 @@ export default function ModelBottomSheet() {
     });
     return () => hideSub.remove();
   }, []);
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      if (!model) return;
+      try {
+        const data = await fetchModelReviews(model.model.modelId);
+        setReviews(data);
+      } catch (err) {
+        console.debug('리뷰 불러오기 실패:', err);
+      }
+    };
+
+    loadReviews();
+  }, [model]);
 
   useFocusEffect(
     useCallback(() => {
@@ -94,8 +106,8 @@ export default function ModelBottomSheet() {
       ref={bottomSheetRef}
       snapPoints={snapPoints}
       enablePanDownToClose
-      onDismiss={() => setSelectedModel(null)}
       keyboardBehavior="interactive"
+      onDismiss={() => setIsBottomSheetVisible(false)}
       android_keyboardInputMode="adjustResize"
       backdropComponent={(props) => (
         <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} />
@@ -106,14 +118,16 @@ export default function ModelBottomSheet() {
         {/* 헤더 정보 */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>{model.title}</Text>
-            <Text style={styles.author}>by {model.artist}</Text>
+            <Text style={styles.title}>{model.model.modelName}</Text>
+            <Text style={styles.author}>by {model.userName}</Text>
           </View>
         </View>
 
-        {/* 대표 이미지 */}
         <View style={styles.mainImageWrapper}>
-          <Image source={model.image} style={styles.mainImage} />
+          {/* 대표 이미지 */}
+          <Image source={{ uri: model.thumbnailUrl }} style={styles.mainImage} />
+
+          {/* 좋아요 버튼 */}
           <TouchableOpacity
             style={styles.heartButton}
             onPress={() => {
@@ -131,7 +145,7 @@ export default function ModelBottomSheet() {
         </View>
 
         {/* 관련 이미지 */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={styles.subTitle}>이 모델로 만든 이미지</Text>
           <FlatList
             horizontal
@@ -140,18 +154,14 @@ export default function ModelBottomSheet() {
             renderItem={({ item }) => <Image source={item} style={styles.thumbImage} />}
             showsHorizontalScrollIndicator={false}
           />
-        </View>
+        </View> */}
 
         {/* 사용 버튼 */}
         <TouchableOpacity
           style={styles.useButton}
           onPress={() => {
-            if (!model.image) return;
-
             bottomSheetRef.current?.dismiss();
-            setSelectedModel(null);
-
-            router.push({ pathname: '/convert', params: { modelId: model.id } });
+            router.push('/convert');
           }}
         >
           <Text style={styles.useButtonText}>사용해 보기</Text>
@@ -161,18 +171,20 @@ export default function ModelBottomSheet() {
 
         {/* 리뷰 섹션 */}
         <View style={styles.section}>
-          <Text style={styles.subTitle}>리뷰 {model.reviews.length}개</Text>
-          {model.reviews.map((item, index) => (
-            <View key={item.id}>
+          <Text style={styles.subTitle}>리뷰 {reviews.length}개</Text>
+          {reviews.map((item, index) => (
+            <View key={item.reviewId}>
               <View style={styles.reviewRow}>
                 <View style={styles.reviewContent}>
-                  <Text style={styles.reviewer}>{item.nickname}</Text>
-                  <Text style={styles.commentText}>{item.comment}</Text>
-                  <Text style={styles.reviewDate}>{item.date}</Text>
+                  <Text style={styles.reviewer}>user#{item.userId}</Text>
+                  <Text style={styles.commentText}>{item.content}</Text>
+                  <Text style={styles.reviewDate}>
+                    {new Date(item.createdAt).toLocaleDateString()}
+                  </Text>
                 </View>
-                <Image source={item.image} style={styles.reviewImage} />
+                <Image source={{ uri: item.presignedUrl }} style={styles.reviewImage} />
               </View>
-              {index !== model.reviews.length - 1 && <View style={styles.reviewDivider} />}
+              {index !== reviews.length - 1 && <View style={styles.reviewDivider} />}
             </View>
           ))}
         </View>
@@ -204,12 +216,39 @@ export default function ModelBottomSheet() {
 
           <TouchableOpacity
             style={styles.sendButton}
-            onPress={() => {
+            onPress={async () => {
               if (!comment.trim()) return;
-              console.log('댓글 전송:', comment);
-              setComment('');
-              inputRef.current?.clear();
-              setCommentImage(null);
+
+              try {
+                let uploadFileName: string | undefined;
+
+                if (commentImage) {
+                  const fileUri = commentImage.uri;
+                  const fileName = fileUri.split('/').pop()!;
+                  const fileType = getMimeTypeFromUri(fileUri);
+
+                  const { presignedUrl, uploadFileName: fileKey } = await getImageUploadUrl(
+                    fileName,
+                    fileType,
+                  );
+                  await uploadToS3(presignedUrl, fileUri, fileType);
+                  uploadFileName = fileKey;
+                }
+
+                await postModelReview(model.model.modelId, comment, uploadFileName);
+
+                // UI 초기화
+                setComment('');
+                inputRef.current?.clear?.();
+                setCommentImage(null);
+
+                // 최신 리뷰 다시 불러오기
+                const updated = await fetchModelReviews(model.model.modelId);
+                setReviews(updated);
+              } catch (err) {
+                console.debug('리뷰 등록 실패:', err);
+                alert('리뷰 등록 중 오류가 발생했습니다.');
+              }
             }}
           >
             <ICONS.send width={20} height={20} />

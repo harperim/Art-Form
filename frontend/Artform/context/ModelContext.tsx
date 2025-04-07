@@ -6,14 +6,19 @@ import type { ModelWithThumbnail } from '~/types/model';
 type ModelContextType = {
   selectedModel: ModelWithThumbnail | null;
   setSelectedModel: (model: ModelWithThumbnail | null) => void;
+  isBottomSheetVisible: boolean;
+  setIsBottomSheetVisible: (visible: boolean) => void;
 };
 
 const ModelContext = createContext<ModelContextType | undefined>(undefined);
 
 export const ModelProvider = ({ children }: { children: ReactNode }) => {
   const [selectedModel, setSelectedModel] = useState<ModelWithThumbnail | null>(null);
+  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
   return (
-    <ModelContext.Provider value={{ selectedModel, setSelectedModel }}>
+    <ModelContext.Provider
+      value={{ selectedModel, setSelectedModel, isBottomSheetVisible, setIsBottomSheetVisible }}
+    >
       {children}
     </ModelContext.Provider>
   );

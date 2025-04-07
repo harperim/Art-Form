@@ -1,24 +1,27 @@
 // app/(app)/store.tsx
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 
 import colors from '~/constants/colors';
-import type { Model } from '~/types/model';
+import type { ModelWithThumbnail } from '~/types/model';
 import { useModel } from '~/context/ModelContext';
 import { useLocalSearchParams } from 'expo-router';
-import { mockModels } from '~/constants/mockModels';
+
 import AnimatedModelCard from '~/components/AnimatedModelCard';
+import { fetchHotModels, fetchRecentModels } from '~/services/modelService';
+import { fetchPresignedImageUrl } from '~/services/imageService';
 
 export default function StoreScreen() {
   const { sort: sortParam } = useLocalSearchParams();
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'latest' | 'popular'>('latest');
+  const [models, setModels] = useState<ModelWithThumbnail[]>([]);
   const { selectedModel, setSelectedModel } = useModel();
 
-  const openModal = (item: Model) => {
+  const handleCardPress = (item: ModelWithThumbnail) => {
     setSelectedModel(item);
   };
 
@@ -28,17 +31,32 @@ export default function StoreScreen() {
     }
   }, [sortParam]);
 
-  const sortedData = [...mockModels].sort((a, b) => {
-    if (sort === 'popular') {
-      // likes 높은 순으로 정렬 (내림차순)
-      return (b.likes ?? 0) - (a.likes ?? 0);
-    }
-    // 최신순은 id 기준 내림차순 (문자열이지만 id가 시간순이라면)
-    return Number(b.id) - Number(a.id);
-  });
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const fetchModelsBySort = sort === 'latest' ? fetchRecentModels : fetchHotModels;
+        const data = await fetchModelsBySort(1);
 
-  const filtered = sortedData.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase()),
+        const urls = await Promise.all(
+          data.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
+        );
+
+        const merged = data.map((model, index) => ({
+          ...model,
+          thumbnailUrl: urls[index] ?? Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+        }));
+
+        setModels(merged);
+      } catch (err) {
+        console.error('모델 불러오기 실패:', err);
+      }
+    };
+
+    loadModels();
+  }, [sort]);
+
+  const filtered = models.filter((item) =>
+    item.model.modelName.toLowerCase().includes(search.toLowerCase()),
   );
 
   const leftColumn = filtered.filter((_, i) => i % 2 === 0);
@@ -90,10 +108,10 @@ export default function StoreScreen() {
             <View style={styles.column}>
               {leftColumn.map((item, index) => (
                 <AnimatedModelCard
-                  key={`${item.id}-${sort}`}
+                  key={`${item.model.modelId}-${sort}`}
                   item={item}
                   index={index}
-                  onPress={() => openModal(item)}
+                  onPress={() => handleCardPress(item)}
                   disableAnimation={selectedModel}
                 />
               ))}
@@ -101,10 +119,10 @@ export default function StoreScreen() {
             <View style={[styles.column, { marginTop: 40 }]}>
               {rightColumn.map((item, index) => (
                 <AnimatedModelCard
-                  key={`${item.id}-${sort}`}
+                  key={`${item.model.modelId}-${sort}`}
                   item={item}
                   index={index + 0.5}
-                  onPress={() => openModal(item)}
+                  onPress={() => handleCardPress(item)}
                   disableAnimation={selectedModel}
                 />
               ))}

@@ -1,21 +1,21 @@
 // screens/ConvertScreen.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, Pressable, BackHandler, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system';
-import type { ModelDetail } from '~/types/model';
+import type { ModelWithThumbnail } from '~/types/model';
 import colors from '~/constants/colors';
 import UploadOptionModal from '~/components/UploadOptionModal';
 import GenerateByTextModal from '~/components/GenerateByTextModal';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useModel } from '~/context/ModelContext';
 import LoadingModal from '~/components/LoadingModal';
 import { ICONS } from '~/constants/icons';
 
 type Props = {
-  model: ModelDetail;
+  model: ModelWithThumbnail;
 };
 
 export default function ConvertScreen({ model }: Props) {
@@ -31,6 +31,17 @@ export default function ConvertScreen({ model }: Props) {
 
   const router = useRouter();
 
+  const navigation = useNavigation();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ tabBarStyle: { display: 'none' } });
+
+    return () => {
+      // 원래대로 복구
+      navigation.setOptions({ tabBarStyle: undefined });
+    };
+  }, [navigation]);
+
   useEffect(() => {
     const onBackPress = () => {
       setSelectedModel(model);
@@ -41,6 +52,12 @@ export default function ConvertScreen({ model }: Props) {
     const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => subscription.remove();
   }, [router, model]);
+
+  useEffect(() => {
+    return () => {
+      setSelectedModel(null);
+    };
+  }, []);
 
   const openLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({ quality: 1 });
@@ -83,7 +100,7 @@ export default function ConvertScreen({ model }: Props) {
 
       Alert.alert('✅ 저장 완료', '이미지가 갤러리에 저장되었습니다!');
     } catch (error) {
-      console.error('이미지 저장 오류:', error);
+      console.debug('이미지 저장 오류:', error);
       Alert.alert('오류 발생', '이미지를 저장하는 중 문제가 발생했습니다.');
     }
   };
@@ -123,7 +140,7 @@ export default function ConvertScreen({ model }: Props) {
                 <Pressable
                   style={styles.secondaryButton}
                   onPress={() => {
-                    setIsDone(false); // ✅ 다시 입력 상태로 복구
+                    setIsDone(false);
                     setUserImage(null);
                     setPrompt('');
                   }}
@@ -187,11 +204,11 @@ export default function ConvertScreen({ model }: Props) {
             />
 
             <View style={styles.modelCard}>
-              <Image source={model.image} style={styles.modelImage} />
+              <Image source={{ uri: model.thumbnailUrl }} style={styles.modelImage} />
               <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={styles.label}>선택한 모델</Text>
-                <Text style={styles.modelTitle}>{model.title}</Text>
-                <Text style={styles.artistName}>by {model.artist}</Text>
+                <Text style={styles.modelTitle}>{model.model.modelName}</Text>
+                <Text style={styles.artistName}>by {model.userName}</Text>
               </View>
             </View>
 

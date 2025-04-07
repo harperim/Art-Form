@@ -1,5 +1,5 @@
 // app/(app)/model.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ICONS } from '~/constants/icons';
@@ -7,25 +7,29 @@ import { mockModels } from '../../constants/mockModels';
 import ModelCarousel from '~/components/ModelCarousel';
 import AnimatedModelCard from '~/components/AnimatedModelCard';
 import { useModel } from '~/context/ModelContext';
-import type { Model } from '~/types/model';
+import type { ModelWithThumbnail } from '~/types/model';
+import { fetchPresignedImageUrl } from '~/services/imageService';
+import { fetchRecentModels } from '~/services/modelService';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_ITEM_WIDTH = (SCREEN_WIDTH - 24 * 2 - 12) / 2;
 const GRID_ITEM_HEIGHT = GRID_ITEM_WIDTH * 1.3;
 
 type Props = {
-  item: Model;
+  item: ModelWithThumbnail;
   index: number;
 };
 
 export default function ModelScreen() {
   const [isGrid, setIsGrid] = useState(false);
+  const [models, setModels] = useState<ModelWithThumbnail[]>([]);
   const toggleView = () => setIsGrid((prev) => !prev);
 
-  const { setSelectedModel } = useModel();
+  const { setSelectedModel, setIsBottomSheetVisible } = useModel();
 
-  const handleCardPress = (item: Model) => {
+  const handleCardPress = (item: ModelWithThumbnail) => {
     setSelectedModel(item);
+    setIsBottomSheetVisible(true);
   };
 
   const renderGridItem = ({ item, index }: Props) => (
@@ -39,6 +43,25 @@ export default function ModelScreen() {
     </View>
   );
 
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const data = await fetchRecentModels(1); // 최근 모델 1페이지
+        const urls = await Promise.all(
+          data.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
+        );
+        const enriched = data.map((model, i) => ({
+          ...model,
+          thumbnailUrl: urls[i] ?? '',
+        }));
+        setModels(enriched);
+      } catch (err) {
+        console.error('모델 불러오기 실패:', err);
+      }
+    };
+    loadModels();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       {/* 상단 제목 + 아이콘 */}
@@ -50,26 +73,30 @@ export default function ModelScreen() {
       </View>
 
       {/* 캐러셀 or 그리드 */}
-      {isGrid ? (
+      {models.length === 0 ? (
+        <View style={styles.emptyWrapper}>
+          <Text style={styles.emptyText}>모델이 없습니다.</Text>
+
+          <Text style={styles.description}>나만의 모델을 만들어 보세요</Text>
+          <TouchableOpacity style={styles.learnButton}>
+            <View style={styles.iconLeft}>
+              <ICONS.plus width={20} height={20} />
+            </View>
+            <Text style={styles.learnButtonText}>새로 학습하기</Text>
+          </TouchableOpacity>
+        </View>
+      ) : isGrid ? (
         <FlatList
-          data={mockModels}
+          data={models}
           numColumns={2}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => String(item.model.modelId)}
           columnWrapperStyle={{ gap: 12 }}
           contentContainerStyle={{ paddingBottom: 100, gap: 12 }}
           renderItem={renderGridItem}
         />
       ) : (
         <View style={styles.scrollContent}>
-          <ModelCarousel
-            data={mockModels.map((model) => ({
-              id: model.id,
-              image: model.image,
-              title: model.title,
-              artist: model.artist,
-            }))}
-            onPress={handleCardPress}
-          />
+          <ModelCarousel data={models} onPress={handleCardPress} />
 
           <Text style={styles.description}>나만의 모델을 만들어 보세요</Text>
           <TouchableOpacity style={styles.learnButton}>
@@ -157,5 +184,15 @@ const styles = StyleSheet.create({
   iconLeft: {
     position: 'absolute',
     left: 20,
+  },
+  emptyWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+    marginVertical: 150,
   },
 });

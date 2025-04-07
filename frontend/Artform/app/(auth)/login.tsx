@@ -60,10 +60,11 @@ export default function LoginScreen() {
 
   const onLogin = async () => {
     try {
-      await handleLogin(email, password);
-      console.debug('로그인 성공');
-
-      router.replace('/home');
+      const loginSuccess = await handleLogin(email, password);
+      if (loginSuccess) {
+        console.debug('로그인 성공');
+        router.replace('/home');
+      }
     } catch (err) {
       console.debug('로그인 실패', err);
     }
