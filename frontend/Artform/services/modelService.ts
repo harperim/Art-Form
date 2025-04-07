@@ -1,6 +1,6 @@
 // services/modelService.ts
 import modelApi from '~/lib/api/model';
-import type { Model, RawModel, MyLikeModel } from '~/types/model';
+import type { Model, MyLikeModel } from '~/types/model';
 
 // 오늘의 추천 (랜덤) 모델 조회
 export const fetchRandomModels = async (count: number = 5): Promise<Model[]> => {
@@ -17,7 +17,7 @@ export const fetchRandomModels = async (count: number = 5): Promise<Model[]> => 
 };
 
 // 인기 모델 조회
-export const fetchHotModels = async (page: number = 1): Promise<Model[]> => {
+export const fetchHotModels = async (page: number = 0): Promise<Model[]> => {
   try {
     const res = await modelApi.get('/model/hot', {
       params: { page },
@@ -31,7 +31,7 @@ export const fetchHotModels = async (page: number = 1): Promise<Model[]> => {
 };
 
 // 최신 모델 조회
-export const fetchRecentModels = async (page: number = 1): Promise<Model[]> => {
+export const fetchRecentModels = async (page: number = 0): Promise<Model[]> => {
   try {
     const res = await modelApi.get('/model/recent', {
       params: { page },

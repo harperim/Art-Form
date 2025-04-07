@@ -1,22 +1,31 @@
-// components/ModelBottomSheet.tsx
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Keyboard, TextInput } from 'react-native';
-import { Text, Image, StyleSheet, View, TouchableOpacity, BackHandler } from 'react-native';
-import { BottomSheetBackdrop, BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import {
+  Alert,
+  BackHandler,
+  Image,
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import * as ImagePicker from 'expo-image-picker';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 import { ICONS } from '~/constants/icons';
 import colors from '~/constants/colors';
-import { useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import type { ModelWithThumbnail } from '~/types/model';
-
-import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
 import { useModel } from '~/context/ModelContext';
-import type { Review } from '~/types/review';
-import { fetchModelReviews, postModelReview } from '~/services/reviewService';
+import { useAuth } from '~/lib/auth-context';
 
-import { getImageUploadUrl, uploadToS3, getMimeTypeFromUri } from '~/utils/uploadImageToS3';
+import { getImageUploadUrl, postImageMetadata } from '~/services/imageService';
+import { deleteModelReview, fetchModelReviews, postModelReview } from '~/services/reviewService';
+import { uploadToS3, getFileTypeFromUri } from '~/utils/uploadImageToS3';
+import type { ModelWithThumbnail } from '~/types/model';
+import type { Review } from '~/types/review';
 
 export default function ModelBottomSheet() {
   const snapPoints = useMemo(() => ['85%'], []);
@@ -25,271 +34,300 @@ export default function ModelBottomSheet() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [comment, setComment] = useState('');
   const [commentImage, setCommentImage] = useState<{ uri: string } | null>(null);
+  const [previewImageUri, setPreviewImageUri] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
+  const { userInfo } = useAuth();
   const router = useRouter();
   const inputRef = useRef<TextInput>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-
   const { selectedModel, setSelectedModel } = useModel();
   const model = selectedModel as ModelWithThumbnail;
 
   useEffect(() => {
     if (model) {
+      setPage(0);
+      setHasMore(true);
+      loadReviews(0);
       setLikes(model.model.likeCount);
       setLiked(false);
     }
   }, [model]);
 
   useEffect(() => {
-    if (selectedModel) {
-      bottomSheetRef.current?.present();
-    }
+    if (selectedModel) bottomSheetRef.current?.present();
   }, [selectedModel]);
 
   useEffect(() => {
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
-      inputRef.current?.blur(); // 키보드 내려가면 확실히 blur
-    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => inputRef.current?.blur());
     return () => hideSub.remove();
   }, []);
-
-  useEffect(() => {
-    const loadReviews = async () => {
-      if (!model) return;
-      try {
-        const data = await fetchModelReviews(model.model.modelId);
-        setReviews(data);
-      } catch (err) {
-        console.debug('리뷰 불러오기 실패:', err);
-      }
-    };
-
-    loadReviews();
-  }, [model]);
 
   useFocusEffect(
     useCallback(() => {
       const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
         if (inputRef.current?.isFocused()) {
-          inputRef.current.blur(); // <- 명시적으로 blur 처리
-          return true; // 이벤트 소비
+          inputRef.current.blur();
+          return true;
         }
-
         if (bottomSheetRef.current) {
-          bottomSheetRef.current.close(); // 바텀시트를 닫음
-          return true; // 뒤로가기 이벤트 소비
+          bottomSheetRef.current.close();
+          return true;
         }
         return false;
       });
-
       return () => backHandler.remove();
     }, []),
   );
 
-  if (!model) return null;
-
-  // 이미지 선택 함수
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 1,
     });
-
     if (!result.canceled && result.assets.length > 0) {
       setCommentImage({ uri: result.assets[0].uri });
     }
   };
 
+  const alertDelete = (reviewId: number) => {
+    Alert.alert('리뷰 삭제', '이 리뷰를 삭제하시겠어요?', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '삭제',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteModelReview(reviewId);
+            setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId));
+          } catch (err) {
+            console.warn('리뷰 삭제 실패:', err);
+            alert('리뷰 삭제에 실패했습니다.');
+          }
+        },
+      },
+    ]);
+  };
+
+  const loadReviews = async (nextPage = 0) => {
+    if (isFetchingMore || !model || (!hasMore && nextPage !== 0)) return;
+
+    setIsFetchingMore(true);
+    try {
+      const data = await fetchModelReviews(model.model.modelId, nextPage);
+
+      setReviews((prev) => {
+        const existingIds = new Set(prev.map((r) => r.reviewId));
+        const filtered = data.filter((r) => !existingIds.has(r.reviewId));
+        return nextPage === 0 ? data : [...prev, ...filtered];
+      });
+
+      setPage(nextPage + 1);
+      if (data.length === 0) setHasMore(false);
+    } catch (err) {
+      console.debug('리뷰 불러오기 실패:', err);
+    } finally {
+      setIsFetchingMore(false);
+    }
+  };
+
+  const handleSendComment = async () => {
+    if (!comment.trim()) return;
+    try {
+      let uploadFileName: string | undefined;
+      if (commentImage) {
+        const fileUri = commentImage.uri;
+        const fileName = fileUri.split('/').pop()!;
+        const fileType = getFileTypeFromUri(fileUri);
+
+        const { presignedUrl, uploadFileName: fileKey } = await getImageUploadUrl(
+          fileName,
+          fileType,
+          'review',
+        );
+        await uploadToS3(presignedUrl, fileUri, fileType);
+        uploadFileName = fileKey;
+
+        await postImageMetadata({
+          modelId: model.model.modelId,
+          userId: model.model.userId,
+          uploadFileName,
+          public: true,
+        });
+      }
+
+      await postModelReview(model.model.modelId, comment, uploadFileName);
+
+      setComment('');
+      inputRef.current?.clear?.();
+      setCommentImage(null);
+      loadReviews(0);
+    } catch (err) {
+      console.debug('리뷰 등록 실패:', err);
+      alert('리뷰 등록 중 오류가 발생했습니다.');
+    }
+  };
+
+  if (!model) return null;
+
   return (
-    <BottomSheetModal
-      ref={bottomSheetRef}
-      snapPoints={snapPoints}
-      enablePanDownToClose
-      keyboardBehavior="interactive"
-      onDismiss={() => setSelectedModel(null)}
-      android_keyboardInputMode="adjustResize"
-      backdropComponent={(props) => (
-        <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} />
-      )}
-      backgroundStyle={{ borderRadius: 20 }}
-    >
-      <BottomSheetScrollView contentContainerStyle={styles.container}>
-        {/* 헤더 정보 */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>{model.model.modelName}</Text>
-            <Text style={styles.author}>by {model.userName}</Text>
-          </View>
-        </View>
-
-        <View style={styles.mainImageWrapper}>
-          {/* 대표 이미지 */}
-          <Image source={{ uri: model.thumbnailUrl }} style={styles.mainImage} />
-
-          {/* 좋아요 버튼 */}
-          <TouchableOpacity
-            style={styles.heartButton}
-            onPress={() => {
-              setLiked((prev) => !prev);
-              setLikes((prev) => (liked ? prev - 1 : prev + 1));
-            }}
-          >
-            {liked ? (
-              <ICONS.heart.filled width={24} height={24} />
-            ) : (
-              <ICONS.heart.outline width={24} height={24} />
-            )}
-            <Text style={{ marginLeft: 4 }}>{likes}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* 관련 이미지 */}
-        {/* <View style={styles.section}>
-          <Text style={styles.subTitle}>이 모델로 만든 이미지</Text>
-          <FlatList
-            horizontal
-            data={model.relatedImages}
-            keyExtractor={(_, index) => `image-${index}`}
-            renderItem={({ item }) => <Image source={item} style={styles.thumbImage} />}
-            showsHorizontalScrollIndicator={false}
-          />
-        </View> */}
-
-        {/* 사용 버튼 */}
+    <>
+      {previewImageUri && (
         <TouchableOpacity
-          style={styles.useButton}
-          onPress={() => {
-            bottomSheetRef.current?.dismiss();
-            router.push({ pathname: '/convert', params: { modelId: model.model.modelId } });
-          }}
+          style={styles.fullscreenModal}
+          onPress={() => setPreviewImageUri(null)}
+          activeOpacity={1}
         >
-          <Text style={styles.useButtonText}>사용해 보기</Text>
+          <Image
+            source={{ uri: previewImageUri }}
+            style={styles.fullscreenImage}
+            resizeMode="contain"
+          />
         </TouchableOpacity>
+      )}
 
-        <View style={styles.divider} />
-
-        {/* 리뷰 섹션 */}
-        <View style={styles.section}>
-          <Text style={styles.subTitle}>리뷰 {reviews.length}개</Text>
-          {reviews.map((item, index) => (
-            <View key={item.reviewId}>
-              <View style={styles.reviewRow}>
-                <View style={styles.reviewContent}>
-                  <Text style={styles.reviewer}>user#{item.userId}</Text>
-                  <Text style={styles.commentText}>{item.content}</Text>
-                  <Text style={styles.reviewDate}>
-                    {new Date(item.createdAt).toLocaleDateString()}
-                  </Text>
-                </View>
-                <Image source={{ uri: item.presignedUrl }} style={styles.reviewImage} />
-              </View>
-              {index !== reviews.length - 1 && <View style={styles.reviewDivider} />}
+      <BottomSheetModal
+        ref={bottomSheetRef}
+        snapPoints={snapPoints}
+        enablePanDownToClose
+        keyboardBehavior="interactive"
+        onDismiss={() => setSelectedModel(null)}
+        android_keyboardInputMode="adjustResize"
+        backdropComponent={(props) => (
+          <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} />
+        )}
+        backgroundStyle={{ borderRadius: 20 }}
+      >
+        <BottomSheetScrollView
+          onScroll={({ nativeEvent }) => {
+            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const isNearBottom =
+              layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
+            if (isNearBottom && !isFetchingMore && hasMore) loadReviews(page);
+          }}
+          contentContainerStyle={styles.container}
+        >
+          {/* 헤더 */}
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.title}>{model.model.modelName}</Text>
+              <Text style={styles.author}>by {model.userName}</Text>
             </View>
-          ))}
-        </View>
+          </View>
 
-        {/* 댓글 입력 */}
-        {commentImage && (
-          <View style={styles.previewContainer}>
-            <Image source={commentImage} style={styles.previewImage} />
-            <TouchableOpacity style={styles.removeImageBtn} onPress={() => setCommentImage(null)}>
-              <Text style={styles.removeImageText}>×</Text>
+          {/* 대표 이미지 */}
+          <View style={styles.mainImageWrapper}>
+            <TouchableOpacity onPress={() => setPreviewImageUri(model.thumbnailUrl)}>
+              <Image source={{ uri: model.thumbnailUrl }} style={styles.mainImage} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.heartButton}
+              onPress={() => {
+                setLiked((prev) => !prev);
+                setLikes((prev) => (liked ? prev - 1 : prev + 1));
+              }}
+            >
+              {liked ? (
+                <ICONS.heart.filled width={24} height={24} />
+              ) : (
+                <ICONS.heart.outline width={24} height={24} />
+              )}
+              <Text style={{ marginLeft: 4 }}>{likes}</Text>
             </TouchableOpacity>
           </View>
-        )}
 
-        <View style={styles.commentInputContainer}>
-          <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
-            <Text style={{ fontSize: 22, color: '#555' }}>＋</Text>
-          </TouchableOpacity>
-
-          <View style={styles.commentBox}>
-            <TextInput
-              ref={inputRef}
-              style={styles.commentInput}
-              placeholder="댓글 작성하기..."
-              placeholderTextColor="#999"
-              onChangeText={setComment}
-            />
-          </View>
-
+          {/* 사용 버튼 */}
           <TouchableOpacity
-            style={styles.sendButton}
-            onPress={async () => {
-              if (!comment.trim()) return;
-
-              try {
-                let uploadFileName: string | undefined;
-
-                if (commentImage) {
-                  const fileUri = commentImage.uri;
-                  const fileName = fileUri.split('/').pop()!;
-                  const fileType = getMimeTypeFromUri(fileUri);
-
-                  const { presignedUrl, uploadFileName: fileKey } = await getImageUploadUrl(
-                    fileName,
-                    fileType,
-                  );
-                  await uploadToS3(presignedUrl, fileUri, fileType);
-                  uploadFileName = fileKey;
-                }
-
-                await postModelReview(model.model.modelId, comment, uploadFileName);
-
-                // UI 초기화
-                setComment('');
-                inputRef.current?.clear?.();
-                setCommentImage(null);
-
-                // 최신 리뷰 다시 불러오기
-                const updated = await fetchModelReviews(model.model.modelId);
-                setReviews(updated);
-              } catch (err) {
-                console.debug('리뷰 등록 실패:', err);
-                alert('리뷰 등록 중 오류가 발생했습니다.');
-              }
+            style={styles.useButton}
+            onPress={() => {
+              bottomSheetRef.current?.dismiss();
+              router.push({ pathname: '/convert', params: { modelId: model.model.modelId } });
             }}
           >
-            <ICONS.send width={20} height={20} />
+            <Text style={styles.useButtonText}>사용해 보기</Text>
           </TouchableOpacity>
-        </View>
-      </BottomSheetScrollView>
-    </BottomSheetModal>
+
+          <View style={styles.divider} />
+
+          {/* 리뷰 목록 */}
+          <View style={styles.section}>
+            <Text style={styles.subTitle}>리뷰 {reviews.length}개</Text>
+            {reviews.map((item, index) => (
+              <View key={item.reviewId}>
+                <Pressable
+                  style={styles.reviewRow}
+                  onLongPress={() => {
+                    if (item.userId !== Number(userInfo.userId)) return;
+                    alertDelete(item.reviewId);
+                  }}
+                >
+                  <View style={styles.reviewContent}>
+                    <Text style={styles.reviewer}>user#{item.userId}</Text>
+                    <Text style={styles.commentText}>{item.content}</Text>
+                    <Text style={styles.reviewDate}>
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  {!!item.presignedUrl && (
+                    <TouchableOpacity onPress={() => setPreviewImageUri(item.presignedUrl)}>
+                      <Image source={{ uri: item.presignedUrl }} style={styles.reviewImage} />
+                    </TouchableOpacity>
+                  )}
+                </Pressable>
+                {index !== reviews.length - 1 && <View style={styles.reviewDivider} />}
+              </View>
+            ))}
+          </View>
+
+          {/* 댓글 입력 */}
+          {commentImage && (
+            <View style={styles.previewContainer}>
+              <Image source={commentImage} style={styles.previewImage} />
+              <TouchableOpacity style={styles.removeImageBtn} onPress={() => setCommentImage(null)}>
+                <Text style={styles.removeImageText}>×</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.commentInputContainer}>
+            <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
+              <Text style={{ fontSize: 22, color: '#555' }}>＋</Text>
+            </TouchableOpacity>
+            <View style={styles.commentBox}>
+              <TextInput
+                ref={inputRef}
+                style={styles.commentInput}
+                placeholder="댓글 작성하기..."
+                placeholderTextColor="#999"
+                onChangeText={setComment}
+              />
+            </View>
+            <TouchableOpacity style={styles.sendButton} onPress={handleSendComment}>
+              <ICONS.send width={20} height={20} />
+            </TouchableOpacity>
+          </View>
+        </BottomSheetScrollView>
+      </BottomSheetModal>
+    </>
   );
 }
 
 const shadowStyle = {
   shadowColor: '#000',
-  shadowOffset: {
-    width: 0,
-    height: 1,
-  },
+  shadowOffset: { width: 0, height: 1 },
   shadowOpacity: 0.2,
   shadowRadius: 1.41,
-
   elevation: 2,
 };
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  author: {
-    color: '#999',
-    marginTop: 4,
-    marginLeft: 2,
-  },
-  mainImageWrapper: {
-    position: 'relative',
-  },
+  container: { padding: 20, paddingBottom: 40 },
+  header: { marginBottom: 10 },
+  title: { fontSize: 18, fontWeight: 'bold' },
+  author: { color: '#999', marginTop: 4, marginLeft: 2 },
+  mainImageWrapper: { position: 'relative' },
   mainImage: {
     width: '100%',
     height: 200,
@@ -308,72 +346,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 20,
   },
-  section: {
-    marginBottom: 20,
-  },
-  subTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  thumbImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 10,
-  },
+  section: { marginBottom: 20 },
+  subTitle: { fontWeight: 'bold', fontSize: 16, marginBottom: 12 },
   useButton: {
     backgroundColor: colors.primary,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
   },
-  useButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  divider: {
-    height: 10,
-    backgroundColor: '#E0E0E0',
-    marginHorizontal: -20,
-    marginVertical: 20,
-  },
-  reviewRow: {
-    flexDirection: 'row',
-    marginVertical: 12,
-  },
-  reviewImage: {
-    width: 60,
-    height: 80,
-    borderRadius: 6,
-    marginRight: 10,
-  },
-  reviewer: {
-    fontWeight: 'bold',
-  },
-  reviewContent: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  commentText: {
-    marginVertical: 4,
-  },
-  reviewDate: {
-    fontSize: 12,
-    color: '#aaa',
-    marginTop: 4,
-    alignSelf: 'flex-start',
-  },
-  reviewDivider: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-  },
-  commentInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
+  useButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  divider: { height: 10, backgroundColor: '#E0E0E0', marginHorizontal: -20, marginVertical: 20 },
+  reviewRow: { flexDirection: 'row', marginVertical: 12 },
+  reviewImage: { width: 60, height: 80, borderRadius: 6, marginRight: 10 },
+  reviewer: { fontWeight: 'bold' },
+  reviewContent: { flex: 1, justifyContent: 'space-between' },
+  commentText: { marginVertical: 4 },
+  reviewDate: { fontSize: 12, color: '#aaa', marginTop: 4, alignSelf: 'flex-start' },
+  reviewDivider: { height: 1, backgroundColor: '#E0E0E0' },
+  commentInputContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   addImageButton: {
     width: 40,
     height: 50,
@@ -392,11 +382,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     ...shadowStyle,
   },
-  previewImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-  },
+  previewImage: { width: 80, height: 80, borderRadius: 12 },
   removeImageBtn: {
     position: 'absolute',
     top: -8,
@@ -408,17 +394,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  removeImageText: {
-    color: '#fff',
-    fontSize: 16,
-    lineHeight: 16,
-  },
-  commentBox: {
-    flex: 1,
-    height: 50,
-    borderRadius: 12,
-    ...shadowStyle,
-  },
+  removeImageText: { color: '#fff', fontSize: 16, lineHeight: 16 },
+  commentBox: { flex: 1, height: 50, borderRadius: 12, ...shadowStyle },
   commentInput: {
     flex: 1,
     height: 50,
@@ -436,4 +413,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...shadowStyle,
   },
+  fullscreenModal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  fullscreenImage: { width: '100%', height: '100%' },
 });

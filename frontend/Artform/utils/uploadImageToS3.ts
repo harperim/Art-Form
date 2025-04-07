@@ -1,15 +1,4 @@
-import modelApi from '~/lib/api/model';
-
-export const getImageUploadUrl = async (fileName: string, fileType: string) => {
-  const res = await modelApi.get('/image/presigned-url', {
-    params: {
-      fileName,
-      fileType,
-    },
-  });
-
-  return res.data.data as { presignedUrl: string; uploadFileName: string };
-};
+// utils/uploadImageToS3.ts
 
 export const uploadToS3 = async (presignedUrl: string, fileUri: string, fileType: string) => {
   const blob = await (await fetch(fileUri)).blob();
@@ -23,7 +12,7 @@ export const uploadToS3 = async (presignedUrl: string, fileUri: string, fileType
   });
 };
 
-export const getMimeTypeFromUri = (uri: string): string => {
+export const getFileTypeFromUri = (uri: string): string => {
   const extension = uri.split('.').pop()?.toLowerCase();
 
   switch (extension) {

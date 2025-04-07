@@ -9,6 +9,7 @@ import { useModel } from '~/context/ModelContext';
 import type { ModelWithThumbnail } from '~/types/model';
 import { fetchPresignedImageUrl } from '~/services/imageService';
 import { fetchRecentModels } from '~/services/modelService';
+import { router } from 'expo-router';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_ITEM_WIDTH = (SCREEN_WIDTH - 24 * 2 - 12) / 2;
@@ -97,7 +98,7 @@ export default function ModelScreen() {
           <ModelCarousel data={models} onPress={handleCardPress} />
 
           <Text style={styles.description}>나만의 모델을 만들어 보세요</Text>
-          <TouchableOpacity style={styles.learnButton}>
+          <TouchableOpacity style={styles.learnButton} onPress={() => router.push('/train')}>
             <View style={styles.iconLeft}>
               <ICONS.plus width={20} height={20} />
             </View>
