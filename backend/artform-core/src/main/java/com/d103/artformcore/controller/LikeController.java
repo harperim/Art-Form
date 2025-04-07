@@ -39,9 +39,9 @@ public class LikeController {
                     @ApiResponse(responseCode = "200", description = "처리 성공!"),
             })
     @GetMapping
-    public ResponseEntity<LikeListResponseDto> likeList(Authentication authentication) {
+    public ResponseEntity<LikeListResponseDto> likeList(Authentication authentication, @RequestParam int page) {
         Long userId = Long.valueOf(authentication.getName());
-        LikeListResponseDto likeList = likeService.getLikeList(userId);
+        LikeListResponseDto likeList = likeService.getLikeList(userId, page);
         return ResponseEntity.ok(likeList);
     }
 }

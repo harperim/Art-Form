@@ -12,5 +12,6 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 
     Optional<Like> findByUserIdAndModel_ModelId(Long userId, Long modelId);
 
-    List<Like> findByUserId(Long userId);
+    List<Like> findByUserIdOrderByCreatedAtDesc(Long userId);
+
 }
