@@ -31,9 +31,9 @@ public class ImageController {
     @Operation(summary = "이미지 업로드 Presigned URL 요청",
             description = "S3에 이미지 파일을 업로드하기 위한 Presigned URL을 요청합니다")
     @GetMapping("/presigned-url")
-    public ResponseEntity<ApiResponses<ImageSaveResponseDto>> getPresignedPutUrl(@RequestParam String fileType, @RequestParam String fileName) {
+    public ResponseEntity<ApiResponses<ImageSaveResponseDto>> getPresignedPutUrl(@RequestParam String fileType, @RequestParam String fileName, @RequestParam String service) {
         try {
-            ImageSaveResponseDto imageSaveResponseDto = imageService.getPresignedPutUrl(fileType, fileName, "image");
+            ImageSaveResponseDto imageSaveResponseDto = imageService.getPresignedPutUrl(fileType, fileName, service);
             return ResponseEntity.ok(ApiResponses.success(imageSaveResponseDto));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
