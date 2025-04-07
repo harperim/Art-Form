@@ -66,9 +66,6 @@ public class JwtTokenProvider {
         Date refreshTokenExpireDate = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
         String refreshToken = generateRefreshToken(userId, refreshTokenExpireDate);
 
-        // redis에 저장
-        redisDao.setValues(userId, refreshToken, Duration.ofMinutes(REFRESH_TOKEN_EXPIRE_TIME));
-
         return JwtToken.builder()
                 .grantType(GRANT_TYPE)
                 .accessToken(accessToken)
