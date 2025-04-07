@@ -1,6 +1,5 @@
 // components/ModelCarousel.tsx
 import { LinearGradient } from 'expo-linear-gradient';
-import type { ImageSourcePropType } from 'react-native';
 import {
   Text,
   Image,

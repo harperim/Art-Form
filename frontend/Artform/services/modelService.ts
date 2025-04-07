@@ -1,6 +1,6 @@
 // services/modelService.ts
 import modelApi from '~/lib/api/model';
-import type { Model, RawModel } from '~/types/model';
+import type { Model } from '~/types/model';
 
 // 오늘의 추천 (랜덤) 모델 조회
 export const fetchRandomModels = async (count: number = 5): Promise<Model[]> => {
@@ -71,6 +71,6 @@ export const fetchMyLikeModel = async (page: number = 1): Promise<Model[]> => {
 
 // 모델 상세 조회
 export const fetchModelInfo = async (modelId: number): Promise<Model> => {
-  const res = await modelApi.get(`/model/${modelId}/presigned-url`);
+  const res = await modelApi.get(`/model/${modelId}/metadata`);
   return res.data.data;
 };

@@ -24,11 +24,10 @@ export default function ModelScreen() {
   const [models, setModels] = useState<ModelWithThumbnail[]>([]);
   const toggleView = () => setIsGrid((prev) => !prev);
 
-  const { setSelectedModel, setIsBottomSheetVisible } = useModel();
+  const { setSelectedModel } = useModel();
 
   const handleCardPress = (item: ModelWithThumbnail) => {
     setSelectedModel(item);
-    setIsBottomSheetVisible(true);
   };
 
   const renderGridItem = ({ item, index }: Props) => (
