@@ -22,23 +22,25 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
         String method = request.getMethod();
+        if (!uri.contains("/actuator/prometheus")) {
+            log.info("요청 정보: URI={}, METHOD={}", uri, method);
 
-        log.info("요청 정보: URI={}, METHOD={}", uri, method);
+            String accessToken = getJwtFromRequest(request);
 
-        String accessToken = getJwtFromRequest(request);
-
-        // 토큰 가지고 있을 경우
-        if (accessToken != null) {
-            if (jwtTokenValidator.validateAccessToken(accessToken)) {
-                log.info("토큰 검증 성공");
-                Authentication authentication = jwtTokenValidator.getAuthentication(accessToken);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            // 토큰 가지고 있을 경우
+            if (accessToken != null) {
+                if (jwtTokenValidator.validateAccessToken(accessToken)) {
+                    log.info("토큰 검증 성공");
+                    Authentication authentication = jwtTokenValidator.getAuthentication(accessToken);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    log.warn("토큰 검증 실패");
+                }
             } else {
-                log.warn("토큰 검증 실패");
+                log.warn("토큰이 없음");
             }
-        } else {
-            log.warn("토큰이 없음");
         }
+
         filterChain.doFilter(request, response);
     }
 
