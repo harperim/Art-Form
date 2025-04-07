@@ -25,14 +25,13 @@ import { fetchPresignedImageUrl } from '~/services/imageService';
 import { useAuth } from '~/lib/auth-context';
 import { fetchMyInfo } from '~/services/userService';
 
-
 export default function Home() {
   const [todayData, setTodayData] = useState<ModelWithThumbnail[]>([]);
   const [hotModels, setHotModels] = useState<ModelWithThumbnail[]>([]);
   const [recentModels, setRecentModels] = useState<ModelWithThumbnail[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  const { setSelectedModel, setIsBottomSheetVisible } = useModel();
+  const { setSelectedModel } = useModel();
 
   const OFFSET = 20;
   const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
@@ -40,7 +39,6 @@ export default function Home() {
 
   const handleCardPress = (item: ModelWithThumbnail) => {
     setSelectedModel(item);
-    setIsBottomSheetVisible(true);
   };
 
   const loadModels = async () => {

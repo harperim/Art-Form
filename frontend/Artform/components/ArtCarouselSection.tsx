@@ -26,7 +26,7 @@ export default function ArtCarouselSection({ data, onPress }: Props) {
           <ArtCarouselCard
             image={item.thumbnailUrl}
             title={item.model.modelName}
-            subtitle={item.userName}
+            // subtitle={item.userName}
           />
         </TouchableOpacity>
       ))}

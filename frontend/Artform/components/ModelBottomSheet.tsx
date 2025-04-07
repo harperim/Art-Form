@@ -30,8 +30,7 @@ export default function ModelBottomSheet() {
   const inputRef = useRef<TextInput>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const { selectedModel, setSelectedModel, isBottomSheetVisible, setIsBottomSheetVisible } =
-    useModel();
+  const { selectedModel, setSelectedModel } = useModel();
   const model = selectedModel as ModelWithThumbnail;
 
   useEffect(() => {
@@ -42,10 +41,10 @@ export default function ModelBottomSheet() {
   }, [model]);
 
   useEffect(() => {
-    if (selectedModel && isBottomSheetVisible) {
+    if (selectedModel) {
       bottomSheetRef.current?.present();
     }
-  }, [selectedModel, isBottomSheetVisible]);
+  }, [selectedModel]);
 
   useEffect(() => {
     const hideSub = Keyboard.addListener('keyboardDidHide', () => {
@@ -107,7 +106,7 @@ export default function ModelBottomSheet() {
       snapPoints={snapPoints}
       enablePanDownToClose
       keyboardBehavior="interactive"
-      onDismiss={() => setIsBottomSheetVisible(false)}
+      onDismiss={() => setSelectedModel(null)}
       android_keyboardInputMode="adjustResize"
       backdropComponent={(props) => (
         <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} />
@@ -161,7 +160,7 @@ export default function ModelBottomSheet() {
           style={styles.useButton}
           onPress={() => {
             bottomSheetRef.current?.dismiss();
-            router.push('/convert');
+            router.push({ pathname: '/convert', params: { modelId: model.model.modelId } });
           }}
         >
           <Text style={styles.useButtonText}>사용해 보기</Text>
