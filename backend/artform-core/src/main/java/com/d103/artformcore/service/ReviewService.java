@@ -20,10 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +30,7 @@ public class ReviewService {
     private final ModelRepository modelRepository;
     private final ImageService imageService;
 
-    public ReviewListDto getModelReviews(Long modelId, Long userId, String authHeader) {
+    public ReviewListDto getModelReviews(Long modelId, Long userId, String authHeader, int page) {
         Model model = modelRepository.findById(modelId).orElseThrow(() -> new ModelNotFoundException("모델 미존재"));
         List<Review> reviewList = reviewRepository.findReviewByModelOrderByCreatedAtDesc(model);
 
@@ -41,11 +38,28 @@ public class ReviewService {
         if (reviewList.isEmpty()) {
             return ReviewListDto.builder()
                     .msg("조회 성공")
-                    .data(List.of())
+                    .data(Collections.emptyList())
                     .build();
         }
+
+        // 페이징 처리
+        int PAGE_SIZE = 5;
+        int start = page * PAGE_SIZE;
+        int end = Math.min(start + PAGE_SIZE, reviewList.size());
+
+        // 범위가 유효한지 확인
+        if (start >= reviewList.size()) {
+            return ReviewListDto.builder()
+                    .msg("조회 성공")
+                    .data(Collections.emptyList())
+                    .build();
+        }
+
+        // 페이지에 해당하는 데이터만 추출
+        List<Review> pageReviews = reviewList.subList(start, end);
+
         // 리뷰 DTO 리스트 기져오기
-        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId, authHeader);
+        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(pageReviews, userId, authHeader);
 
         return ReviewListDto.builder()
                 .msg("조회 성공")

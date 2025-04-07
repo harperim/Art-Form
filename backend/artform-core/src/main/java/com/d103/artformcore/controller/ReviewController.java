@@ -26,12 +26,12 @@ public class ReviewController {
             })
     @GetMapping("/{modelId}")
     public ResponseEntity<ReviewListDto> getModelReviews(@PathVariable("modelId") Long modelId, Authentication authentication,
-                                                         HttpServletRequest request) {
+                                                         HttpServletRequest request, @RequestParam("page") int page) {
 
         Long userId = Long.valueOf(authentication.getName());
         String authHeader = request.getHeader("Authorization");
 
-        ReviewListDto reviews = reviewService.getModelReviews(modelId, userId, authHeader);
+        ReviewListDto reviews = reviewService.getModelReviews(modelId, userId, authHeader, page);
         return ResponseEntity.ok(reviews);
     }
 
