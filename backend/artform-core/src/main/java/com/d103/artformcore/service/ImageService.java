@@ -13,12 +13,14 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
@@ -84,6 +86,18 @@ public class ImageService {
         }
         Long modelId = image.getModel().getModelId();
         return new ImageLoadResponseDto(image, presignedUrl);
+    }
+
+    @Async("taskExecutor")
+    public CompletableFuture<ImageLoadResponseDto> getPresignedGetUrlAsync(long imageId, long userId, String service) {
+        try {
+            ImageLoadResponseDto result = getPresignedGetUrl(imageId, userId, service);
+            return CompletableFuture.completedFuture(result);
+        } catch (CustomException e) {
+            CompletableFuture<ImageLoadResponseDto> future = new CompletableFuture<>();
+            future.completeExceptionally(e);
+            return future;
+        }
     }
 
     public List<ImageLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId) {

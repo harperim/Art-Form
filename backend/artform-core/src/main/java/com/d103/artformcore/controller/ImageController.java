@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Tag(name = "이미지", description = "이미지 관리 API")
 @RestController
@@ -75,6 +76,15 @@ public class ImageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponses.error(errorResponse));
         }
+    }
+
+    @GetMapping("/{imageId}/presigned-url/async")
+    public CompletableFuture<ResponseEntity<ImageLoadResponseDto>> getPresignedUrlAsync(
+            @PathVariable long imageId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        return imageService.getPresignedGetUrlAsync(imageId, Long.parseLong(userDetails.getUsername()), "image")
+                .thenApply(ResponseEntity::ok);
     }
 
     @Operation(summary = "최근순 이미지 다운로드 Presigned URL 요청",
