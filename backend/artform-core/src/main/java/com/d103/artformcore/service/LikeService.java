@@ -61,20 +61,38 @@ public class LikeService {
         }
     }
 
-    public LikeListResponseDto getLikeList(Long userId) {
+    public LikeListResponseDto getLikeList(Long userId, int page) {
+        int size = 5;
 
-        List<Like> likeList = likeRepository.findByUserId(userId);
+        // 전체 좋아요 목록을 가져옵니다
+        List<Like> allLikes = likeRepository.findByUserIdOrderByCreatedAtDesc(userId);
+
         // 좋아요 리스트가 없으면
-        if (likeList.isEmpty()) {
-            return new LikeListResponseDto("success", null);
+        if (allLikes.isEmpty()) {
+            return new LikeListResponseDto("success", Collections.emptyList());
         }
-        
+
+        // 페이징 처리
+        int start = page * size;
+        int end = Math.min(start + size, allLikes.size());
+
+        // 범위가 유효한지 확인
+        if (start >= allLikes.size()) {
+            return new LikeListResponseDto("success", Collections.emptyList());
+        }
+
+        // 페이지에 해당하는 데이터만 추출
+        List<Like> likeList = allLikes.subList(start, end);
+
         // 썸네일 ID 받아오기
         List<Long> thumbnailIdList = likeList.stream()
                 .map(like -> like.getModel().getThumbnailId())
                 .toList();
 
+        // 이미지 URL 조회
         List<String> imageUrlList = imageService.getPresignedGetUrlLikedList(thumbnailIdList, userId);
+
+        // DTO 변환
         List<LikeResponseDto> likeResponseList = getLikeResponseDtoList(userId, likeList, imageUrlList);
 
         return new LikeListResponseDto("조회 성공", likeResponseList);
