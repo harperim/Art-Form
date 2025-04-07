@@ -33,12 +33,13 @@ public class ReviewService {
     public ReviewListDto getModelReviews(Long modelId, Long userId, String authHeader, int page) {
         Model model = modelRepository.findById(modelId).orElseThrow(() -> new ModelNotFoundException("모델 미존재"));
         List<Review> reviewList = reviewRepository.findReviewByModelOrderByCreatedAtDesc(model);
-
+        int totalCount = reviewList.size();
         // 아무것도 없으면
         if (reviewList.isEmpty()) {
             return ReviewListDto.builder()
                     .msg("조회 성공")
                     .data(Collections.emptyList())
+                    .reviewCount(totalCount)
                     .build();
         }
 
@@ -52,6 +53,7 @@ public class ReviewService {
             return ReviewListDto.builder()
                     .msg("조회 성공")
                     .data(Collections.emptyList())
+                    .reviewCount(totalCount)
                     .build();
         }
 
@@ -64,6 +66,7 @@ public class ReviewService {
         return ReviewListDto.builder()
                 .msg("조회 성공")
                 .data(reviewDtos)
+                .reviewCount(totalCount)
                 .build();
     }
 
