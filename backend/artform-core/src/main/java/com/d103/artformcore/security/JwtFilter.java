@@ -30,7 +30,6 @@ public class JwtFilter extends OncePerRequestFilter {
             // 토큰 가지고 있을 경우
             if (accessToken != null) {
                 if (jwtTokenValidator.validateAccessToken(accessToken)) {
-                    log.info("토큰 검증 성공");
                     Authentication authentication = jwtTokenValidator.getAuthentication(accessToken);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {
