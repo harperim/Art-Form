@@ -1,6 +1,6 @@
 // services/modelService.ts
 import modelApi from '~/lib/api/model';
-import type { Model } from '~/types/model';
+import type { Model, RawModel, MyLikeModel } from '~/types/model';
 
 // 오늘의 추천 (랜덤) 모델 조회
 export const fetchRandomModels = async (count: number = 5): Promise<Model[]> => {
@@ -57,12 +57,12 @@ export const fetchMyModels = async (page: number = 1): Promise<Model[]> => {
   }
 };
 
-export const fetchMyLikeModel = async (page: number = 1): Promise<Model[]> => {
+export const fetchMyLikeModel = async (page: number = 1): Promise<MyLikeModel[]> => {
   try {
     const res = await modelApi.get('/model/like', {
       params: { page },
     });
-    return res.data.data as Model[];
+    return res.data.data as MyLikeModel[];
   } catch (err) {
     console.error('좋아요한 모델 조회 실패:', err);
     throw new Error('좋아요한한 모델을 불러오지 못했습니다.');

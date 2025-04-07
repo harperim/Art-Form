@@ -12,7 +12,8 @@ import { fetchPresignedImageUrl } from '~/services/imageService';
 import { fetchMyModels, fetchMyLikeModel } from '~/services/modelService';
 import { ICONS } from '~/constants/icons';
 
-import type { ModelWithThumbnail, MyModelItem } from '~/types/model';
+import type { ModelWithThumbnail, MyModelItem, MyLikeModel } from '~/types/model';
+import { useModel } from '~/context/ModelContext';
 
 export default function MyPageScreen() {
   type MyContentFilter = '내가 만든 그림' | '내가 만든 모델' | '내가 좋아요한 모델';
@@ -69,8 +70,13 @@ export default function MyPageScreen() {
   };
 
   const LoadMyLikeModel = async () => {
-    const likeModelInfo = fetchMyLikeModel();
-    console.log(likeModelInfo);
+    const myLikeModeList = await fetchMyLikeModel();
+    const newMyLikeModel: MyModelItem[] = [];
+    for (const MyLikeMode of myLikeModeList) {
+      console.log(MyLikeMode);
+      //   newLikeModelItem.push(MyLikeMode);
+      //   console.log(newLikeModelItem);
+    }
   };
 
   useEffect(() => {
@@ -144,11 +150,6 @@ export default function MyPageScreen() {
   const onLogout = async () => {
     await handleLogout();
     router.replace('/login');
-  };
-
-  const handleCardPress = (item: ModelWithThumbnail) => {
-    // setSelectedModel(item);
-    undefined;
   };
 
   return (

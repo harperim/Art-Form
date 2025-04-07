@@ -28,3 +28,10 @@ export type MyModelItem = {
   modelName: string;
   url: string;
 };
+
+export type MyLikeModel = {
+  imageSrc: string;
+  userId: string;
+  modelId: string;
+  modelName: string;
+};

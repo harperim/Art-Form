@@ -1,4 +1,4 @@
-// components/AnimatedModelCard.tsx
+import { useEffect, useState } from 'react';
 import {
   View,
   FlatList,
@@ -9,8 +9,11 @@ import {
   StyleSheet,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useModel } from '~/context/ModelContext';
 import { useAuth } from '~/lib/auth-context';
-import type { MyModelItem } from '~/types/model';
+import { fetchPresignedImageUrl } from '~/services/imageService';
+import { fetchModelInfo } from '~/services/modelService';
+import type { ModelWithThumbnail, MyModelItem } from '~/types/model';
 
 type Props = {
   item: MyModelItem[];
@@ -42,12 +45,31 @@ const GRID_ITEM_WIDTH = width / 2;
 
 export default function MypageItemList({ item, disableAnimation = null }: Props) {
   const { userInfo } = useAuth();
+
+  const { selectedModel, setSelectedModel } = useModel();
+
+  const handleCardPress = async (item: MyModelItem) => {
+    try {
+      const modelInfo = await fetchModelInfo(item.modelId);
+      const thumbnailUrl = (await fetchPresignedImageUrl(modelInfo.model.thumbnailId)) || '';
+
+      const formattedModel: ModelWithThumbnail = {
+        ...modelInfo,
+        thumbnailUrl,
+      };
+
+      setSelectedModel(formattedModel);
+    } catch (error) {
+      console.error('모델 조회 실패:', error);
+    }
+  };
+
   const renderGridItem = ({ item, index }: { item: MyModelItem; index: number }) => (
     <Animated.View
       entering={disableAnimation ? undefined : FadeInDown.delay(index * 30).springify()}
       style={styles.card}
     >
-      <TouchableOpacity activeOpacity={0.9}>
+      <TouchableOpacity activeOpacity={0.9} onPress={() => handleCardPress(item)}>
         <Image style={styles.cardImage} source={{ uri: item.url }} />
         <Text style={styles.modelName}>{item.modelName}</Text>
         {item.userName !== userInfo.nickname ? (
