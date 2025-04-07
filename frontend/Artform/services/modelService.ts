@@ -45,7 +45,7 @@ export const fetchRecentModels = async (page: number = 1): Promise<Model[]> => {
 };
 
 // 내가 만든 모델 조회
-export const fetchMyModels = async (page: number = 1): Promise<Model[]> => {
+export const fetchMyModels = async (page: number = 0): Promise<Model[]> => {
   try {
     const res = await modelApi.get('/model/my-model', {
       params: { page },
@@ -57,11 +57,12 @@ export const fetchMyModels = async (page: number = 1): Promise<Model[]> => {
   }
 };
 
-export const fetchMyLikeModel = async (page: number = 1): Promise<MyLikeModel[]> => {
+export const fetchMyLikeModel = async (page: number = 0): Promise<MyLikeModel[]> => {
   try {
     const res = await modelApi.get('/model/like', {
       params: { page },
     });
+    console.log(res.data);
     return res.data.data as MyLikeModel[];
   } catch (err) {
     console.error('좋아요한 모델 조회 실패:', err);

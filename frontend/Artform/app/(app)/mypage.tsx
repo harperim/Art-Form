@@ -72,11 +72,16 @@ export default function MyPageScreen() {
   const LoadMyLikeModel = async () => {
     const myLikeModeList = await fetchMyLikeModel();
     const newMyLikeModel: MyModelItem[] = [];
-    for (const MyLikeMode of myLikeModeList) {
-      console.log(MyLikeMode);
-      //   newLikeModelItem.push(MyLikeMode);
-      //   console.log(newLikeModelItem);
+    for (const MyLikeModel of myLikeModeList) {
+      const formattedModel: MyModelItem = {
+        modelId: Number(MyLikeModel.modelId),
+        userName: `user-${MyLikeModel.userId}`, // 임시 처리. 실제 닉네임 있으면 교체
+        modelName: MyLikeModel.modelName,
+        url: MyLikeModel.imageSrc,
+      };
+      newMyLikeModel.push(formattedModel);
     }
+    setMyLikeModels(newMyLikeModel);
   };
 
   useEffect(() => {
@@ -134,15 +139,15 @@ export default function MyPageScreen() {
       case '내가 좋아요한 모델':
         return (
           <View style={styles.mainContentView}>
-            <Text style={styles.mainContentTitle}>총 {1}개</Text>
-            <MyPageItemList />
+            <Text style={styles.mainContentTitle}>총 {myLikeModels.length}개</Text>
+            <MyPageItemList item={myLikeModels} disableAnimation={null} />
           </View>
         );
 
       default:
         return <Text>1</Text>;
     }
-  }, [selectedTab]);
+  }, [selectedTab, imageUrls, myModels]);
 
   const { handleLogout } = useAuthActions();
   const router = useRouter();
