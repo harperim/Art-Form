@@ -16,7 +16,7 @@ def remove_unexpected_kwargs(orig_func, *args, **kwargs):
             else:
                 raise
 
-def run_text2img(model_dir: str, prompt: str, model_name: str, guidance_scale: float = 7.5, num_inference_steps: int = 50, strength_str: str = "0.33") -> str:
+def run_text2img(model_dir: str, prompt: str, model_name: str, guidance_scale: float = 7.5, num_inference_steps: int = 50, strength_str: str = "0.") -> str:
     """
     text2img 추론 함수
 

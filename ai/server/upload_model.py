@@ -12,8 +12,7 @@ app = FastAPI()
 CORE_SERVER_BASE = "http://j12d103.p.ssafy.io:8081"
 USER_SERVER_BASE = "http://j12d103.p.ssafy.io:8082"
 
-# 예시 Authorization 토큰
-authorization = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTc0MzkxMzc4MH0.d9ho84eCf1ea_Vh-f2PjpoeOb12Xlm1fhIg2hFfo7mk'
+authorization = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTc0NDI0MjA2NH0.hGEXqS-BOnU30W3EriTBA1qwJfDzvXRS9ZJnIEgf61Q'
 
 @app.post("/model/upload/")
 async def upload_pretrained_model(
