@@ -1,13 +1,13 @@
 package com.d103.artformcore.controller;
 
 
-import com.d103.artformcore.dto.LikeListResponseDto;
+import com.d103.artformcore.dto.like.LikeIsTrueDto;
+import com.d103.artformcore.dto.like.LikeListResponseDto;
 import com.d103.artformcore.dto.ResponseDto;
 import com.d103.artformcore.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -42,6 +42,17 @@ public class LikeController {
     public ResponseEntity<LikeListResponseDto> likeList(Authentication authentication, @RequestParam int page) {
         Long userId = Long.valueOf(authentication.getName());
         LikeListResponseDto likeList = likeService.getLikeList(userId, page);
+        return ResponseEntity.ok(likeList);
+    }
+
+    @Operation(summary = "좋아요한 여부 확인",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "처리 성공!"),
+            })
+    @GetMapping("{modelId}")
+    public ResponseEntity<LikeIsTrueDto> getIsLike(@PathVariable Long modelId, Authentication authentication) {
+        Long userId = Long.valueOf(authentication.getName());
+        LikeIsTrueDto likeList = likeService.getIsLike(userId, modelId);
         return ResponseEntity.ok(likeList);
     }
 }

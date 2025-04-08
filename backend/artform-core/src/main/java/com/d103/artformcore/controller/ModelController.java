@@ -203,4 +203,22 @@ public class ModelController {
         }
     }
 
+    @Operation(summary = "모델 썸네일 ID 등록", description = "모델을 썸네일 ",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "처리 성공!"),
+                @ApiResponse(responseCode = "500", description = "오류 발생!")
+            })
+    @PostMapping("/update/{modelId}/{imageId}")
+    public ResponseEntity<ApiResponses<String>> registerThumbnailId(@PathVariable Long modelId, @PathVariable Long imageId) {
+
+        try{
+            modelService.thumbnailId(modelId, imageId);
+            return ResponseEntity.ok(ApiResponses.success("업데이트 성공"));
+        } catch (CustomException e){
+            ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponses.error(errorResponse));
+        }
+    }
+
 }
