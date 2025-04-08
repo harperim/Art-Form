@@ -13,4 +13,5 @@ import java.util.List;
 public class ReviewListDto {
     String msg;
     List<ReviewDto> data;
+    private Integer reviewCount;
 }
