@@ -8,7 +8,7 @@ import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
 type ModelContextType = {
   selectedModel: ModelWithThumbnail | null;
   setSelectedModel: (model: ModelWithThumbnail | null) => void;
-  refreshSelectedModel: () => Promise<void>;
+  refreshSelectedModel: () => Promise<ModelWithThumbnail | null>;
 };
 
 const ModelContext = createContext<ModelContextType | undefined>(undefined);

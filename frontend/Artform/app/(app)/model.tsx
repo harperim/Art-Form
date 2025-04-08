@@ -1,14 +1,6 @@
 // app/(app)/model.tsx
 import { useEffect, useState } from 'react';
-import {
-  View,
-  Image,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  FlatList,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ICONS } from '~/constants/icons';
 import ModelCarousel from '~/components/ModelCarousel';

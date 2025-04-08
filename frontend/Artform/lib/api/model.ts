@@ -3,7 +3,7 @@ import axios from 'axios';
 import { getToken } from '../auth';
 
 const modelApi = axios.create({
-  baseURL: 'http://j12d103.p.ssafy.io:8081',
+  baseURL: 'https://j12d103.p.ssafy.io/core',
   headers: {
     'Content-Type': 'application/json',
   },
