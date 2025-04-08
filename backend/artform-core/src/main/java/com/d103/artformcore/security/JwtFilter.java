@@ -22,22 +22,26 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String uri = request.getRequestURI();
         String method = request.getMethod();
-        log.info("[JwtFilter] URI={}, METHOD={}", uri, method);
 
-        String accessToken = getJwtFromRequest(request);
-        log.info("[JwtFilter] Authorization Header: {}", request.getHeader("Authorization"));
-        log.info("[JwtFilter] Extracted Token: {}", accessToken);
+        // actuator/prometheus 요청 시 로깅 생략
+        if (!uri.equals("/actuator/prometheus")) {
+            log.info("[JwtFilter] URI={}, METHOD={}", uri, method);
 
-        if (accessToken != null) {
-            if (jwtTokenValidator.validateAccessToken(accessToken)) {
-                Authentication authentication = jwtTokenValidator.getAuthentication(accessToken);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("[JwtFilter] 인증 성공: {}", authentication.getName());
+            String accessToken = getJwtFromRequest(request);
+            log.info("[JwtFilter] Authorization Header: {}", request.getHeader("Authorization"));
+            log.info("[JwtFilter] Extracted Token: {}", accessToken);
+
+            if (accessToken != null) {
+                if (jwtTokenValidator.validateAccessToken(accessToken)) {
+                    Authentication authentication = jwtTokenValidator.getAuthentication(accessToken);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.info("[JwtFilter] 인증 성공: {}", authentication.getName());
+                } else {
+                    log.warn("[JwtFilter] 토큰 검증 실패");
+                }
             } else {
-                log.warn("[JwtFilter] 토큰 검증 실패");
+                log.warn("[JwtFilter] 토큰이 없음");
             }
-        } else {
-            log.warn("[JwtFilter] 토큰이 없음");
         }
 
         filterChain.doFilter(request, response);
