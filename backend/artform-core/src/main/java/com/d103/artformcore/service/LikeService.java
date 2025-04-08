@@ -1,8 +1,8 @@
 package com.d103.artformcore.service;
 
-import com.d103.artformcore.dto.ImageLoadResponseDto;
-import com.d103.artformcore.dto.LikeListResponseDto;
-import com.d103.artformcore.dto.LikeResponseDto;
+import com.d103.artformcore.dto.like.LikeIsTrueDto;
+import com.d103.artformcore.dto.like.LikeListResponseDto;
+import com.d103.artformcore.dto.like.LikeResponseDto;
 import com.d103.artformcore.dto.ResponseDto;
 import com.d103.artformcore.entity.Like;
 import com.d103.artformcore.entity.Model;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +86,7 @@ public class LikeService {
         // 썸네일 ID 받아오기
         List<Long> thumbnailIdList = likeList.stream()
                 .map(like -> like.getModel().getThumbnailId())
+                .filter(Objects::nonNull)  // null 값 필터링
                 .toList();
 
         // 이미지 URL 조회
@@ -114,5 +114,11 @@ public class LikeService {
             likeResponseList.add(responseDto);
         }
         return likeResponseList;
+    }
+
+    public LikeIsTrueDto getIsLike(Long userId, Long modelId) {
+        Optional<Like> byUserIdAndModelModelId = likeRepository.findByUserIdAndModel_ModelId(userId, modelId);
+        Boolean isLike = byUserIdAndModelModelId.isPresent();
+        return new LikeIsTrueDto("조회 성공",isLike);
     }
 }
