@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ImageService {
     private final ImageRepository imageRepository;
     private final ModelRepository modelRepository;
@@ -90,33 +93,25 @@ public class ImageService {
         return new ImageLoadResponseDto(image, presignedUrl);
     }
 
+    // ***************************** 비동기 테스트 중 *****************************
     @Async("taskExecutor")
     public CompletableFuture<ImageLoadResponseDto> getPresignedGetUrlAsync(long imageId, long userId, String service) {
-        try {
-            Image image = imageRepository.findByImageIdAndDeletedAtIsNull(imageId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        log.info("userId: {}", userId);
+        log.info("비동기 메소드 내부 인증 정보: {}", auth != null ? auth.getName() + ", 권한: " + auth.getAuthorities() : "없음" );
 
-            if (!image.isPublic() && !image.getUserId().equals(userId)) {
-                System.out.println(image.isPublic() + " " + image.getUserId());
-                throw new CustomException(ErrorCode.FORBIDDEN_IMAGE);
-            }
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return CompletableFuture.supplyAsync(() -> {
+            // 비동기 작업에서 SecurityContext 설정
+            SecurityContextHolder.setContext(securityContext);
 
-            String uploadFileName = image.getUploadFileName();
-            String presignedUrl = s3Service.createPresignedGetUrl("artform-data", service + "/" + uploadFileName);
-            if (presignedUrl.isEmpty()) {
-                throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
-            }
+            ImageLoadResponseDto imageLoadResponseDto = new ImageLoadResponseDto();
+            // 비즈니스 로직 수행
 
-            ImageLoadResponseDto result = new ImageLoadResponseDto(image, presignedUrl);
-            return CompletableFuture.completedFuture(result);
-
-        } catch (CustomException e) {
-            CompletableFuture<ImageLoadResponseDto> future = new CompletableFuture<>();
-            future.completeExceptionally(e);
-            return future;
-        }
+            return imageLoadResponseDto;
+        });
     }
-
+    // **************************************************************************
 
     public List<ImageLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId) {
         List<Image> imageList = imageRepository.findByIsPublicTrueAndDeletedAtIsNull(

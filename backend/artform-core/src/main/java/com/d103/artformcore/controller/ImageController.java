@@ -6,6 +6,7 @@ import com.d103.artformcore.dto.ImageSaveDto;
 import com.d103.artformcore.dto.ImageSaveResponseDto;
 import com.d103.artformcore.entity.Image;
 import com.d103.artformcore.exception.CustomException;
+import com.d103.artformcore.exception.ErrorCode;
 import com.d103.artformcore.exception.ErrorResponse;
 import com.d103.artformcore.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,14 +81,28 @@ public class ImageController {
         }
     }
 
+    // ***************************** 비동기 테스트 중 *****************************
     @GetMapping("/{imageId}/presigned-url/async")
-    public CompletableFuture<ResponseEntity<ImageLoadResponseDto>> getPresignedUrlAsync(
+    public CompletableFuture<ResponseEntity<ApiResponses<ImageLoadResponseDto>>> getPresignedUrlAsync(
             @PathVariable long imageId,
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        return imageService.getPresignedGetUrlAsync(imageId, Long.parseLong(userDetails.getUsername()), "image")
-                .thenApply(ResponseEntity::ok);
+        long userId = Long.parseLong(userDetails.getUsername());
+
+        return imageService.getPresignedGetUrlAsync(imageId, userId, "image")
+                .thenApply(response -> ResponseEntity.ok(ApiResponses.success(response)));
     }
+
+    @GetMapping("/benchmark")
+    public ApiResponses<String> benchmark(
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        long userId = Long.parseLong(userDetails.getUsername());
+
+        return ApiResponses.success("userId: " + userId);
+    }
+
+    // **************************************************************************
 
     @Operation(summary = "최근순 이미지 다운로드 Presigned URL 요청",
             description = "최근에 등록된 이미지 리스트를 페이지 단위로 조회합니다",

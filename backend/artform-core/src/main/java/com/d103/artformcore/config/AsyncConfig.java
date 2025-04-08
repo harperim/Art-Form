@@ -11,7 +11,7 @@ import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecu
 import java.util.concurrent.Executor;
 
 @Configuration
-@EnableAsync(proxyTargetClass = true)
+@EnableAsync
 public class AsyncConfig {
 
     @Bean(name = "taskExecutor")
@@ -23,14 +23,6 @@ public class AsyncConfig {
         executor.setThreadNamePrefix("async-task-");
         executor.initialize();
 
-        // 🔥 SecurityContext를 전달하는 executor로 Wrapping
         return new DelegatingSecurityContextAsyncTaskExecutor(executor);
     }
-
-
-    @Bean
-    public TaskDecorator taskDecorator() {
-        return new SecurityContextTaskDecorator();
-    }
-
 }
