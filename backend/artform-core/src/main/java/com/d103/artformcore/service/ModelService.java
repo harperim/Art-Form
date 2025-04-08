@@ -210,7 +210,7 @@ public class ModelService {
     }
     
     // 썸네일 ID 등록
-    public void thumbnailId(long modelId, long thumbnailId) {
+    public void thumbnailId(long modelId, long imageId) {
         Model model = modelRepository.findById(modelId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
 
@@ -219,7 +219,7 @@ public class ModelService {
             throw new CustomException(ErrorCode.DELETED_MODEL);
         }
 
-        model.setThumbnailId(thumbnailId);
+        model.setThumbnailId(imageId);
 
         // 변경사항 저장
         modelRepository.save(model);

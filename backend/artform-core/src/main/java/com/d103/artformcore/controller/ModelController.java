@@ -208,11 +208,11 @@ public class ModelController {
                 @ApiResponse(responseCode = "200", description = "처리 성공!"),
                 @ApiResponse(responseCode = "500", description = "오류 발생!")
             })
-    @PostMapping("/update/{modelId}/{thumbnailId}")
-    public ResponseEntity<ApiResponses<String>> registerThumbnailId(@PathVariable Long modelId, @PathVariable Long thumbnailId) {
+    @PostMapping("/update/{modelId}/{imageId}")
+    public ResponseEntity<ApiResponses<String>> registerThumbnailId(@PathVariable Long modelId, @PathVariable Long imageId) {
 
         try{
-            modelService.thumbnailId(modelId, thumbnailId);
+            modelService.thumbnailId(modelId, imageId);
             return ResponseEntity.ok(ApiResponses.success("업데이트 성공"));
         } catch (CustomException e){
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
