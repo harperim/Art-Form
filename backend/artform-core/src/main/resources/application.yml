@@ -26,10 +26,10 @@ jwt:
 server:
   tomcat:
     threads:
-      max: 1000
+      max: 500
       min-spare: 100
     max-connections: 8192
-    accept-count: 1000
+    accept-count: 500
 
 # S3 설정
 cloud:
