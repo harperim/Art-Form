@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static java.lang.Thread.sleep;
+
 @Tag(name = "이미지", description = "이미지 관리 API")
 @RestController
 @RequestMapping("/image")
@@ -95,11 +97,9 @@ public class ImageController {
 
     @GetMapping("/benchmark")
     public ApiResponses<String> benchmark(
-            @AuthenticationPrincipal UserDetails userDetails) {
-
-        long userId = Long.parseLong(userDetails.getUsername());
-
-        return ApiResponses.success("userId: " + userId);
+            @AuthenticationPrincipal UserDetails userDetails) throws InterruptedException {
+        sleep(300);
+        return ApiResponses.success("");
     }
 
     // **************************************************************************
