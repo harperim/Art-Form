@@ -12,8 +12,7 @@ import { fetchPresignedImageUrl } from '~/services/imageService';
 import { fetchMyModels, fetchMyLikeModel } from '~/services/modelService';
 import { ICONS } from '~/constants/icons';
 
-import type { ModelWithThumbnail, MyModelItem, MyLikeModel } from '~/types/model';
-import { useModel } from '~/context/ModelContext';
+import type { MyModelItem } from '~/types/model';
 
 export default function MyPageScreen() {
   type MyContentFilter = '내가 만든 그림' | '내가 만든 모델' | '내가 좋아요한 모델';
@@ -27,7 +26,7 @@ export default function MyPageScreen() {
   const [imageUrls, setImageUrls] = useState<ImageItem[]>([]);
   const [myModels, setMyModels] = useState<MyModelItem[]>([]); // 내가 만든 모델
   const [myLikeModels, setMyLikeModels] = useState<MyModelItem[]>([]); // 내가 만든 모델
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   // 내 사진 불러오기
   const loadImages = async () => {

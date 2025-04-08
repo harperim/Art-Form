@@ -19,6 +19,11 @@ export default function StoreScreen() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'latest' | 'popular'>('latest');
   const [models, setModels] = useState<ModelWithThumbnail[]>([]);
+
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+
   const { selectedModel, setSelectedModel } = useModel();
 
   const handleCardPress = (item: ModelWithThumbnail) => {
@@ -32,28 +37,57 @@ export default function StoreScreen() {
   }, [sortParam]);
 
   useEffect(() => {
-    const loadModels = async () => {
-      try {
-        const fetchModelsBySort = sort === 'latest' ? fetchRecentModels : fetchHotModels;
-        const data = await fetchModelsBySort(1);
-
-        const urls = await Promise.all(
-          data.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
-        );
-
-        const merged = data.map((model, index) => ({
-          ...model,
-          thumbnailUrl: urls[index] ?? Image.resolveAssetSource(require('~/assets/logo.png')).uri,
-        }));
-
-        setModels(merged);
-      } catch (err) {
-        console.error('모델 불러오기 실패:', err);
-      }
-    };
-
-    loadModels();
+    loadInitialModels();
   }, [sort]);
+
+  const loadInitialModels = async () => {
+    try {
+      const fetchModelsBySort = sort === 'latest' ? fetchRecentModels : fetchHotModels;
+      const data = await fetchModelsBySort(0);
+
+      const urls = await Promise.all(
+        data.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
+      );
+
+      const merged = data.map((model, index) => ({
+        ...model,
+        thumbnailUrl: urls[index] ?? Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+      }));
+
+      setModels(merged);
+      setPage(2);
+      setHasMore(data.length > 0);
+    } catch (err) {
+      console.error('모델 불러오기 실패:', err);
+    }
+  };
+
+  const loadMoreModels = async () => {
+    if (isFetchingMore || !hasMore) return;
+
+    setIsFetchingMore(true);
+    try {
+      const fetchModelsBySort = sort === 'latest' ? fetchRecentModels : fetchHotModels;
+      const data = await fetchModelsBySort(page);
+
+      const urls = await Promise.all(
+        data.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
+      );
+
+      const merged = data.map((model, index) => ({
+        ...model,
+        thumbnailUrl: urls[index] ?? Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+      }));
+
+      setModels((prev) => [...prev, ...merged]);
+      setPage((prev) => prev + 1);
+      if (data.length === 0) setHasMore(false);
+    } catch (err) {
+      console.error('더 불러오기 실패:', err);
+    } finally {
+      setIsFetchingMore(false);
+    }
+  };
 
   const filtered = models.filter((item) =>
     item.model.modelName.toLowerCase().includes(search.toLowerCase()),
@@ -103,7 +137,16 @@ export default function StoreScreen() {
           <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
         </View>
       ) : (
-        <Animated.ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Animated.ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          scrollEventThrottle={100}
+          onScroll={({ nativeEvent }) => {
+            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const isNearBottom =
+              layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
+            if (isNearBottom) loadMoreModels();
+          }}
+        >
           <View style={styles.columns}>
             <View style={styles.column}>
               {leftColumn.map((item, index) => (
@@ -128,6 +171,12 @@ export default function StoreScreen() {
               ))}
             </View>
           </View>
+          {/* 로딩 인디케이터 */}
+          {isFetchingMore && (
+            <View style={{ paddingVertical: 20 }}>
+              <Text style={{ textAlign: 'center', color: '#999' }}>불러오는 중...</Text>
+            </View>
+          )}
         </Animated.ScrollView>
       )}
     </SafeAreaView>

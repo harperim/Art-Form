@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
   View,
   FlatList,
@@ -24,29 +23,10 @@ const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height / 5;
 const GRID_ITEM_WIDTH = width / 2;
 
-// const renderGridItem = (item, index, disableAnimation: {index: number }; ) => (
-//   <Animated.View
-//     entering={disableAnimation ? undefined : FadeInDown.delay(index * 100).springify()}
-//     style={styles.card}
-//   >
-//     <TouchableOpacity activeOpacity={0.9} style={{ width: '100%', height: '100%' }}>
-//       <Image style={{ width: '100%', height: '100%', borderRadius: 8 }} source={item.image} />
-//       {/* <MyPageItemList
-//             item={item.image}
-//             index={index}
-//             onPress={() => handleCardPress(item)}
-//             disableAnimation={null}
-//           /> */}
-//       <Text style={{ marginTop: 10 }}>{item.artist}</Text>
-//       <Text>ff</Text>
-//     </TouchableOpacity>
-//   </Animated.View>
-// );
-
 export default function MypageItemList({ item, disableAnimation = null }: Props) {
   const { userInfo } = useAuth();
 
-  const { selectedModel, setSelectedModel } = useModel();
+  const { setSelectedModel } = useModel();
 
   const handleCardPress = async (item: MyModelItem) => {
     try {
@@ -92,16 +72,6 @@ export default function MypageItemList({ item, disableAnimation = null }: Props)
     </View>
   );
 }
-// onPress={onPress}
-//   <Animated.View
-//     entering={disableAnimation ? undefined : FadeInDown.delay(index * 100).springify()}
-//     style={styles.card}
-//   >
-//     <Image source={item.image} style={styles.cardImage} />
-//     <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
-//       {item.title}
-//     </Text>
-//   </Animated.View>
 
 const styles = StyleSheet.create({
   mainContentItem: {

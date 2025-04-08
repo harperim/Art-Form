@@ -1,12 +1,16 @@
+// services/reviewService.ts
 import modelApi from '~/lib/api/model';
-import type { Review } from '~/types/review';
+import type { Reviews } from '~/types/review';
 
 // 해당 모델의 리뷰 조회
-export const fetchModelReviews = async (modelId: number, page: number = 0): Promise<Review[]> => {
+export const fetchModelReviews = async (modelId: number, page: number = 0): Promise<Reviews> => {
   const res = await modelApi.get(`/model/review/${modelId}`, {
     params: { page },
   });
-  return res.data.data;
+  return {
+    data: res.data.data,
+    reviewCount: res.data.reviewCount,
+  };
 };
 
 // 리뷰 등록

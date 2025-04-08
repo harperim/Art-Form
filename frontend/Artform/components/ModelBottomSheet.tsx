@@ -38,6 +38,7 @@ export default function ModelBottomSheet() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [reviewCount, setReviewCount] = useState(0);
 
   const { userInfo } = useAuth();
   const router = useRouter();
@@ -50,7 +51,7 @@ export default function ModelBottomSheet() {
     if (model) {
       setPage(0);
       setHasMore(true);
-      loadReviews(0);
+      loadReviews(0, true);
       setLikes(model.model.likeCount);
       setLiked(false);
     }
@@ -111,23 +112,29 @@ export default function ModelBottomSheet() {
     ]);
   };
 
-  const loadReviews = async (nextPage = 0) => {
+  const loadReviews = async (nextPage = 0, reset = false) => {
     if (isFetchingMore || !model || (!hasMore && nextPage !== 0)) return;
 
     setIsFetchingMore(true);
     try {
-      const data = await fetchModelReviews(model.model.modelId, nextPage);
+      const { data, reviewCount } = await fetchModelReviews(model.model.modelId, nextPage);
+
+      setReviewCount(reviewCount);
 
       setReviews((prev) => {
         const existingIds = new Set(prev.map((r) => r.reviewId));
         const filtered = data.filter((r) => !existingIds.has(r.reviewId));
-        return nextPage === 0 ? data : [...prev, ...filtered];
+        return reset || nextPage === 0 ? data : [...prev, ...filtered];
       });
 
       setPage(nextPage + 1);
-      if (data.length === 0) setHasMore(false);
+      setHasMore((nextPage + 1) * data.length < reviewCount); // 페이지당 개수로 남은 여부 계산
     } catch (err) {
       console.debug('리뷰 불러오기 실패:', err);
+
+      setReviews([]);
+      setReviewCount(0);
+      setHasMore(false);
     } finally {
       setIsFetchingMore(false);
     }
@@ -163,7 +170,7 @@ export default function ModelBottomSheet() {
       setComment('');
       inputRef.current?.clear?.();
       setCommentImage(null);
-      loadReviews(0);
+      loadReviews(0, true);
     } catch (err) {
       console.debug('리뷰 등록 실패:', err);
       alert('리뷰 등록 중 오류가 발생했습니다.');
@@ -253,7 +260,7 @@ export default function ModelBottomSheet() {
 
           {/* 리뷰 목록 */}
           <View style={styles.section}>
-            <Text style={styles.subTitle}>리뷰 {reviews.length}개</Text>
+            <Text style={styles.subTitle}>리뷰 {reviewCount}개</Text>
             {reviews.map((item, index) => (
               <View key={item.reviewId}>
                 <Pressable
@@ -264,7 +271,7 @@ export default function ModelBottomSheet() {
                   }}
                 >
                   <View style={styles.reviewContent}>
-                    <Text style={styles.reviewer}>user#{item.userId}</Text>
+                    <Text style={styles.reviewer}>{item.userName}</Text>
                     <Text style={styles.commentText}>{item.content}</Text>
                     <Text style={styles.reviewDate}>
                       {new Date(item.createdAt).toLocaleDateString()}
