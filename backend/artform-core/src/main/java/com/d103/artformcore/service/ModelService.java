@@ -99,7 +99,7 @@ public class ModelService {
         }
 
         String uploadFileName = model.getUploadFileName();
-        return new ModelLoadResponseDto(model, getUserName(userId, token));
+        return new ModelLoadResponseDto(model, getUserName(model.getUserId(), token));
     }
 
     public List<ModelLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId, String token) {
