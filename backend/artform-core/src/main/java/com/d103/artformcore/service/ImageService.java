@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -91,14 +93,30 @@ public class ImageService {
     @Async("taskExecutor")
     public CompletableFuture<ImageLoadResponseDto> getPresignedGetUrlAsync(long imageId, long userId, String service) {
         try {
-            ImageLoadResponseDto result = getPresignedGetUrl(imageId, userId, service);
+            Image image = imageRepository.findByImageIdAndDeletedAtIsNull(imageId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+
+            if (!image.isPublic() && !image.getUserId().equals(userId)) {
+                System.out.println(image.isPublic() + " " + image.getUserId());
+                throw new CustomException(ErrorCode.FORBIDDEN_IMAGE);
+            }
+
+            String uploadFileName = image.getUploadFileName();
+            String presignedUrl = s3Service.createPresignedGetUrl("artform-data", service + "/" + uploadFileName);
+            if (presignedUrl.isEmpty()) {
+                throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
+            }
+
+            ImageLoadResponseDto result = new ImageLoadResponseDto(image, presignedUrl);
             return CompletableFuture.completedFuture(result);
+
         } catch (CustomException e) {
             CompletableFuture<ImageLoadResponseDto> future = new CompletableFuture<>();
             future.completeExceptionally(e);
             return future;
         }
     }
+
 
     public List<ImageLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId) {
         List<Image> imageList = imageRepository.findByIsPublicTrueAndDeletedAtIsNull(
