@@ -62,10 +62,10 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
             width: ITEM_WIDTH,
             height: ITEM_HEIGHT,
             overflow: 'hidden',
-            borderColor: '#2C2D26',
+            borderColor: '#ddd',
             borderRadius: 8,
             justifyContent: 'center',
-            borderWidth: 4,
+            borderWidth: 0.5,
           },
           translateStyle,
         ]}
