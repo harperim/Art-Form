@@ -26,6 +26,7 @@ import { deleteModelReview, fetchModelReviews, postModelReview } from '~/service
 import { uploadToS3, getFileTypeFromUri } from '~/utils/uploadImageToS3';
 import type { ModelWithThumbnail } from '~/types/model';
 import type { Review } from '~/types/review';
+import { fetchModelLikeStatus, likeModel } from '~/services/modelService';
 
 export default function ModelBottomSheet() {
   const snapPoints = useMemo(() => ['85%'], []);
@@ -48,13 +49,24 @@ export default function ModelBottomSheet() {
   const model = selectedModel as ModelWithThumbnail;
 
   useEffect(() => {
-    if (model) {
+    const init = async () => {
+      if (!model) return;
+
       setPage(0);
       setHasMore(true);
       loadReviews(0, true);
       setLikes(model.model.likeCount);
-      setLiked(false);
-    }
+
+      try {
+        const liked = await fetchModelLikeStatus(model.model.modelId);
+        setLiked(liked);
+      } catch (err) {
+        console.warn('좋아요 여부 불러오기 실패:', err);
+        setLiked(false);
+      }
+    };
+
+    init(); // async 실행
   }, [model]);
 
   useEffect(() => {
@@ -231,9 +243,18 @@ export default function ModelBottomSheet() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.heartButton}
-              onPress={() => {
-                setLiked((prev) => !prev);
-                setLikes((prev) => (liked ? prev - 1 : prev + 1));
+              onPress={async () => {
+                try {
+                  const isLiked = await likeModel(model.model.modelId);
+                  setLiked(isLiked);
+                  setLikes((prev) => (isLiked ? prev + 1 : prev - 1));
+                } catch (err) {
+                  console.warn('좋아요 처리 실패:', err);
+                  // 실패 시 롤백
+                  setLiked((prev) => !prev);
+                  setLikes((prev) => (liked ? prev + 1 : prev - 1));
+                  // alert('좋아요 처리 중 오류가 발생했습니다.');
+                }
               }}
             >
               {liked ? (

@@ -3,7 +3,7 @@ import { useGlobalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import ConvertScreen from '~/screens/ConvertScreen';
-import { fetchPresignedImageUrl } from '~/services/imageService';
+import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
 import { fetchModelInfo } from '~/services/modelService';
 import type { ModelWithThumbnail } from '~/types/model';
 
@@ -24,7 +24,8 @@ export default function ConvertPage() {
         // modelId 기반 모델 정보 요청
         const apiResponse = await fetchModelInfo(Number(modelId));
 
-        const thumbnailUrl = (await fetchPresignedImageUrl(apiResponse.model.thumbnailId)) || '';
+        const rawThumbnailUrl = await fetchPresignedImageUrl(apiResponse.model.thumbnailId);
+        const thumbnailUrl = getValidUrl(rawThumbnailUrl);
 
         const formattedModel: ModelWithThumbnail = {
           ...apiResponse,

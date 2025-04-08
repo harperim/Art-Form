@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     height: 190,
     borderRadius: 12,
     overflow: 'hidden',
-    backgroundColor: '#000',
+    backgroundColor: '#eee',
     marginBottom: 12,
     position: 'relative',
   },

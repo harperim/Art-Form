@@ -1,7 +1,6 @@
 // app/(app)/mypage.tsx
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuthActions } from '~/hooks/useAuthActions';
 import { useState, useMemo, useEffect } from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '~/lib/auth-context';
@@ -164,13 +163,7 @@ export default function MyPageScreen() {
     }
   }, [selectedTab, imageUrls, myModels]);
 
-  const { handleLogout } = useAuthActions();
   const router = useRouter();
-
-  const onLogout = async () => {
-    await handleLogout();
-    router.replace('/login');
-  };
 
   return (
     <View style={styles.container}>

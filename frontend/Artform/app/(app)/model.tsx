@@ -1,13 +1,21 @@
 // app/(app)/model.tsx
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import {
+  View,
+  Image,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ICONS } from '~/constants/icons';
 import ModelCarousel from '~/components/ModelCarousel';
 import AnimatedModelCard from '~/components/AnimatedModelCard';
 import { useModel } from '~/context/ModelContext';
 import type { ModelWithThumbnail } from '~/types/model';
-import { fetchPresignedImageUrl } from '~/services/imageService';
+import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
 import { fetchRecentModels } from '~/services/modelService';
 import { router } from 'expo-router';
 
@@ -45,13 +53,13 @@ export default function ModelScreen() {
   useEffect(() => {
     const loadModels = async () => {
       try {
-        const data = await fetchRecentModels(1); // 최근 모델 1페이지
+        const data = await fetchRecentModels(0);
         const urls = await Promise.all(
           data.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
         );
         const enriched = data.map((model, i) => ({
           ...model,
-          thumbnailUrl: urls[i] ?? '',
+          thumbnailUrl: getValidUrl(urls[i]),
         }));
         setModels(enriched);
       } catch (err) {

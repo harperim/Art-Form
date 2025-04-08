@@ -8,11 +8,12 @@ import type { ModelWithThumbnail } from '~/types/model';
 import colors from '~/constants/colors';
 import UploadOptionModal from '~/components/UploadOptionModal';
 import GenerateByTextModal from '~/components/GenerateByTextModal';
-import { useNavigation, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useModel } from '~/context/ModelContext';
 import LoadingModal from '~/components/LoadingModal';
 import { ICONS } from '~/constants/icons';
+import { applyImg2Img, applyText2Img } from '~/services/convertService';
 
 type Props = {
   model: ModelWithThumbnail;
@@ -30,17 +31,6 @@ export default function ConvertScreen({ model }: Props) {
   const { setSelectedModel } = useModel();
 
   const router = useRouter();
-
-  const navigation = useNavigation();
-
-  useLayoutEffect(() => {
-    navigation.setOptions({ tabBarStyle: { display: 'none' } });
-
-    return () => {
-      // 원래대로 복구
-      navigation.setOptions({ tabBarStyle: undefined });
-    };
-  }, [navigation]);
 
   useEffect(() => {
     const onBackPress = () => {
@@ -105,16 +95,55 @@ export default function ConvertScreen({ model }: Props) {
     }
   };
 
-  const handleSubmit = () => {
-    // if (!userImage) return;
+  const handleSubmit = async () => {
+    if (!userImage) {
+      Alert.alert('이미지 없음', '변환할 이미지를 먼저 업로드해 주세요.');
+      return;
+    }
 
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-    setTimeout(() => {
+      const result = await applyImg2Img({
+        imageUri: userImage,
+        modelId: String(model.model.modelId),
+        // strength: '0.8',
+      });
+
+      setResultImage(result); // API에서 받은 변환 결과 URL
+      setIsDone(true);
+    } catch (error) {
+      console.error('변환 실패:', error);
+      Alert.alert('변환 실패', '이미지 변환 중 오류가 발생했습니다.');
+    } finally {
       setIsLoading(false);
-      setIsDone(true); // ✅ 완료 상태로 전환
-      setResultImage(userImage || ''); // 실제 변환 이미지로 교체
-    }, 3000);
+    }
+  };
+
+  const handleGenerateByText = async () => {
+    if (!prompt.trim()) {
+      Alert.alert('프롬프트를 입력해 주세요.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const imageUrl = await applyText2Img({
+        prompt,
+        modelId: String(model.model.modelId),
+        strength: '0.8',
+      });
+
+      setResultImage(imageUrl);
+      setIsDone(true);
+      setTextModalVisible(false);
+      setPrompt('');
+    } catch (err) {
+      console.error('text2img 실패:', err);
+      Alert.alert('실패', '이미지를 생성하지 못했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -195,12 +224,7 @@ export default function ConvertScreen({ model }: Props) {
               }}
               value={prompt}
               onChange={setPrompt}
-              onSubmit={() => {
-                console.log('입력된 프롬프트:', prompt);
-                setTextModalVisible(false);
-                setPrompt('');
-                // 이미지 생성 로직 시작!
-              }}
+              onSubmit={handleGenerateByText}
             />
 
             <View style={styles.modelCard}>

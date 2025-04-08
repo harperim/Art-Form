@@ -2,9 +2,18 @@ import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-nativ
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ICONS } from '~/constants/icons';
+import { useAuthActions } from '~/hooks/useAuthActions';
 
 export default function setting() {
   const router = useRouter();
+
+  const { handleLogout } = useAuthActions();
+
+  const onLogout = async () => {
+    await handleLogout();
+    router.replace('/login');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
@@ -18,15 +27,18 @@ export default function setting() {
         <Text style={styles.title}>모델 학습하기</Text>
       </View>
       <View style={{ marginTop: 120 }}>
-        <TouchableOpacity style={styles.textBotton}>
+        <TouchableOpacity style={styles.textButton}>
           <ICONS.user width={28} height={28} />
           <Text style={styles.text}>계정 정보 확인 및 변경</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.textBotton}>
+        <TouchableOpacity style={styles.textButton}>
           <ICONS.setting width={28} height={28} />
-          <Text style={styles.text}>기본 설정정</Text>
+          <Text style={styles.text}>기본 설정</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.textBotton, { marginTop: 20, paddingLeft: 2 }]}>
+        <TouchableOpacity
+          onPress={onLogout}
+          style={[styles.textButton, { marginTop: 20, paddingLeft: 2 }]}
+        >
           <ICONS.logout width={24} height={24} />
           <Text style={[styles.text, { color: '#BE6E6E' }]}>로그아웃</Text>
         </TouchableOpacity>
@@ -50,7 +62,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   title: { fontSize: 18, marginLeft: 8, fontFamily: 'Freesentation7' },
-  textBotton: {
+  textButton: {
     alignItems: 'center',
     flexDirection: 'row',
     marginBottom: 16,

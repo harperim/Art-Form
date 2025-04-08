@@ -1,6 +1,15 @@
 // services/imageService.ts
 import modelApi from '~/lib/api/model';
 import type { PresignedImageResponse } from '~/types/image';
+import { Image } from 'react-native';
+
+export const getValidUrl = (url: string | null | undefined): string => {
+  const fallback = Image.resolveAssetSource(require('~/assets/logo.png')).uri;
+  if (!url || typeof url !== 'string' || url.trim().length === 0) {
+    return fallback;
+  }
+  return url;
+};
 
 // 개별 이미지 다운로드 presigned URL 요청
 export const fetchPresignedImageUrl = async (imageId: number): Promise<string | null> => {
@@ -10,7 +19,15 @@ export const fetchPresignedImageUrl = async (imageId: number): Promise<string | 
     const res = await modelApi.get<{ data: PresignedImageResponse }>(
       `/image/${imageId}/presigned-url`,
     );
-    return res.data.data.presignedUrl;
+    const url = res.data.data.presignedUrl;
+
+    // presignedUrl이 undefined, null, 빈 문자열일 때 방어
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      console.warn(`presigned-url 비어 있음: 이미지 ID ${imageId}`, url);
+      return null;
+    }
+
+    return url;
   } catch (err) {
     console.warn(`presigned-url 요청 실패: 이미지 ID ${imageId}`, err);
     return null;

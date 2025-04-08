@@ -57,6 +57,7 @@ export const fetchMyModels = async (page: number = 0): Promise<Model[]> => {
   }
 };
 
+// 내가 좋아요한 모델 조회
 export const fetchMyLikeModel = async (page: number = 0): Promise<MyLikeModel[]> => {
   try {
     const res = await modelApi.get('/model/like', {
@@ -74,4 +75,27 @@ export const fetchMyLikeModel = async (page: number = 0): Promise<MyLikeModel[]>
 export const fetchModelInfo = async (modelId: number): Promise<Model> => {
   const res = await modelApi.get(`/model/${modelId}/metadata`);
   return res.data.data;
+};
+
+// 좋아요 클릭
+export const likeModel = async (modelId: number): Promise<boolean> => {
+  try {
+    const res = await modelApi.post(`/model/like/${modelId}`);
+
+    return res.data.data;
+  } catch (err) {
+    console.error(`모델 좋아요 실패 (modelId: ${modelId}):`, err);
+    throw new Error('모델에 좋아요를 누를 수 없습니다.');
+  }
+};
+
+// 모델 좋아요 여부 확인
+export const fetchModelLikeStatus = async (modelId: number): Promise<boolean> => {
+  try {
+    const res = await modelApi.get(`/model/like/${modelId}`);
+    return res.data.data === true;
+  } catch (err) {
+    console.error(`좋아요 여부 확인 실패 (modelId: ${modelId}):`, err);
+    throw new Error('모델 좋아요 여부를 확인할 수 없습니다.');
+  }
 };

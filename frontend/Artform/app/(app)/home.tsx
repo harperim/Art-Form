@@ -20,7 +20,7 @@ import { useModel } from '~/context/ModelContext';
 import { useCallback, useEffect, useState } from 'react';
 import { fetchHotModels, fetchRandomModels, fetchRecentModels } from '~/services/modelService';
 import type { ModelWithThumbnail } from '~/types/model';
-import { fetchPresignedImageUrl } from '~/services/imageService';
+import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
 
 import { useAuth } from '~/lib/auth-context';
 import { fetchMyInfo } from '~/services/userService';
@@ -45,8 +45,8 @@ export default function Home() {
     try {
       const [random, hot, recent] = await Promise.all([
         fetchRandomModels(5),
-        fetchHotModels(1),
-        fetchRecentModels(1),
+        fetchHotModels(0),
+        fetchRecentModels(0),
       ]);
 
       const all = [...random, ...hot, ...recent];
@@ -56,20 +56,17 @@ export default function Home() {
 
       const randomMerged = random.map((model, index) => ({
         ...model,
-        thumbnailUrl: urls[index] ?? Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+        thumbnailUrl: getValidUrl(urls[index]),
       }));
 
       const hotMerged = hot.map((model, index) => ({
         ...model,
-        thumbnailUrl:
-          urls[random.length + index] ?? Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+        thumbnailUrl: getValidUrl(urls[random.length + index]),
       }));
 
       const recentMerged = recent.map((model, index) => ({
         ...model,
-        thumbnailUrl:
-          urls[random.length + hot.length + index] ??
-          Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+        thumbnailUrl: getValidUrl(urls[random.length + hot.length + index]),
       }));
 
       setTodayData(randomMerged);

@@ -1,6 +1,6 @@
 // app/(app)/store.tsx
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
@@ -12,7 +12,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 import AnimatedModelCard from '~/components/AnimatedModelCard';
 import { fetchHotModels, fetchRecentModels } from '~/services/modelService';
-import { fetchPresignedImageUrl } from '~/services/imageService';
+import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
 
 export default function StoreScreen() {
   const { sort: sortParam } = useLocalSearchParams();
@@ -51,7 +51,7 @@ export default function StoreScreen() {
 
       const merged = data.map((model, index) => ({
         ...model,
-        thumbnailUrl: urls[index] ?? Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+        thumbnailUrl: getValidUrl(urls[index]),
       }));
 
       setModels(merged);
@@ -76,7 +76,7 @@ export default function StoreScreen() {
 
       const merged = data.map((model, index) => ({
         ...model,
-        thumbnailUrl: urls[index] ?? Image.resolveAssetSource(require('~/assets/logo.png')).uri,
+        thumbnailUrl: getValidUrl(urls[index]),
       }));
 
       setModels((prev) => [...prev, ...merged]);
