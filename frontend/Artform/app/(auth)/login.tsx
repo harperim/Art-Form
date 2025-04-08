@@ -79,8 +79,8 @@ export default function LoginScreen() {
       <LinearGradient
         colors={[
           'rgba(0,0,0,0)', // 0%: 완전 투명
-          'rgba(0,0,0,0.3)', // 20%: 반투명
-          'rgba(0,0,0,0.5)', // 70%: 거의 검정
+          'rgba(0,0,0,0.4)', // 20%: 반투명
+          'rgba(0,0,0,0.7)', // 70%: 거의 검정
           'rgba(0,0,0,1)', // 100%: 완전 검정
         ]}
         locations={[0, 0.3, 0.5, 1]}
@@ -138,26 +138,27 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     backgroundColor: 'black',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   gradient: {
     position: 'absolute',
-    top: 20,
+    top: 0,
     bottom: 0,
     width: '100%',
   },
   container: {
-    top: 140,
     width: '85%',
     padding: 20,
     borderRadius: 10,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   titleWrapper: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 100,
+    marginBottom: 60,
   },
   title: {
     fontSize: 58,
@@ -195,8 +196,7 @@ const styles = StyleSheet.create({
   signupPrompt: {
     color: '#ddd',
     textAlign: 'center',
-    marginTop: 16,
-    fontFamily: 'Freesentation5',
+    marginTop: 20,
   },
   signupText: {
     color: '#6E95BE',
