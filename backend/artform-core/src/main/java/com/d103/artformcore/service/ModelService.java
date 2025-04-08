@@ -208,4 +208,20 @@ public class ModelService {
 
         return new ModelDownloadInfoDto(model, presignedUrl);
     }
+    
+    // 썸네일 ID 등록
+    public void thumbnailId(long modelId, long thumbnailId) {
+        Model model = modelRepository.findById(modelId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+
+        // 삭제 여부 확인
+        if (model.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.DELETED_MODEL);
+        }
+
+        model.setThumbnailId(thumbnailId);
+
+        // 변경사항 저장
+        modelRepository.save(model);
+    }
 }

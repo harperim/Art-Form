@@ -63,7 +63,7 @@ public class LikeService {
     public LikeListResponseDto getLikeList(Long userId, int page) {
         int size = 5;
 
-        // 전체 좋아요 목록을 가져옵니다
+        // 전체 좋아요 목록을 순서대로 가져옵니다
         List<Like> allLikes = likeRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
         // 좋아요 리스트가 없으면
