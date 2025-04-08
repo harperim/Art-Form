@@ -45,7 +45,7 @@ export default function ModelBottomSheet() {
   const router = useRouter();
   const inputRef = useRef<TextInput>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const { selectedModel, setSelectedModel } = useModel();
+  const { selectedModel, setSelectedModel, refreshSelectedModel } = useModel();
   const model = selectedModel as ModelWithThumbnail;
 
   useEffect(() => {
@@ -70,7 +70,23 @@ export default function ModelBottomSheet() {
   }, [model]);
 
   useEffect(() => {
-    if (selectedModel) bottomSheetRef.current?.present();
+    if (!selectedModel) return;
+
+    let cancelled = false;
+
+    const refreshIfNeeded = async () => {
+      const updatedModel = await refreshSelectedModel();
+
+      if (!cancelled && updatedModel) {
+        bottomSheetRef.current?.present();
+      }
+    };
+
+    refreshIfNeeded();
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedModel]);
 
   useEffect(() => {

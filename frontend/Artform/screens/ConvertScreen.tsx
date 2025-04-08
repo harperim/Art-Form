@@ -1,5 +1,5 @@
 // screens/ConvertScreen.tsx
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, Pressable, BackHandler, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
@@ -14,6 +14,7 @@ import { useModel } from '~/context/ModelContext';
 import LoadingModal from '~/components/LoadingModal';
 import { ICONS } from '~/constants/icons';
 import { applyImg2Img, applyText2Img } from '~/services/convertService';
+import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
 
 type Props = {
   model: ModelWithThumbnail;
@@ -75,23 +76,24 @@ export default function ConvertScreen({ model }: Props) {
     }
 
     try {
-      // 파일명 만들기
+      setIsLoading(true);
+
+      // 1. 파일명 만들기
       const filename = resultImage.substring(resultImage.lastIndexOf('/') + 1);
 
-      // 파일을 앱의 캐시 디렉토리에 복사 (이미 웹 URL이거나 카메라에서 온 경우 대비)
+      // 2. 캐시 디렉토리에 다운로드
       const localUri = `${FileSystem.cacheDirectory}${filename}`;
-      await FileSystem.copyAsync({
-        from: resultImage,
-        to: localUri,
-      });
+      const downloadRes = await FileSystem.downloadAsync(resultImage, localUri);
 
-      // 갤러리에 저장
-      await MediaLibrary.saveToLibraryAsync(localUri);
+      // 3. MediaLibrary에 저장
+      await MediaLibrary.saveToLibraryAsync(downloadRes.uri);
 
       Alert.alert('✅ 저장 완료', '이미지가 갤러리에 저장되었습니다!');
     } catch (error) {
       console.debug('이미지 저장 오류:', error);
       Alert.alert('오류 발생', '이미지를 저장하는 중 문제가 발생했습니다.');
+    } finally {
+      setIsLoading(false); // ⬅️ 로딩 종료
     }
   };
 
@@ -110,7 +112,9 @@ export default function ConvertScreen({ model }: Props) {
         // strength: '0.8',
       });
 
-      setResultImage(result); // API에서 받은 변환 결과 URL
+      const imageUrl = getValidUrl(await fetchPresignedImageUrl(result.imageId));
+
+      setResultImage(imageUrl); // API에서 받은 변환 결과 URL
       setIsDone(true);
     } catch (error) {
       console.error('변환 실패:', error);
@@ -128,15 +132,19 @@ export default function ConvertScreen({ model }: Props) {
 
     try {
       setIsLoading(true);
-      const imageUrl = await applyText2Img({
+      const imageUri = await applyText2Img({
         prompt,
         modelId: String(model.model.modelId),
-        strength: '0.8',
+        // strength: '0.8',
       });
 
+      console.log('text2img 결과:', imageUri);
+
+      const imageUrl = getValidUrl(await fetchPresignedImageUrl(imageUri.imageId));
+
       setResultImage(imageUrl);
-      setIsDone(true);
       setTextModalVisible(false);
+      setIsDone(true);
       setPrompt('');
     } catch (err) {
       console.error('text2img 실패:', err);

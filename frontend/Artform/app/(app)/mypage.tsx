@@ -7,7 +7,7 @@ import { useAuth } from '~/lib/auth-context';
 import { FlatList } from 'react-native-gesture-handler';
 
 import MyPageItemList from '~/components/MypageItemList';
-import { fetchPresignedImageUrl } from '~/services/imageService';
+import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
 import { fetchMyModels, fetchMyLikeModel } from '~/services/modelService';
 import { ICONS } from '~/constants/icons';
 
@@ -125,7 +125,7 @@ export default function MyPageScreen() {
                 activeOpacity={1}
               >
                 <Image
-                  source={{ uri: previewImageUri }}
+                  source={{ uri: getValidUrl(previewImageUri) }}
                   style={styles.fullscreenImage}
                   resizeMode="contain"
                 />
