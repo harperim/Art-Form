@@ -79,8 +79,8 @@ export default function LoginScreen() {
       <LinearGradient
         colors={[
           'rgba(0,0,0,0)', // 0%: 완전 투명
-          'rgba(0,0,0,0.4)', // 20%: 반투명
-          'rgba(0,0,0,0.7)', // 70%: 거의 검정
+          'rgba(0,0,0,0.3)', // 20%: 반투명
+          'rgba(0,0,0,0.5)', // 70%: 거의 검정
           'rgba(0,0,0,1)', // 100%: 완전 검정
         ]}
         locations={[0, 0.3, 0.5, 1]}
@@ -138,44 +138,54 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     backgroundColor: 'black',
-    justifyContent: 'center',
     alignItems: 'center',
   },
   gradient: {
     position: 'absolute',
-    top: 0,
+    top: 20,
     bottom: 0,
     width: '100%',
   },
   container: {
+    top: 140,
     width: '85%',
     padding: 20,
     borderRadius: 10,
+    alignItems: 'center',
   },
   titleWrapper: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 60,
+    marginBottom: 100,
   },
   title: {
-    fontSize: 60,
+    fontSize: 58,
     color: '#fff',
     fontFamily: 'SansitaSwashed-Bold',
+    textShadowColor: '#6E95BE',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
   },
   subtitle: {
-    bottom: 5,
-    left: 80,
-    fontSize: 20,
-    color: '#F2E6E6',
-    fontWeight: 'bold',
+    bottom: 12,
+    left: 32,
+    fontSize: 18,
+    color: '#F5F5DC',
+    fontFamily: 'Freesentation7',
+    textShadowColor: '#6E95BE',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
   },
   loginButton: {
     backgroundColor: '#6E95BE',
     padding: 15,
     borderRadius: 8,
+    width: 300,
+    height: 56,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
   },
   loginText: {
     color: '#fff',
@@ -185,7 +195,8 @@ const styles = StyleSheet.create({
   signupPrompt: {
     color: '#ddd',
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 16,
+    fontFamily: 'Freesentation5',
   },
   signupText: {
     color: '#6E95BE',

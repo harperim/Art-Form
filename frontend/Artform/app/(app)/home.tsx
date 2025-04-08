@@ -115,6 +115,7 @@ export default function Home() {
             bounces={false}
             showsHorizontalScrollIndicator={false}
             disableIntervalMomentum
+            // contentContainerStyle={{ paddingHorizontal: 1 }}
             scrollEventThrottle={20}
             onScroll={(event) => {
               scrollX.value = event.nativeEvent.contentOffset.x;
@@ -162,6 +163,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   main: {
     padding: 20,
+    paddingTop: 40,
     backgroundColor: '#fff',
   },
   logo: {
@@ -173,15 +175,15 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#2C2D26',
-    fontSize: 22,
+    fontSize: 18,
     fontFamily: 'Freesentation',
     fontWeight: '700',
   },
   parallaxCarouselView: {
-    marginTop: 12,
+    marginTop: 8,
   },
   popularModelView: {
-    marginTop: 28,
+    marginTop: 20,
   },
   newModelView: {
     marginTop: 28,
@@ -194,9 +196,10 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   seeMoreBtn: {
-    fontFamily: 'Freesentation',
+    fontFamily: 'Freesentation7',
     fontWeight: '600',
     color: '#59799B',
-    fontSize: 13,
+    fontSize: 15,
+    top: 2,
   },
 });

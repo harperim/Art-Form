@@ -14,7 +14,7 @@ import type { ModelWithThumbnail } from '~/types/model';
 
 const OFFSET = 20;
 const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
-const ITEM_HEIGHT = Dimensions.get('window').height * 0.36;
+const ITEM_HEIGHT = Dimensions.get('window').height * 0.38;
 
 interface ParallaxCarouselCardProps {
   item: ModelWithThumbnail;
@@ -58,7 +58,15 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
     <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(item)}>
       <Animated.View
         style={[
-          { width: ITEM_WIDTH, height: ITEM_HEIGHT, overflow: 'hidden', borderRadius: 15 },
+          {
+            width: ITEM_WIDTH,
+            height: ITEM_HEIGHT,
+            overflow: 'hidden',
+            borderColor: '#2C2D26',
+            borderRadius: 8,
+            justifyContent: 'center',
+            borderWidth: 4,
+          },
           translateStyle,
         ]}
       >
@@ -69,11 +77,7 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
             resizeMode="cover"
           >
             <Animated.View
-              style={[
-                styles.posterInfoView,
-                translateTextStyle,
-                { width: ITEM_WIDTH - OFFSET * 4 },
-              ]}
+              style={[styles.posterInfoView, translateTextStyle, { width: ITEM_WIDTH - OFFSET }]}
             >
               <View style={styles.textInfo}>
                 <Text style={styles.posterTitle}>{item.model.modelName}</Text>
@@ -97,7 +101,6 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
 
 const styles = StyleSheet.create({
   imageBackground: {
-    borderRadius: 15,
     overflow: 'hidden',
     width: '100%',
     height: '100%',
@@ -105,7 +108,7 @@ const styles = StyleSheet.create({
   posterInfoView: {
     height: 60,
     position: 'absolute',
-    bottom: 16,
+    bottom: 4,
     alignSelf: 'center',
     alignItems: 'center',
     flexDirection: 'row',
@@ -113,23 +116,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.85)',
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 15,
+    borderRadius: 8,
     minWidth: 200,
   },
   textInfo: {
     flexDirection: 'column',
-    marginRight: 10,
+    marginRight: 8,
   },
   posterTitle: {
     fontSize: 16,
-    fontFamily: 'Freesentation',
+    fontFamily: 'Freesentation7',
     fontWeight: '700',
   },
   userName: {
-    fontSize: 13,
-    color: '#444',
-    fontFamily: 'Freesentation',
-    marginTop: 2,
+    fontSize: 12,
+    color: '#6E95BE',
+    fontFamily: 'Freesentation7',
   },
   heartBox: {
     flexDirection: 'row',
