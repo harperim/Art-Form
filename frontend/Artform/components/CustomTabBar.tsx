@@ -4,7 +4,7 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { TAB_ICONS } from '~/constants/icons';
 
 export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
-  const hiddenRoutes = ['convert', 'train'];
+  const hiddenRoutes = ['convert', 'train', 'create-model', 'setting'];
 
   const currentRouteName = state.routes[state.index].name;
 

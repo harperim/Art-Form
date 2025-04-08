@@ -104,6 +104,12 @@ export default function ModelScreen() {
             </View>
             <Text style={styles.learnButtonText}>새로 학습하기</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.learnButton} onPress={() => router.push('/create-model')}>
+            <View style={styles.iconLeft}>
+              <ICONS.plus width={20} height={20} />
+            </View>
+            <Text style={styles.learnButtonText}>새로 학습하기</Text>
+          </TouchableOpacity>
         </View>
       )}
     </SafeAreaView>

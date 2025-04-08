@@ -27,6 +27,7 @@ export default function MyPageScreen() {
   const [myModels, setMyModels] = useState<MyModelItem[]>([]); // 내가 만든 모델
   const [myLikeModels, setMyLikeModels] = useState<MyModelItem[]>([]); // 내가 만든 모델
   const [, setLoading] = useState(true);
+  const [previewImageUri, setPreviewImageUri] = useState<string | null>(null);
 
   // 내 사진 불러오기
   const loadImages = async () => {
@@ -91,18 +92,20 @@ export default function MyPageScreen() {
 
   const renderItem = ({ item, index }: { item: ImageItem; index: number }) => (
     <Animated.View entering={FadeInDown.delay(index * 30).springify()}>
-      <Image
-        source={{ uri: item.url }}
-        style={{
-          flex: 1,
-          width: itemSize,
-          height: itemSize,
-          resizeMode: 'cover',
-          borderRadius: 4,
-          borderWidth: 3,
-          borderColor: '#2C2D26',
-        }}
-      />
+      <TouchableOpacity onPress={() => setPreviewImageUri(item.url)}>
+        <Image
+          source={{ uri: item.url }}
+          style={{
+            flex: 1,
+            width: itemSize,
+            height: itemSize,
+            resizeMode: 'cover',
+            borderRadius: 4,
+            borderWidth: 3,
+            borderColor: '#2C2D26',
+          }}
+        />
+      </TouchableOpacity>
     </Animated.View>
   );
 
@@ -116,6 +119,19 @@ export default function MyPageScreen() {
       case '내가 만든 그림':
         return (
           <View style={styles.mainContentView}>
+            {previewImageUri && (
+              <TouchableOpacity
+                style={styles.fullscreenModal}
+                onPress={() => setPreviewImageUri(null)}
+                activeOpacity={1}
+              >
+                <Image
+                  source={{ uri: previewImageUri }}
+                  style={styles.fullscreenImage}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+            )}
             <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
             <FlatList
               data={imageUrls}
@@ -160,7 +176,7 @@ export default function MyPageScreen() {
     <View style={styles.container}>
       {/* 유저 프로필 */}
       <View style={styles.menuIconWrapper}>
-        <TouchableOpacity onPress={onLogout}>
+        <TouchableOpacity onPress={() => router.push('/setting')}>
           <ICONS.Menu width={44} height={24} />
         </TouchableOpacity>
       </View>
@@ -313,4 +329,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  fullscreenModal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  fullscreenImage: { width: '100%', height: '100%' },
 });

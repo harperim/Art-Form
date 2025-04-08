@@ -24,6 +24,10 @@ import GridIcon from '~/assets/icons/grid.svg';
 import PlusIcon from '~/assets/icons/plus.svg';
 import Menu from '~/assets/icons/menu.svg';
 
+import Settings from '~/assets/icons/settings.svg';
+import User from '~/assets/icons/user.svg';
+import LogOut from '~/assets/icons/log-out.svg';
+
 export const ICONS = {
   home: { outline: HomeIcon, filled: HomeIconFilled },
   store: { outline: StoreIcon, filled: StoreIconFilled },
@@ -39,6 +43,9 @@ export const ICONS = {
   grid: GridIcon,
   plus: PlusIcon,
   Menu: Menu,
+  setting: Settings,
+  user: User,
+  logout: LogOut,
 };
 
 export const TAB_ICONS = {
