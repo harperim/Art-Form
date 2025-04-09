@@ -56,7 +56,7 @@ public class ImageService {
                 .model(model)
                 .userId(imageSaveDto.getUserId())
                 .uploadFileName(imageSaveDto.getUploadFileName())
-                .isPublic(imageSaveDto.isPublic())
+                .isPublic(true)
                 .createdAt(LocalDateTime.now())
                 .build();
         try {
