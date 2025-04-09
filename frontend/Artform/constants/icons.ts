@@ -27,6 +27,7 @@ import Menu from '~/assets/icons/menu.svg';
 import Settings from '~/assets/icons/settings.svg';
 import User from '~/assets/icons/user.svg';
 import LogOut from '~/assets/icons/log-out.svg';
+import Message from '~/assets/icons/message.svg';
 
 export const ICONS = {
   home: { outline: HomeIcon, filled: HomeIconFilled },
@@ -46,6 +47,7 @@ export const ICONS = {
   setting: Settings,
   user: User,
   logout: LogOut,
+  message: Message,
 };
 
 export const TAB_ICONS = {
