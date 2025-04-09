@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     height: 45,
   },
   todayRecommend: {
-    marginTop: 40,
+    marginTop: 32,
   },
   title: {
     color: '#2C2D26',
@@ -183,10 +183,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   popularModelView: {
-    marginTop: 20,
+    marginTop: 16,
   },
   newModelView: {
-    marginTop: 28,
+    marginTop: 16,
     marginBottom: 120,
   },
   sectionHeader: {
