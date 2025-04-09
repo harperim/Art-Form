@@ -8,6 +8,7 @@ import com.d103.artformcore.exception.ModelNotFoundException;
 import com.d103.artformcore.repository.ModelRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,6 +27,9 @@ import java.util.*;
 public class ModelService {
     private final ModelRepository modelRepository;
     private final S3Service s3Service;
+
+    @Value("${service.user.url}")
+    private String userServiceUrl;
 
     @Transactional
     public ModelSaveResponseDto getPresignedPutUrl(String fileType, String fileName) {
@@ -65,9 +69,11 @@ public class ModelService {
             headers.set("Authorization", token); // 토큰 가져오는 메서드 필요
             headers.set("accept", "*/*");
 
+            String url = userServiceUrl + "/user/" + userId;
+
             HttpEntity<String> entity = new HttpEntity<>(headers);
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    "http://j12d103.p.ssafy.io:8082/user/" + userId,
+                    url,
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Map<String, Object>>() {

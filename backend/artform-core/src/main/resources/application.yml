@@ -18,6 +18,10 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+service:
+  user:
+    url: ${USER_SERVICE_URL}
+
 
 jwt:
   secret: ${JWT_SECRET}

@@ -12,6 +12,7 @@ import com.d103.artformcore.exception.ReviewNotFoundException;
 import com.d103.artformcore.repository.ModelRepository;
 import com.d103.artformcore.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +30,9 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ModelRepository modelRepository;
     private final ImageService imageService;
+
+    @Value("${service.user.url}")
+    private String userServiceUrl;
 
     public ReviewListDto getModelReviews(Long modelId, Long userId, String authHeader, int page) {
         Model model = modelRepository.findById(modelId).orElseThrow(() -> new ModelNotFoundException("모델 미존재"));
@@ -150,7 +154,8 @@ public class ReviewService {
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             try {
-                String url = "http://j12d103.p.ssafy.io:8082/user/name/" + idListParam;
+//                String url = "http://j12d103.p.ssafy.io:8082/user/name/" + idListParam;
+                String url = userServiceUrl + "/user/name/" + idListParam;
                 ResponseEntity<ResponseNameList> response = restTemplate.exchange(
                         url,
                         HttpMethod.GET,
