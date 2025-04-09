@@ -1,4 +1,5 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List
 from fastapi.responses import Response, JSONResponse
 import uuid
@@ -7,12 +8,25 @@ from pathlib import Path
 import shutil
 import os
 import mimetypes
+from PIL import Image
 os.environ.pop("SSL_CERT_FILE", None)
 import requests
 from ai.train.augment import run_augmentation
 from ai.train.train import run_training
 from ai.apply.apply_img2img import run_inference
 from ai.apply.apply_text2img import run_text2img
+
+security = HTTPBearer()
+
+name_dict = {
+    "모네": 'monet',
+    "동양화": "oriental_painting",
+    "반 고흐": "van_gogh",
+    "수채화": "watercolor",
+    "한국 전통화": "korean painting",
+    "일본 전통화": "japanese painting",
+    "유화": "oil painting"
+}
 
 
 def cleanup_files_in_directory(directory_path):
@@ -33,14 +47,134 @@ app = FastAPI()
 CORE_SERVER_BASE = "http://j12d103.p.ssafy.io:8081"
 USER_SERVER_BASE = "http://j12d103.p.ssafy.io:8082"
 
-authorization = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTc0NDI0MjA2NH0.hGEXqS-BOnU30W3EriTBA1qwJfDzvXRS9ZJnIEgf61Q'
+
+@app.post("/thumnail/upload/")
+async def apply_endpoint(
+    image: UploadFile = File(...),
+    model_id: str = Form(...),
+    strength: str = Form("0.4"),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+
+    Authorization = f"Bearer {credentials.credentials}"
+    # user정보 조회
+    async with httpx.AsyncClient() as client:
+        user_info_resp = await client.get(
+            f"{USER_SERVER_BASE}/user",
+            headers={"Authorization": Authorization}
+        )
+    if user_info_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="유저 정보 조회에 실패했습니다.")
+    user_info = user_info_resp.json().get("data")
+    if not user_info:
+        raise HTTPException(status_code=404, detail="유저 정보를 찾을 수 없습니다.")
+    user_id = user_info.get("userId")
+
+    # 업로드된 이미지를 임시 저장할 디렉토리 생성
+    input_dir = Path("ai/apply/input")
+    input_dir.mkdir(parents=True, exist_ok=True)
+    
+    # 업로드 파일 저장
+    image_filename = f"{uuid.uuid4().hex}_{image.filename}"
+    input_image_path = input_dir / image_filename
+    with input_image_path.open("wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
+
+    # 이미지 리사이즈
+    try:
+        with Image.open(input_image_path) as img:
+            img = img.convert("RGB")
+            original_width, original_height = img.size
+            target_width = 1024
+            target_height = int((target_width / original_width) * original_height)
+            resized_img = img.resize((target_width, target_height), Image.LANCZOS)
+            resized_img.save(input_image_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"이미지 리사이즈 실패: {e}")
+
+    mime_type, _ = mimetypes.guess_type(input_image_path)
+    if not mime_type:
+        mime_type = "application/octet-stream"
+
+    # Core 서버에 presigned URL 요청
+    async with httpx.AsyncClient() as client:
+        presigned_orig_resp = await client.get(
+            f"{CORE_SERVER_BASE}/image/presigned-url",
+            headers={"Authorization": Authorization,
+                     "accept": "application/json"
+                     },
+            params={"fileType": mime_type, "fileName": Path(input_image_path).name, "service": "image"}
+        )
+
+    if presigned_orig_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="원본 이미지 presigned URL 요청에 실패했습니다.")
+    orig_presigned_data = presigned_orig_resp.json()
+    if not orig_presigned_data.get("success"):
+        raise HTTPException(status_code=500, detail="원본 이미지 presigned URL 발급 실패")
+    orig_presigned_url = orig_presigned_data["data"]["presignedUrl"]
+    orig_upload_filename = orig_presigned_data["data"]["uploadFileName"]
+   
+    # presigned URL을 사용하여 이미지 업로드 (HTTP PUT)
+    with open(input_image_path, "rb") as f:
+        orig_file_content = f.read()
+    async with httpx.AsyncClient() as client:
+        upload_orig_resp = await client.put(
+            orig_presigned_url,
+            content=orig_file_content,
+            headers={"Content-Type": mime_type})
+    if upload_orig_resp.status_code not in (200, 201):
+        raise HTTPException(status_code=500, detail="원본 이미지 업로드에 실패했습니다.")
+   
+    # Core 서버에 업로드 완료 등록 요청
+    register_payload = {
+        "modelId": model_id,
+        "userId": user_id,
+        "isPublic": "true",
+        "uploadFileName": orig_upload_filename
+    }
+
+    async with httpx.AsyncClient() as client:
+        register_resp = await client.post(
+            f"{CORE_SERVER_BASE}/image/metadata",
+            json=register_payload,
+            headers={"Authorization": Authorization}
+        )
+    if register_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="이미지 등록에 실패했습니다.")
+    register_data = register_resp.json()
+    image_id = (register_data["data"]["imageId"])
+
+    async with httpx.AsyncClient() as client:
+        register_resp = await client.post(
+            f"{CORE_SERVER_BASE}/model/update/{image_id}/{model_id}",
+            json=register_payload,
+            headers={"Authorization": Authorization}
+        )
+    if register_resp.status_code != 200:
+        raise HTTPException(status_code=500, detail="썸네일일 등록에 실패했습니다.")
+    register_data = register_resp.json()
+    
+    # 임시 파일 삭제
+    os.remove(input_image_path)
+
+    return JSONResponse(content={
+        "success": True,
+        "data": {
+            "original": {
+                "imageId": image_id,
+                "uploadFileName": orig_upload_filename
+            }
+        },
+        "error": None
+    })
 
 @app.post("/model/upload/")
 async def upload_pretrained_model(
     model_name: str = Form(...),
-    # authorization: str = Header(...),
-
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
+
+    authorization = f"Bearer {credentials.credentials}"
 
     # 사용자 정보 조회
     async with httpx.AsyncClient() as client:
@@ -133,13 +267,15 @@ async def train_endpoint(
     token: str = Form(...),
     images: List[UploadFile] = File(...),
     model_name: str = Form(...),
-    # authorization: str = Header(...)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
+
+    Authorization = f"Bearer {credentials.credentials}"
     # user정보 조회
     async with httpx.AsyncClient() as client:
         user_info_resp = await client.get(
             f"{USER_SERVER_BASE}/user",
-            headers={"Authorization": authorization}
+            headers={"Authorization": Authorization}
         )
     if user_info_resp.status_code != 200:
         raise HTTPException(status_code=500, detail="유저 정보 조회에 실패했습니다.")
@@ -186,7 +322,7 @@ async def train_endpoint(
     async with httpx.AsyncClient() as client:
         presigned_model_resp = await client.get(
             f"{CORE_SERVER_BASE}/model/presigned-url",
-            headers={"Authorization": authorization,
+            headers={"Authorization": Authorization,
                      "accept": "application/json"
                      },
             params={"fileType": "zip", "fileName": Path(zip_path).name}
@@ -225,7 +361,7 @@ async def train_endpoint(
         register_resp = await client.post(
             f"{CORE_SERVER_BASE}/model/metadata",
             json=register_payload,
-            headers={"Authorization": authorization}
+            headers={"Authorization": Authorization}
         )
     if register_resp.status_code != 200:
         raise HTTPException(status_code=500, detail="모델 등록에 실패했습니다.")
@@ -258,13 +394,15 @@ async def apply_endpoint(
     image: UploadFile = File(...),
     model_id: str = Form(...),
     strength: str = Form("0.4"),
-    # authorization: str = Header(...)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
+
+    Authorization = f"Bearer {credentials.credentials}"
     # user정보 조회
     async with httpx.AsyncClient() as client:
         user_info_resp = await client.get(
             f"{USER_SERVER_BASE}/user",
-            headers={"Authorization": authorization}
+            headers={"Authorization": Authorization}
         )
     if user_info_resp.status_code != 200:
         raise HTTPException(status_code=500, detail="유저 정보 조회에 실패했습니다.")
@@ -282,13 +420,25 @@ async def apply_endpoint(
     input_image_path = input_dir / image_filename
     with input_image_path.open("wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
-    
+
+    # 이미지 리사이즈
+    try:
+        with Image.open(input_image_path) as img:
+            img = img.convert("RGB")
+            original_width, original_height = img.size
+            target_width = 1024
+            target_height = int((target_width / original_width) * original_height)
+            resized_img = img.resize((target_width, target_height), Image.LANCZOS)
+            resized_img.save(input_image_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"이미지 리사이즈 실패: {e}")
+
     # model정보 조회
     async with httpx.AsyncClient() as client:
         model_info_resp = await client.get(
             f"{CORE_SERVER_BASE}/model/{model_id}/presigned-url",
             # params={"model_id": model_id},
-            headers={"Authorization": authorization}
+            headers={"Authorization": Authorization}
         )
     if model_info_resp.status_code != 200:
         raise HTTPException(status_code=500, detail="모델 정보 조회에 실패했습니다.")
@@ -296,7 +446,7 @@ async def apply_endpoint(
     if not model_info:
         raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
     producer_id = model_info.get("userId")
-    model_name = model_info.get("modelName")
+    model_name = name_dict[model_info.get("modelName")]
 
     # 로컬 모델 디렉토리 확인 및 inference 실행
     model_dir = os.path.join("ai", "img_model", str(producer_id), model_name)
@@ -312,7 +462,7 @@ async def apply_endpoint(
     async with httpx.AsyncClient() as client:
         presigned_orig_resp = await client.get(
             f"{CORE_SERVER_BASE}/image/presigned-url",
-            headers={"Authorization": authorization,
+            headers={"Authorization": Authorization,
                      "accept": "application/json"
                      },
             params={"fileType": mime_type, "fileName": Path(input_image_path).name, "service": "image"}
@@ -333,7 +483,7 @@ async def apply_endpoint(
     async with httpx.AsyncClient() as client:
         presigned_result_resp = await client.get(
             f"{CORE_SERVER_BASE}/image/presigned-url",
-            headers={"Authorization": authorization,
+            headers={"Authorization": Authorization,
                     "accept": "application/json"
                     },
             params={"fileType": result_mime_type, "fileName": Path(result_image_path).name, "service": "image"}
@@ -382,53 +532,38 @@ async def apply_endpoint(
         "isPublic": "true",
         "uploadFileName": result_upload_filename
     }]
-    
+
+    image_id = []
     for register_payload in register_payloads:
         async with httpx.AsyncClient() as client:
             register_resp = await client.post(
                 f"{CORE_SERVER_BASE}/image/metadata",
                 json=register_payload,
-                headers={"Authorization": authorization}
+                headers={"Authorization": Authorization}
             )
         if register_resp.status_code != 200:
             raise HTTPException(status_code=500, detail="이미지 등록에 실패했습니다.")
         register_data = register_resp.json()
-
-    # 원본 이미지와 변환 이미지 각각을 읽어 multipart 메시지 구성
-    boundary = "myboundary"
-    parts = []
-    
-    # 원본 이미지 파트
-    with open(input_image_path, "rb") as f:
-        orig_data = f.read()
-    orig_filename = Path(input_image_path).name
-    parts.append(f"--{boundary}\r\n".encode())
-    parts.append(f'Content-Disposition: form-data; name="original_image"; filename="{orig_filename}"\r\n'.encode())
-    parts.append(f"Content-Type: {mime_type}\r\n\r\n".encode())
-    parts.append(orig_data)
-    parts.append(b"\r\n")
-    
-    # 추론 이미지 파트
-    with open(result_image_path, "rb") as f:
-        result_data = f.read()
-    result_filename = Path(result_image_path).name
-    parts.append(f"--{boundary}\r\n".encode())
-    parts.append(f'Content-Disposition: form-data; name="result_image"; filename="{result_filename}"\r\n'.encode())
-    parts.append(f"Content-Type: {result_mime_type}\r\n\r\n".encode())
-    parts.append(result_data)
-    parts.append(b"\r\n")
-    
-    # multipart 종료
-    parts.append(f"--{boundary}--\r\n".encode())
-    body = b"".join(parts)
+        image_id.append(register_data["data"]["imageId"])
     
     # 임시 파일 삭제
-    # os.remove(input_image_path)
+    os.remove(input_image_path)
     # os.remove(result_image_path)
-    
-    # multipart 응답 전송
-    headers = {"Content-Type": f"multipart/mixed; boundary={boundary}"}
-    return Response(content=body, headers=headers)
+
+    return JSONResponse(content={
+        "success": True,
+        "data": {
+            "original": {
+                "imageId": image_id[0],
+                "uploadFileName": orig_upload_filename
+            },
+            "result": {
+                "imageId": image_id[1],
+                "uploadFileName": result_upload_filename
+            }
+        },
+        "error": None
+    })
 
 # text2img 추론
 @app.post("/apply/text2img/")
@@ -436,8 +571,10 @@ async def apply_endpoint(
     prompt: str = Form(...),
     model_id: str = Form(...),
     strength: str = Form("0.4"),
-    # authorization: str = Header(...)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
+
+    authorization = f"Bearer {credentials.credentials}"
     # user정보 조회
     async with httpx.AsyncClient() as client:
         user_info_resp = await client.get(
@@ -445,10 +582,10 @@ async def apply_endpoint(
             headers={"Authorization": authorization}
         )
     if user_info_resp.status_code != 200:
-        raise HTTPException(status_code=500, detail="유저저 정보 조회에 실패했습니다.")
+        raise HTTPException(status_code=500, detail=f"유저 정보 조회에 실패했습니다. token:{authorization}")
     user_info = user_info_resp.json().get("data")
     if not user_info:
-        raise HTTPException(status_code=404, detail="유저저 정보를 찾을 수 없습니다.")
+        raise HTTPException(status_code=404, detail="유저 정보를 찾을 수 없습니다.")
     user_id = user_info.get("userId")
     
     # model정보 조회
@@ -464,7 +601,7 @@ async def apply_endpoint(
     if not model_info:
         raise HTTPException(status_code=404, detail="모델 정보를 찾을 수 없습니다.")
     producer_id = model_info.get("userId")
-    model_name = model_info.get("modelName")
+    model_name = name_dict[model_info.get("modelName")]
 
     # 로컬 모델 디렉토리 확인 및 inference 실행
     model_dir = os.path.join("ai", "img_model", str(producer_id), model_name)
@@ -522,28 +659,15 @@ async def apply_endpoint(
     if register_resp.status_code != 200:
         raise HTTPException(status_code=500, detail="이미지 등록에 실패했습니다.")
     register_data = register_resp.json()
-
-    # multipart 메시지 구성
-    boundary = "myboundary"
-    parts = []
-    
-    # 추론 이미지 파트
-    with open(result_image_path, "rb") as f:
-        result_data = f.read()
-    result_filename = Path(result_image_path).name
-    parts.append(f"--{boundary}\r\n".encode())
-    parts.append(f'Content-Disposition: form-data; name="result_image"; filename="{result_filename}"\r\n'.encode())
-    parts.append(f"Content-Type: {result_mime_type}\r\n\r\n".encode())
-    parts.append(result_data)
-    parts.append(b"\r\n")
-    
-    # multipart 종료
-    parts.append(f"--{boundary}--\r\n".encode())
-    body = b"".join(parts)
     
     # 임시 파일 삭제
-    # os.remove(result_image_path)
+    os.remove(result_image_path)
     
-    # multipart 응답 전송
-    headers = {"Content-Type": f"multipart/mixed; boundary={boundary}"}
-    return Response(content=body, headers=headers)
+    return JSONResponse(content={
+        "success": True,
+        "data": {
+            "uploadFileName": result_upload_filename,
+            "imageId": register_data["data"]["imageId"]
+        },
+        "error": None
+    })
