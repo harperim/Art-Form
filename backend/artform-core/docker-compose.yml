@@ -48,6 +48,7 @@ services:
       - ACCESS_KEY_ID=${ACCESS_KEY_ID}
       - SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
       - JWT_SECRET=${JWT_SECRET}
+      - USER_SERVICE_URL=${USER_SERVICE_URL}
     networks:
       - core-network
       - nginx-network
