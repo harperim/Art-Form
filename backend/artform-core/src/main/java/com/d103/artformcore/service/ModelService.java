@@ -110,7 +110,7 @@ public class ModelService {
 
     public List<ModelLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId, String token) {
         List<Model> modelList = modelRepository.findByIsPublicTrueAndDeletedAtIsNull(
-                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
+                PageRequest.of(page, 6, Sort.by(Sort.Direction.DESC, "createdAt"))
         ).getContent();
 
         List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
@@ -132,7 +132,7 @@ public class ModelService {
 
     public List<ModelLoadResponseDto> getPresignedGetUrlHotList(int page, long userId, String token) {
         List<Model> modelList = modelRepository.findByIsPublicTrueAndDeletedAtIsNull(
-                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "likeCount"))
+                PageRequest.of(page, 6, Sort.by(Sort.Direction.DESC, "likeCount"))
         ).getContent();
         List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Model model : modelList) {
