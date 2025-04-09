@@ -100,8 +100,8 @@ export default function MyPageScreen() {
             height: itemSize,
             resizeMode: 'cover',
             borderRadius: 4,
-            borderWidth: 3,
-            borderColor: '#2C2D26',
+            borderWidth: 0.5,
+            borderColor: '#6E95BE',
           }}
         />
       </TouchableOpacity>
@@ -118,19 +118,6 @@ export default function MyPageScreen() {
       case '내가 만든 그림':
         return (
           <View style={styles.mainContentView}>
-            {previewImageUri && (
-              <TouchableOpacity
-                style={styles.fullscreenModal}
-                onPress={() => setPreviewImageUri(null)}
-                activeOpacity={1}
-              >
-                <Image
-                  source={{ uri: getValidUrl(previewImageUri) }}
-                  style={styles.fullscreenImage}
-                  resizeMode="contain"
-                />
-              </TouchableOpacity>
-            )}
             <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
             <FlatList
               data={imageUrls}
@@ -167,10 +154,23 @@ export default function MyPageScreen() {
 
   return (
     <View style={styles.container}>
+      {previewImageUri && (
+        <TouchableOpacity
+          style={styles.fullscreenModal}
+          onPress={() => setPreviewImageUri(null)}
+          activeOpacity={1}
+        >
+          <Image
+            source={{ uri: getValidUrl(previewImageUri) }}
+            style={styles.fullscreenImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      )}
       {/* 유저 프로필 */}
       <View style={styles.menuIconWrapper}>
         <TouchableOpacity onPress={() => router.push('/setting')}>
-          <ICONS.Menu width={44} height={24} />
+          <ICONS.Menu width={32} height={20} />
         </TouchableOpacity>
       </View>
       <View style={styles.userProfile}>
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   menuIconWrapper: {
     position: 'absolute',
-    top: 68, // SafeArea 고려
+    top: 40, // SafeArea 고려
     right: 20,
     zIndex: 10, // 프로필보다 위에 표시
   },
@@ -246,38 +246,37 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   userProfileInfo: {
-    marginTop: 20,
+    marginTop: 18,
     marginLeft: 24,
   },
   userProfileImage: {
-    width: 122,
-    height: 122,
+    width: 100,
+    height: 100,
     borderRadius: 100,
   },
   userName: {
-    fontSize: 20,
+    fontSize: 16,
     color: '#2C2D26',
     fontFamily: 'Freesentation7',
   },
   userEmail: {
-    marginTop: 2,
-    fontSize: 16,
+    fontSize: 12,
     fontFamily: 'Freesentation4',
     color: '#CBB7AF',
   },
   userFollowInfo: {
-    marginTop: 12,
+    marginTop: 8,
     flexDirection: 'row',
   },
   userFollowTextStyle: {
-    fontFamily: 'Freesentation7',
+    fontFamily: 'Freesentation8',
     color: '#2C2D26',
-    marginRight: 16,
-    fontSize: 16,
+    marginRight: 10,
+    fontSize: 14,
   },
   contentSelector: {
     width: '100%',
-    marginTop: 28,
+    marginTop: 12,
     flexDirection: 'row',
     alignContent: 'center',
     justifyContent: 'space-between',
@@ -289,39 +288,30 @@ const styles = StyleSheet.create({
   selectorContainer: {
     flex: 1,
     width: '100%',
-    height: 50,
+    height: 46,
     alignItems: 'center',
     justifyContent: 'center',
   },
   unselectedTab: {
     fontFamily: 'Freesentation5',
-    fontSize: 20,
+    fontSize: 16,
     color: '#F2D7D0',
   },
   selectedTab: {
     fontFamily: 'Freesentation6',
-    fontSize: 20,
+    fontSize: 16,
     color: '#5C89B2',
   },
   mainContentView: {
-    paddingTop: 30,
+    paddingTop: 20,
     paddingBottom: 350,
   },
   mainContentTitle: {
     fontFamily: 'Freesentation7',
-    fontSize: 20,
+    fontSize: 18,
     color: '#2C2D26',
   },
 
-  button: {
-    backgroundColor: '#4A73E8',
-    padding: 14,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
   fullscreenModal: {
     position: 'absolute',
     top: 0,

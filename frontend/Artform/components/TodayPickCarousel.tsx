@@ -15,7 +15,7 @@ import { BlurView } from 'expo-blur';
 
 const OFFSET = 20;
 const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
-const ITEM_HEIGHT = Dimensions.get('window').height * 0.34;
+const ITEM_HEIGHT = Dimensions.get('window').height * 0.32;
 
 interface ParallaxCarouselCardProps {
   item: ModelWithThumbnail;
@@ -63,12 +63,11 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
             width: ITEM_WIDTH,
             height: ITEM_HEIGHT,
             overflow: 'hidden',
-
-            borderColor: '#2C2D26',
-            borderRadius: 4,
+            borderColor: '#6E95BE',
+            borderRadius: 8,
             alignItems: 'center',
+            borderWidth: 1,
             justifyContent: 'center',
-            borderWidth: 0.5,
           },
           translateStyle,
         ]}
@@ -80,7 +79,7 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
             resizeMode="cover"
           >
             <BlurView
-              intensity={70}
+              intensity={60}
               tint="dark"
               style={[styles.posterInfoView, translateTextStyle]}
             >
@@ -106,18 +105,20 @@ const styles = StyleSheet.create({
   },
   posterInfoView: {
     height: 48,
+    overflow: 'hidden',
+    borderRadius: 8,
     position: 'absolute',
     alignSelf: 'flex-end',
-    paddingLeft: 12,
-    paddingRight: 12,
+    paddingLeft: 24,
+    paddingRight: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
     bottom: 16,
     right: 16,
   },
   textInfo: {
     flexDirection: 'column',
+    alignItems: 'center',
   },
   posterTitle: {
     fontSize: 16,
@@ -125,8 +126,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Freesentation6',
   },
   userName: {
-    fontSize: 12,
-    color: '#ffff',
+    fontSize: 8,
+    color: '#DAD5D1',
     fontFamily: 'Freesentation4',
   },
 });

@@ -36,6 +36,7 @@ export default function ArtCarouselSection({ data, onPress }: Props) {
 
 const styles = StyleSheet.create({
   scroll: {
+    top: -4,
     paddingVertical: 10,
   },
 });
