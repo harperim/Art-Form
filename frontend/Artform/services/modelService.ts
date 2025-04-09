@@ -81,7 +81,6 @@ export const fetchModelInfo = async (modelId: number): Promise<Model> => {
 export const likeModel = async (modelId: number): Promise<boolean> => {
   try {
     const res = await modelApi.post(`/model/like/${modelId}`);
-
     return res.data.data;
   } catch (err) {
     console.error(`모델 좋아요 실패 (modelId: ${modelId}):`, err);

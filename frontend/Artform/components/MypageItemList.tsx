@@ -86,6 +86,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2C2D26',
   },
-  modelName: { marginTop: 4, fontSize: 18, fontFamily: 'Freesentation7', color: '#2C2D26' },
+  modelName: { marginTop: 4, fontSize: 16, fontFamily: 'Freesentation7', color: '#2C2D26' },
   modelArtist: { fontSize: 14, fontFamily: 'Freesentation6', color: '#6E95BE' },
 });

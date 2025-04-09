@@ -37,8 +37,15 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontWeight: '700',
     textAlign: 'center',
+    backgroundColor: '#F8F4E3',
+    width: 100,
+    color: '#2C2D26',
+    height: 28,
+    lineHeight: 26,
+    borderRadius: 4,
+    borderColor: '#6E95BE',
+    fontFamily: 'Freesentation8',
   },
   subtitle: {
     fontSize: 12,

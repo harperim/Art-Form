@@ -62,3 +62,16 @@ export const postImageMetadata = async (params: {
     throw err;
   }
 };
+
+// 내가 만든 이미지 데이터 업로드
+export const fetchMyGallery = async (page: number = 0): Promise<PresignedImageResponse[]> => {
+  try {
+    const res = await modelApi.get('/image/my-gallery', {
+      params: { page },
+    });
+    return res.data.data;
+  } catch (err) {
+    console.error(`내 이미지 조회 실패`, err);
+    throw new Error('모델에 좋아요를 누를 수 없습니다.');
+  }
+};

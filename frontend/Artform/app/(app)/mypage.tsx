@@ -1,5 +1,5 @@
 // app/(app)/mypage.tsx
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useMemo, useEffect } from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -7,7 +7,7 @@ import { useAuth } from '~/lib/auth-context';
 import { FlatList } from 'react-native-gesture-handler';
 
 import MyPageItemList from '~/components/MypageItemList';
-import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
+import { fetchPresignedImageUrl, getValidUrl, fetchMyGallery } from '~/services/imageService';
 import { fetchMyModels, fetchMyLikeModel } from '~/services/modelService';
 import { ICONS } from '~/constants/icons';
 
@@ -25,23 +25,22 @@ export default function MyPageScreen() {
   const [imageUrls, setImageUrls] = useState<ImageItem[]>([]);
   const [myModels, setMyModels] = useState<MyModelItem[]>([]); // 내가 만든 모델
   const [myLikeModels, setMyLikeModels] = useState<MyModelItem[]>([]); // 내가 만든 모델
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [previewImageUri, setPreviewImageUri] = useState<string | null>(null);
 
   // 내 사진 불러오기
   const loadImages = async () => {
-    const maxId = 10;
-    const newItems: ImageItem[] = [];
-
-    for (let i = 1; i <= maxId; i++) {
-      const url = await fetchPresignedImageUrl(i);
-      if (url) {
-        newItems.push({ id: i, url });
-      } else {
-        break;
-      }
+    const itemsUrl: ImageItem[] = [];
+    const myGalleryList = await fetchMyGallery();
+    for (const myGalleryInfo of myGalleryList) {
+      const url = myGalleryInfo.presignedUrl;
+      const id = myGalleryInfo.image.imageId;
+      itemsUrl.push({
+        id,
+        url,
+      });
     }
-    setImageUrls(newItems);
+    setImageUrls(itemsUrl);
     setLoading(false); // ✅ 데이터 로딩 완료
   };
 
@@ -84,10 +83,23 @@ export default function MyPageScreen() {
   };
 
   useEffect(() => {
-    loadImages();
-    loadMyModels();
-    LoadMyLikeModel();
-  }, []);
+    const loadData = async () => {
+      setLoading(true);
+      switch (selectedTab) {
+        case '내가 만든 그림':
+          await loadImages();
+          break;
+        case '내가 만든 모델':
+          await loadMyModels();
+          break;
+        case '내가 좋아요한 모델':
+          await LoadMyLikeModel();
+          break;
+      }
+      setLoading(false);
+    };
+    loadData(); // async 함수 내부에서 실행
+  }, [selectedTab]);
 
   const renderItem = ({ item, index }: { item: ImageItem; index: number }) => (
     <Animated.View entering={FadeInDown.delay(index * 30).springify()}>
@@ -113,42 +125,41 @@ export default function MyPageScreen() {
   const numColumns = 3;
   const itemSize = (screenWidth - itemSpacing * (numColumns + 1)) / numColumns;
 
-  const content = useMemo(() => {
-    switch (selectedTab) {
-      case '내가 만든 그림':
-        return (
-          <View style={styles.mainContentView}>
-            <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
-            <FlatList
-              data={imageUrls}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id.toString()}
-              numColumns={3}
-              columnWrapperStyle={{ gap: 4, marginBottom: 4 }}
-              showsVerticalScrollIndicator={false}
-              style={{ marginTop: 20, display: 'flex', width: '100%' }}
-            />
-          </View>
-        );
-      case '내가 만든 모델':
-        return (
-          <View style={styles.mainContentView}>
-            <Text style={styles.mainContentTitle}>총 {myModels.length}개</Text>
-            <MyPageItemList item={myModels} disableAnimation={null} />
-          </View>
-        );
-      case '내가 좋아요한 모델':
-        return (
-          <View style={styles.mainContentView}>
-            <Text style={styles.mainContentTitle}>총 {myLikeModels.length}개</Text>
-            <MyPageItemList item={myLikeModels} disableAnimation={null} />
-          </View>
-        );
-
-      default:
-        return <Text>1</Text>;
+  const renderContent = () => {
+    if (selectedTab === '내가 만든 그림') {
+      return (
+        <View style={styles.mainContentView}>
+          <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
+          <FlatList
+            data={imageUrls}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={3}
+            columnWrapperStyle={{ gap: 4, marginBottom: 4 }}
+            showsVerticalScrollIndicator={false}
+            style={{ marginTop: 20, display: 'flex', width: '100%' }}
+          />
+        </View>
+      );
     }
-  }, [selectedTab, imageUrls, myModels]);
+    if (selectedTab === '내가 만든 모델') {
+      return (
+        <View style={styles.mainContentView}>
+          <Text style={styles.mainContentTitle}>총 {myModels.length}개</Text>
+          <MyPageItemList item={myModels} disableAnimation={null} />
+        </View>
+      );
+    }
+    if (selectedTab === '내가 좋아요한 모델') {
+      return (
+        <View style={styles.mainContentView}>
+          <Text style={styles.mainContentTitle}>총 {myLikeModels.length}개</Text>
+          <MyPageItemList item={myLikeModels} disableAnimation={null} />
+        </View>
+      );
+    }
+    return null;
+  }
 
   const router = useRouter();
 
@@ -222,7 +233,20 @@ export default function MyPageScreen() {
           </TouchableOpacity>
         </View>
       </View>
-      {content}
+      {loading ? (
+        <ActivityIndicator
+          size="large"
+          color="#5C89B2"
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            zIndex: 1000,
+          }}
+        />
+      ) : (
+        renderContent()
+      )}
     </View>
   );
 }
