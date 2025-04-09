@@ -10,6 +10,7 @@ import MyPageItemList from '~/components/MypageItemList';
 import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
 import { fetchMyModels, fetchMyLikeModel } from '~/services/modelService';
 import { ICONS } from '~/constants/icons';
+import { useModel } from '~/context/ModelContext';
 
 import type { MyModelItem } from '~/types/model';
 
@@ -20,6 +21,7 @@ export default function MyPageScreen() {
     url: string; // presignedUrl
   };
 
+  const { bottomSheetClosed, setBottomSheetClosed } = useModel();
   const { userInfo } = useAuth();
   const [selectedTab, setSelectedTab] = useState<MyContentFilter>('내가 만든 그림');
   const [imageUrls, setImageUrls] = useState<ImageItem[]>([]);
@@ -27,6 +29,23 @@ export default function MyPageScreen() {
   const [myLikeModels, setMyLikeModels] = useState<MyModelItem[]>([]); // 내가 만든 모델
   const [, setLoading] = useState(true);
   const [previewImageUri, setPreviewImageUri] = useState<string | null>(null);
+
+  // 바텀시트가 닫힐 때 데이터 다시 로드
+  useEffect(() => {
+    if (bottomSheetClosed) {
+      // 필요한 데이터 다시 로드
+      if (selectedTab === '내가 만든 그림') {
+        loadImages();
+      } else if (selectedTab === '내가 만든 모델') {
+        loadMyModels();
+      } else if (selectedTab === '내가 좋아요한 모델') {
+        LoadMyLikeModel();
+      }
+      console.log('바텀 시트가 닫혔습니다. 데이터 다시 로드');
+      // 상태 리셋
+      setBottomSheetClosed(false);
+    }
+  }, [bottomSheetClosed]);
 
   // 내 사진 불러오기
   const loadImages = async () => {
