@@ -45,7 +45,8 @@ export default function ModelBottomSheet() {
   const router = useRouter();
   const inputRef = useRef<TextInput>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const { selectedModel, setSelectedModel, refreshSelectedModel } = useModel();
+  const { selectedModel, setSelectedModel, refreshSelectedModel, setBottomSheetClosed } =
+    useModel();
   const model = selectedModel as ModelWithThumbnail;
 
   useEffect(() => {
@@ -228,7 +229,10 @@ export default function ModelBottomSheet() {
         snapPoints={snapPoints}
         enablePanDownToClose
         keyboardBehavior="interactive"
-        onDismiss={() => setSelectedModel(null)}
+        onDismiss={() => {
+          setSelectedModel(null);
+          setBottomSheetClosed(true);
+        }}
         android_keyboardInputMode="adjustResize"
         backdropComponent={(props) => (
           <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} />

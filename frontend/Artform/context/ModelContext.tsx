@@ -9,12 +9,15 @@ type ModelContextType = {
   selectedModel: ModelWithThumbnail | null;
   setSelectedModel: (model: ModelWithThumbnail | null) => void;
   refreshSelectedModel: () => Promise<ModelWithThumbnail | null>;
+  bottomSheetClosed: boolean;
+  setBottomSheetClosed: (closed: boolean) => void;
 };
 
 const ModelContext = createContext<ModelContextType | undefined>(undefined);
 
 export const ModelProvider = ({ children }: { children: ReactNode }) => {
   const [selectedModel, setSelectedModel] = useState<ModelWithThumbnail | null>(null);
+  const [bottomSheetClosed, setBottomSheetClosed] = useState<boolean>(false);
 
   const refreshSelectedModel = useCallback(async () => {
     if (!selectedModel) return null;
@@ -40,7 +43,15 @@ export const ModelProvider = ({ children }: { children: ReactNode }) => {
   }, [selectedModel]);
 
   return (
-    <ModelContext.Provider value={{ selectedModel, setSelectedModel, refreshSelectedModel }}>
+    <ModelContext.Provider
+      value={{
+        selectedModel,
+        setSelectedModel,
+        refreshSelectedModel,
+        bottomSheetClosed,
+        setBottomSheetClosed,
+      }}
+    >
       {children}
     </ModelContext.Provider>
   );

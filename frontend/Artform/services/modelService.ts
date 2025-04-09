@@ -63,7 +63,7 @@ export const fetchMyLikeModel = async (page: number = 0): Promise<MyLikeModel[]>
     const res = await modelApi.get('/model/like', {
       params: { page },
     });
-    console.log(res.data);
+
     return res.data.data as MyLikeModel[];
   } catch (err) {
     console.error('좋아요한 모델 조회 실패:', err);
