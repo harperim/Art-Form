@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     height: height,
     resizeMode: 'cover',
     borderRadius: 4,
-    borderWidth: 3,
+    borderWidth: 1,
     borderColor: '#2C2D26',
   },
   modelName: { marginTop: 4, fontSize: 18, fontFamily: 'Freesentation7', color: '#2C2D26' },

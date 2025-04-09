@@ -115,7 +115,6 @@ export default function Home() {
             bounces={false}
             showsHorizontalScrollIndicator={false}
             disableIntervalMomentum
-            // contentContainerStyle={{ paddingHorizontal: OFFSET }}
             scrollEventThrottle={16}
             onScroll={(event) => {
               scrollX.value = event.nativeEvent.contentOffset.x;
@@ -183,10 +182,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   popularModelView: {
-    marginTop: 16,
+    marginTop: 8,
   },
   newModelView: {
-    marginTop: 16,
+    marginTop: 8,
     marginBottom: 120,
   },
   sectionHeader: {

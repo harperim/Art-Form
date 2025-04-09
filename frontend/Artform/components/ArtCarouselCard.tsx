@@ -22,14 +22,16 @@ const styles = StyleSheet.create({
   card: {
     width: 148,
     height: 210,
-    marginHorizontal: 6,
+    marginRight: 8,
     alignItems: 'center',
   },
   image: {
     width: 148,
     height: 184,
-    borderRadius: 12,
+    borderRadius: 8,
     marginBottom: 6,
+    borderColor: '#6E95BE',
+    borderWidth: 0.53,
     resizeMode: 'cover',
     backgroundColor: '#eee', // ✅ 썸네일 없을 때 깜빡임 방지용
   },
