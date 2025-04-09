@@ -73,6 +73,7 @@ public class ImageController {
             })
     @GetMapping("/{imageId}/presigned-url")
     public ResponseEntity<ApiResponses<ImageLoadResponseDto>> getPresignedGetUrl(@PathVariable long imageId, @AuthenticationPrincipal UserDetails userDetails) {
+        System.out.println("imageId: "+ imageId);
         try {
             ImageLoadResponseDto imageLoadResponseDto = imageService.getPresignedGetUrl(imageId, Long.parseLong(userDetails.getUsername()), "image");
             return ResponseEntity.ok(ApiResponses.success(imageLoadResponseDto));
