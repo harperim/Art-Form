@@ -257,8 +257,12 @@ export default function ModelBottomSheet() {
             <TouchableOpacity onPress={() => setPreviewImageUri(model.thumbnailUrl)}>
               <Image source={{ uri: model.thumbnailUrl }} style={styles.mainImage} />
             </TouchableOpacity>
+          </View>
+
+          {/* 좋아요 버튼 (설명 아래로 이동) */}
+          <View style={styles.likesContainer}>
             <TouchableOpacity
-              style={styles.heartButton}
+              style={styles.likeButton}
               onPress={async () => {
                 try {
                   const isLiked = await likeModel(model.model.modelId);
@@ -266,10 +270,8 @@ export default function ModelBottomSheet() {
                   setLikes((prev) => (isLiked ? prev + 1 : prev - 1));
                 } catch (err) {
                   console.warn('좋아요 처리 실패:', err);
-                  // 실패 시 롤백
                   setLiked((prev) => !prev);
                   setLikes((prev) => (liked ? prev + 1 : prev - 1));
-                  // alert('좋아요 처리 중 오류가 발생했습니다.');
                 }
               }}
             >
@@ -278,8 +280,23 @@ export default function ModelBottomSheet() {
               ) : (
                 <ICONS.heart.outline width={24} height={24} />
               )}
-              <Text style={{ marginLeft: 4 }}>{likes}</Text>
+              <Text style={styles.likeText}>{likes.toLocaleString()}</Text>
             </TouchableOpacity>
+
+            <ICONS.message width={24} height={24} style={{ marginRight: 6 }} />
+            <Text style={styles.likeText}>{reviewCount}</Text>
+          </View>
+
+          {/* 모델 설명 */}
+          <View style={styles.descriptionWrapper}>
+            <Text style={styles.descriptionText}>{model.model.description}</Text>
+            <Text style={styles.createdAtText}>
+              {new Date(model.model.createdAt).toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </Text>
           </View>
 
           {/* 사용 버튼 */}
@@ -374,7 +391,7 @@ const styles = StyleSheet.create({
   mainImageWrapper: { position: 'relative' },
   mainImage: {
     width: '100%',
-    height: 200,
+    height: 300,
     borderRadius: 12,
     marginBottom: 20,
     resizeMode: 'cover',
@@ -469,4 +486,37 @@ const styles = StyleSheet.create({
     zIndex: 999,
   },
   fullscreenImage: { width: '100%', height: '100%' },
+  descriptionWrapper: {
+    padding: 4,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+
+  descriptionText: {
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 8,
+  },
+
+  createdAtText: {
+    fontSize: 12,
+    color: '#888',
+  },
+  likesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  likeButton: {
+    marginRight: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+  },
+
+  likeText: {
+    fontSize: 14,
+    color: '#333',
+  },
 });

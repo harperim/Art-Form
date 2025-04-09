@@ -20,7 +20,7 @@ export default function StoreScreen() {
   const [sort, setSort] = useState<'latest' | 'popular'>('latest');
   const [models, setModels] = useState<ModelWithThumbnail[]>([]);
 
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
 
@@ -55,7 +55,7 @@ export default function StoreScreen() {
       }));
 
       setModels(merged);
-      setPage(2);
+      setPage(1);
       setHasMore(data.length > 0);
     } catch (err) {
       console.error('모델 불러오기 실패:', err);

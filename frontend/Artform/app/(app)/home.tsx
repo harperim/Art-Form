@@ -115,7 +115,7 @@ export default function Home() {
             bounces={false}
             showsHorizontalScrollIndicator={false}
             disableIntervalMomentum
-            scrollEventThrottle={20}
+            scrollEventThrottle={16}
             onScroll={(event) => {
               scrollX.value = event.nativeEvent.contentOffset.x;
             }}
