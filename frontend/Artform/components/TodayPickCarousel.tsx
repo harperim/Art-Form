@@ -9,7 +9,6 @@ import {
 import React from 'react';
 import type { SharedValue } from 'react-native-reanimated';
 import Animated, { useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
-import { ICONS } from '~/constants/icons';
 import type { ModelWithThumbnail } from '~/types/model';
 import { BlurView } from 'expo-blur';
 
@@ -99,7 +98,7 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
 const styles = StyleSheet.create({
   imageBackground: {
     overflow: 'hidden',
-    width: ITEM_WIDTH + 10,
+    width: ITEM_WIDTH,
     height: ITEM_HEIGHT,
     justifyContent: 'center',
     alignSelf: 'center',

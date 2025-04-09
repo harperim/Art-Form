@@ -115,8 +115,8 @@ export default function Home() {
             bounces={false}
             showsHorizontalScrollIndicator={false}
             disableIntervalMomentum
-            // contentContainerStyle={{ paddingHorizontal: 1 }}
-            scrollEventThrottle={20}
+            // contentContainerStyle={{ paddingHorizontal: OFFSET }}
+            scrollEventThrottle={16}
             onScroll={(event) => {
               scrollX.value = event.nativeEvent.contentOffset.x;
             }}
