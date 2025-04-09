@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     height: '100%',
     paddingLeft: 20,
     paddingRight: 20,
-    backgroundColor: '#F5F3EF',
+    backgroundColor: '#fff',
   },
   menuIconWrapper: {
     position: 'absolute',
