@@ -128,7 +128,7 @@ public class ImageService {
     public List<ImageLoadResponseDto> getPresignedGetUrlMyList(int page, long userId) {
         List<Image> imageList = imageRepository.findByUserId(
                 userId,
-                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
+                PageRequest.of(page, 12, Sort.by(Sort.Direction.DESC, "createdAt"))
         ).getContent();
 
         List<ImageLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
