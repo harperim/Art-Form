@@ -13,6 +13,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.ssafy.artformuser.dto.SignupRequestDto;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -39,22 +45,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean checkEmailAvailability(String email) {
-        return userRepository.findByEmail(email).isPresent();
+    public ResponseCheckDto checkEmailAvailability(String email) {
+        return new ResponseCheckDto("체크 완료",userRepository.findByEmail(email).isEmpty());
     }
 
     @Override
-    public boolean checkNicknameAvailability(String nickname) {
-        return userRepository.findByNickname(nickname).isPresent();
+    public ResponseCheckDto checkNicknameAvailability(String nickname) {
+        return new ResponseCheckDto("체크 완료",userRepository.findByNickname(nickname).isEmpty());
     }
 
     @Override
     public UserResponseDto getMyUserInfo() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AuthenticationException("인증 정보가 없습니다.");
-        }
 
         // accessToken에서 추출한 userId 가져오기
         Long userId = Long.valueOf(authentication.getName());
@@ -89,6 +91,31 @@ public class UserServiceImpl implements UserService {
         return UserResponseDto.builder()
                 .msg("조회 성공")
                 .data(userInfoDto)
+                .build();
+    }
+
+    @Override
+    public ResponseNameList getUserNameList(List<Long> idList) {
+
+        if (idList == null || idList.isEmpty()) {
+            return ResponseNameList.builder()
+                    .build();
+        }
+
+        // 사용자 정보 조회
+        List<User> users = userRepository.findAllById(idList);
+
+        Map<Long, String> userNameMap = users.stream()
+                .collect(Collectors.toMap(User::getId, User::getNickname));
+
+        // 순서보장
+        List<String> orderedNames = idList.stream()
+                .map(userNameMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+
+        return ResponseNameList.builder()
+                .userNameList(orderedNames)
                 .build();
     }
 

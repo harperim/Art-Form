@@ -9,6 +9,8 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
       {state.routes.map((route, index) => {
         const focused = state.index === index;
         const iconSet = TAB_ICONS[route.name as keyof typeof TAB_ICONS];
+
+        if (!iconSet) return null;
         const IconComponent = focused ? iconSet.filled : iconSet.outline;
 
         const onPress = () => {
@@ -19,7 +21,7 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           });
 
           if (!focused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
+            navigation.navigate(route.name, route.params);
           }
         };
 

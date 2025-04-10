@@ -1,3 +1,4 @@
+// components/ParallaxCarouselPagination.tsx
 import { Dimensions, StyleSheet, View } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 import Animated, {
@@ -8,7 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import React from 'react';
 
-const OFFSET = 45;
+const OFFSET = 20;
 const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
 
 // ✅ PaginationDot props 타입 정의
@@ -43,7 +44,7 @@ const PaginationDot: React.FC<PaginationDotProps> = ({ index, scrollX }) => {
     const backgroundColor = interpolateColor(
       scrollX.value,
       [0, ITEM_WIDTH, 2 * ITEM_WIDTH],
-      ['#9095A7', '#9095A7', '#9095A7'],
+      ['#c78200', '#c78200', '#c78200'],
     );
     return {
       backgroundColor,
@@ -78,11 +79,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 10,
+    marginTop: 10,
   },
 
   dots: {
     height: 10,
-    marginHorizontal: 8,
+    marginHorizontal: 4,
     borderRadius: 5,
     backgroundColor: 'green',
   },

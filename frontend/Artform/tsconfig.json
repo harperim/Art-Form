@@ -18,9 +18,17 @@
     "baseUrl": "./", // 기본 경로를 프로젝트 루트로 설정
     "paths": {
       "~/*": ["./*"],
-      "@/*": ["src/*"]
+      "@/*": ["./*"]
     }
   },
-  "include": ["src", "App.tsx", "index.tsx", "eslint.config.mjs", "**/*.tsx", "declarations.d.ts"], // 프로젝트에서 TypeScript가 적용될 파일들
+  "include": [
+    ".",
+    "**/*.ts",
+    "**/*.tsx",
+    "App.tsx",
+    "index.tsx",
+    "eslint.config.mjs",
+    "declarations.d.ts"
+  ], // 프로젝트에서 TypeScript가 적용될 파일들
   "exclude": ["node_modules", "babel.config.js", "metro.config.js"] // 빌드 대상에서 제외할 파일들
 }

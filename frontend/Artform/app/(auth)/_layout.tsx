@@ -7,9 +7,6 @@ export default function Layout() {
       screenOptions={{
         animation: 'none',
         headerShown: false,
-        contentStyle: {
-          backgroundColor: 'black',
-        },
       }}
     />
   );
