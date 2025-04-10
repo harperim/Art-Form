@@ -2,15 +2,13 @@ package com.ssafy.artformuser.dto;
 
 import lombok.*;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ModelInfoDto {
-
-    private Long modelId;
-    private String modelName;
-    private String thumbnailId;
-
+public class ResponseNameList {
+    List<String> userNameList;
 }

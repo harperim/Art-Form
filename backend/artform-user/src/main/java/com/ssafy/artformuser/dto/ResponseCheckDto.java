@@ -7,8 +7,9 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TokenRefreshResponseDto {
+public class ResponseCheckDto {
 
-    private String msg;
-    private JwtTokenDto data;
+    String msg;
+    boolean data;
+
 }
