@@ -8,6 +8,7 @@ import com.d103.artformcore.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -39,9 +40,11 @@ public class LikeController {
                     @ApiResponse(responseCode = "200", description = "처리 성공!"),
             })
     @GetMapping
-    public ResponseEntity<LikeListResponseDto> likeList(Authentication authentication, @RequestParam int page) {
+    public ResponseEntity<LikeListResponseDto> likeList(Authentication authentication, @RequestParam int page,
+                                                        HttpServletRequest request) {
         Long userId = Long.valueOf(authentication.getName());
-        LikeListResponseDto likeList = likeService.getLikeList(userId, page);
+        String authHeader = request.getHeader("Authorization");
+        LikeListResponseDto likeList = likeService.getLikeList(userId, page, authHeader);
         return ResponseEntity.ok(likeList);
     }
 

@@ -13,7 +13,6 @@ import com.d103.artformcore.repository.ModelRepository;
 import com.d103.artformcore.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -121,7 +120,7 @@ public class ReviewService {
 
         // 리뷰 DTO 변환
         List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId, authHeader);
-        
+
         return ReviewListDto.builder()
                 .msg("삭제 성공")
                 .data(reviewDtos)
@@ -154,7 +153,6 @@ public class ReviewService {
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             try {
-//                String url = "http://j12d103.p.ssafy.io:8082/user/name/" + idListParam;
                 String url = userServiceUrl + "/user/name/" + idListParam;
                 ResponseEntity<ResponseNameList> response = restTemplate.exchange(
                         url,
@@ -209,12 +207,11 @@ public class ReviewService {
 
         return reviewDtos;
     }
-    
-    // Presigned url 받아오기
+
     private void processPresignedUrls(List<ReviewDto> reviewDtos, List<String> imageFileNames, Long userId) {
         // 이미지 서비스에서 presigned URL 요청
         List<ImageLoadResponseDto> responseList = imageService.getPresignedGetUrlByUploadFileName(
-                imageFileNames, userId, "review");
+                imageFileNames, "review");
 
         // URL 매핑 생성
         Map<String, String> imageUrlMap = new HashMap<>();
