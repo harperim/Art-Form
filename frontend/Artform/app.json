@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Artform",
-    "slug": "Artform",
+    "slug": "artform",
     "scheme": "artform",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,18 +14,33 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "이미지를 저장하기 위해 사진 라이브러리에 접근합니다.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.artform.artform"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.artform.artform"
     },
     "web": {
       "bundler": "metro",
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-secure-store"]
+    "plugins": ["expo-router", "expo-secure-store"],
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3a77b158-bfa3-45c0-9474-f0e7d7ffa3c4"
+      }
+    },
+    "owner": "artform"
   }
 }

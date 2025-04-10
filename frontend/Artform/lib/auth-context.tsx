@@ -1,12 +1,13 @@
 // lib/auth-context.tsx
 import type { PropsWithChildren } from 'react';
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getToken, saveToken, removeToken } from '../utils/storage'; // ✅ 유틸 함수 사용
+import { getToken, setToken, removeToken } from './auth';
 
 type AuthContextType = {
   user: { token: string } | null;
   loading: boolean;
-  login: (token: string) => Promise<void>;
+  isLoggedIn: boolean;
+  login: (accessToken: string, refreshToken?: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -27,18 +28,31 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     loadToken();
   }, []);
 
-  const login = async (token: string) => {
-    await saveToken(token);
-    setUser({ token });
+  const login = async (accessToken: string, refreshToken?: string) => {
+    await setToken(accessToken, refreshToken);
+    setUser({ token: accessToken });
   };
 
-  const logout = async () => {
+  const logout = async (message?: string) => {
     await removeToken();
     setUser(null);
+    if (message) {
+      alert(message);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isLoggedIn: !!user,
+        login,
+        logout,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 };
 

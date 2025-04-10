@@ -2,10 +2,13 @@ spring:
   application:
     name: artform-core
 
+  config:
+    import: optional:file:.env[.properties]
+
   jpa:
     database: postgresql
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
 
   datasource:
     hikari:
@@ -13,6 +16,10 @@ spring:
     url: jdbc:postgresql://${SERVER_DOMAIN}:${DB_PORT}/${DB_NAME}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+jwt:
+  secret: ${JWT_SECRET}
 
 # S3 설정
 cloud:
@@ -27,7 +34,24 @@ cloud:
     stack:
       auto: false
 
+# swagger 설정
+springdoc:
+  swagger-ui:
+    path: /core/swagger-ui.html  # 원하는 경로로 변경
+  api-docs:
+    path: /core/v3/api-docs      # API 문서 경로도 변경 가능
+
 # 로그 설정
 logging:
   level:
     com.d103.artformcore: DEBUG
+
+# prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 1111 # 접근 포트 설정
+#    base-path: # 접근 경로 설정
