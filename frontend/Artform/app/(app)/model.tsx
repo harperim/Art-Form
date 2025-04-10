@@ -23,6 +23,8 @@ type Props = {
 export default function ModelScreen() {
   const [isGrid, setIsGrid] = useState(false);
   const [models, setModels] = useState<ModelWithThumbnail[]>([]);
+  const { isTraining } = useModel();
+
   const toggleView = () => setIsGrid((prev) => !prev);
 
   const { setSelectedModel } = useModel();
@@ -98,18 +100,25 @@ export default function ModelScreen() {
           <ModelCarousel data={models} onPress={handleCardPress} />
 
           <Text style={styles.description}>나만의 모델을 만들어 보세요</Text>
-          <TouchableOpacity style={styles.learnButton} onPress={() => router.push('/train')}>
-            <View style={styles.iconLeft}>
-              <ICONS.plus width={20} height={20} />
-            </View>
-            <Text style={styles.learnButtonText}>새로 학습하기</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.learnButton} onPress={() => router.push('/create-model')}>
-            <View style={styles.iconLeft}>
-              <ICONS.plus width={20} height={20} />
-            </View>
-            <Text style={styles.learnButtonText}>새로 학습하기</Text>
-          </TouchableOpacity>
+
+          {isTraining ? (
+            <TouchableOpacity
+              style={styles.trainingButton}
+              onPress={() => router.push('/create-model')}
+            >
+              <View style={styles.iconLeft}>
+                <ICONS.learn width={20} height={20} />
+              </View>
+              <Text style={styles.trainingButtonText}>모델이 학습 중입니다.</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.learnButton} onPress={() => router.push('/train')}>
+              <View style={styles.iconLeft}>
+                <ICONS.plus width={20} height={20} />
+              </View>
+              <Text style={styles.learnButtonText}>새로 학습하기</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </SafeAreaView>
@@ -161,6 +170,28 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
+    textAlign: 'center',
+    flex: 1,
+  },
+  trainingButton: {
+    flexDirection: 'row',
+    borderColor: '#C7A635',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    borderWidth: 2,
+    shadowOffset: { width: 0, height: 2 },
+    position: 'relative',
+  },
+  trainingButtonText: {
+    color: '#C7A635',
+    fontSize: 14,
+    fontWeight: 'bold',
     textAlign: 'center',
     flex: 1,
   },

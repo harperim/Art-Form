@@ -1,3 +1,4 @@
+// app/(app)/train.tsx
 import { useEffect, useState } from 'react';
 import {
   View,
@@ -8,6 +9,7 @@ import {
   TouchableOpacity,
   Dimensions,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -30,39 +32,60 @@ export default function TrainScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    loadPhotos(); // 첫 로드
+    (async () => {
+      const hasPermission = await requestMediaPermission();
+      if (hasPermission) {
+        loadPhotos(); // 첫 로딩
+      }
+    })();
   }, []);
+
+  const requestMediaPermission = async (): Promise<boolean> => {
+    const { granted } = await MediaLibrary.requestPermissionsAsync(false, ['photo']);
+    if (!granted) {
+      Alert.alert(
+        '사진 접근 권한 필요',
+        '모든 사진을 불러오기 위해 갤러리 접근 권한이 필요합니다.',
+      );
+      return false;
+    }
+    return true;
+  };
 
   const loadPhotos = async (after: string | null = null) => {
     if (isLoadingMore || !hasNextPage) return;
-
     setIsLoadingMore(true);
 
-    const assetResult = await MediaLibrary.getAssetsAsync({
-      mediaType: 'photo',
-      sortBy: [['creationTime', false]],
-      first: 30,
-      after: after ?? undefined,
-    });
+    try {
+      const assetResult = await MediaLibrary.getAssetsAsync({
+        mediaType: 'photo',
+        sortBy: [['creationTime', false]],
+        first: 30,
+        after: after ?? undefined,
+      });
 
-    const newAssets: MediaLibrary.Asset[] = assetResult.assets;
-    const existingIds = new Set(photos.map((p) => p.id));
-    const uniqueAssets = newAssets.filter((p) => !existingIds.has(p.id));
+      const newAssets = assetResult.assets;
+      const existingIds = new Set(photos.map((p) => p.id));
+      const uniqueAssets = newAssets.filter((p) => !existingIds.has(p.id));
 
-    const enriched: AssetWithLocalUri[] = await Promise.all(
-      uniqueAssets.map(async (asset) => {
-        const info = await MediaLibrary.getAssetInfoAsync(asset);
-        return {
-          ...asset,
-          localUri: info.localUri || asset.uri,
-        };
-      }),
-    );
+      const enriched: AssetWithLocalUri[] = await Promise.all(
+        uniqueAssets.map(async (asset) => {
+          const info = await MediaLibrary.getAssetInfoAsync(asset);
+          return {
+            ...asset,
+            localUri: info.localUri || asset.uri,
+          };
+        }),
+      );
 
-    setPhotos((prev) => [...prev, ...enriched]);
-    setEndCursor(assetResult.endCursor ?? null);
-    setHasNextPage(assetResult.hasNextPage);
-    setIsLoadingMore(false);
+      setPhotos((prev) => [...prev, ...enriched]);
+      setEndCursor(assetResult.endCursor ?? null);
+      setHasNextPage(assetResult.hasNextPage);
+    } catch (error) {
+      console.warn('사진 불러오기 실패:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
   };
 
   const toggleSelect = async (item: AssetWithLocalUri) => {
@@ -76,7 +99,7 @@ export default function TrainScreen() {
       return next;
     });
 
-    // localUri 없으면 그때 가져오기
+    // localUri 없으면 다시 불러오기
     if (!item.localUri) {
       const info = await MediaLibrary.getAssetInfoAsync(item);
       setPhotos((prev) =>
@@ -87,7 +110,6 @@ export default function TrainScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity onPress={router.back}>
           <Ionicons name="arrow-back" size={24} color="black" />
@@ -141,11 +163,11 @@ export default function TrainScreen() {
 
       <TouchableOpacity
         style={[styles.trainButton, { backgroundColor: selected.size === 10 ? '#7EA4CC' : '#ccc' }]}
-        disabled={selected.size !== 10}
+        disabled={selected.size < 10}
         onPress={() => {
           const selectedUris = photos.filter((p) => selected.has(p.id)).map((p) => p.localUri);
           console.log('선택된 사진 URI:', selectedUris);
-          // 여기서 서버 업로드 or 학습 요청 진행 가능
+          router.push('/create-model');
         }}
       >
         <Text style={styles.trainButtonText}>학습하기</Text>

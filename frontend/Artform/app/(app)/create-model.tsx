@@ -1,16 +1,26 @@
+// app/(app)/create-model.tsx
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import LottieView from 'lottie-react-native';
+import { useModel } from '~/context/ModelContext';
+import { useEffect } from 'react';
 
 export default function createModel() {
+  const { setIsTraining } = useModel();
+
   const router = useRouter();
+
+  useEffect(() => {
+    setIsTraining(true);
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Pressable
           onPress={() => {
-            router.back();
+            router.replace('/model');
           }}
         >
           <Ionicons name="chevron-back" size={24} color="#000" />

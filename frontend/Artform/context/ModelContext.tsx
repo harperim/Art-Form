@@ -11,6 +11,8 @@ type ModelContextType = {
   refreshSelectedModel: () => Promise<ModelWithThumbnail | null>;
   bottomSheetClosed: boolean;
   setBottomSheetClosed: (closed: boolean) => void;
+  isTraining: boolean;
+  setIsTraining: (val: boolean) => void;
 };
 
 const ModelContext = createContext<ModelContextType | undefined>(undefined);
@@ -18,6 +20,7 @@ const ModelContext = createContext<ModelContextType | undefined>(undefined);
 export const ModelProvider = ({ children }: { children: ReactNode }) => {
   const [selectedModel, setSelectedModel] = useState<ModelWithThumbnail | null>(null);
   const [bottomSheetClosed, setBottomSheetClosed] = useState<boolean>(false);
+  const [isTraining, setIsTraining] = useState(false);
 
   const refreshSelectedModel = useCallback(async () => {
     if (!selectedModel) return null;
@@ -50,6 +53,8 @@ export const ModelProvider = ({ children }: { children: ReactNode }) => {
         refreshSelectedModel,
         bottomSheetClosed,
         setBottomSheetClosed,
+        isTraining,
+        setIsTraining,
       }}
     >
       {children}

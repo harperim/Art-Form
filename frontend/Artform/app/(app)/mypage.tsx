@@ -1,7 +1,15 @@
 // app/(app)/mypage.tsx
-import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '~/lib/auth-context';
 import { FlatList } from 'react-native-gesture-handler';
@@ -178,7 +186,7 @@ export default function MyPageScreen() {
       );
     }
     return null;
-  }
+  };
 
   const router = useRouter();
 
