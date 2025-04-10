@@ -1,30 +1,35 @@
 // app/(app)/model.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ICONS } from '~/constants/icons';
-import { mockModels } from '~/constants/mockModels';
 import ModelCarousel from '~/components/ModelCarousel';
 import AnimatedModelCard from '~/components/AnimatedModelCard';
 import { useModel } from '~/context/ModelContext';
-import type { Model } from '~/types/model';
+import type { ModelWithThumbnail } from '~/types/model';
+import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
+import { fetchRecentModels } from '~/services/modelService';
+import { router } from 'expo-router';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GRID_ITEM_WIDTH = (SCREEN_WIDTH - 24 * 2 - 12) / 2;
 const GRID_ITEM_HEIGHT = GRID_ITEM_WIDTH * 1.3;
 
 type Props = {
-  item: Model;
+  item: ModelWithThumbnail;
   index: number;
 };
 
 export default function ModelScreen() {
   const [isGrid, setIsGrid] = useState(false);
+  const [models, setModels] = useState<ModelWithThumbnail[]>([]);
+  const { isTraining } = useModel();
+
   const toggleView = () => setIsGrid((prev) => !prev);
 
   const { setSelectedModel } = useModel();
 
-  const handleCardPress = (item: Model) => {
+  const handleCardPress = (item: ModelWithThumbnail) => {
     setSelectedModel(item);
   };
 
@@ -39,37 +44,42 @@ export default function ModelScreen() {
     </View>
   );
 
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const data = await fetchRecentModels(0);
+        const urls = await Promise.all(
+          data.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
+        );
+        const enriched = data.map((model, i) => ({
+          ...model,
+          thumbnailUrl: getValidUrl(urls[i]),
+        }));
+        setModels(enriched);
+      } catch (err) {
+        console.error('모델 불러오기 실패:', err);
+      }
+    };
+    loadModels();
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       {/* 상단 제목 + 아이콘 */}
       <View style={styles.header}>
-        <Text style={styles.title}>최근에 사용한 모델</Text>
-        <TouchableOpacity onPress={toggleView}>
+        <Text style={styles.title}>최근에 본 모델</Text>
+        <TouchableOpacity
+          onPress={toggleView}
+          style={{ position: 'absolute', width: 40, height: 40, right: -10, top: 0 }}
+        >
           <ICONS.grid width={20} height={20} />
         </TouchableOpacity>
       </View>
 
       {/* 캐러셀 or 그리드 */}
-      {isGrid ? (
-        <FlatList
-          data={mockModels}
-          numColumns={2}
-          keyExtractor={(item) => item.id}
-          columnWrapperStyle={{ gap: 12 }}
-          contentContainerStyle={{ paddingBottom: 100, gap: 12 }}
-          renderItem={renderGridItem}
-        />
-      ) : (
-        <View style={styles.scrollContent}>
-          <ModelCarousel
-            data={mockModels.map((model) => ({
-              id: model.id,
-              image: model.image,
-              title: model.title,
-              artist: model.artist,
-            }))}
-            onPress={handleCardPress}
-          />
+      {models.length === 0 ? (
+        <View style={styles.emptyWrapper}>
+          <Text style={styles.emptyText}>모델이 없습니다.</Text>
 
           <Text style={styles.description}>나만의 모델을 만들어 보세요</Text>
           <TouchableOpacity style={styles.learnButton}>
@@ -78,6 +88,40 @@ export default function ModelScreen() {
             </View>
             <Text style={styles.learnButtonText}>새로 학습하기</Text>
           </TouchableOpacity>
+        </View>
+      ) : isGrid ? (
+        <FlatList
+          data={models}
+          numColumns={2}
+          keyExtractor={(item) => String(item.model.modelId)}
+          columnWrapperStyle={{ gap: 8 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          renderItem={renderGridItem}
+        />
+      ) : (
+        <View style={styles.scrollContent}>
+          <ModelCarousel data={models} onPress={handleCardPress} />
+
+          <Text style={styles.description}>나만의 모델을 만들어 보세요</Text>
+
+          {isTraining ? (
+            <TouchableOpacity
+              style={styles.trainingButton}
+              onPress={() => router.push('/create-model')}
+            >
+              <View style={styles.iconLeft}>
+                <ICONS.learn width={20} height={20} />
+              </View>
+              <Text style={styles.trainingButtonText}>모델이 학습 중입니다.</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.learnButton} onPress={() => router.push('/train')}>
+              <View style={styles.iconLeft}>
+                <ICONS.plus width={20} height={20} />
+              </View>
+              <Text style={styles.learnButtonText}>새로 학습하기</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </SafeAreaView>
@@ -95,26 +139,30 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   header: {
+    marginTop: 40,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 28,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: 'Freesentatio7',
   },
   description: {
     textAlign: 'center',
     color: '#6283A6',
     marginVertical: 12,
     fontSize: 16,
+    marginTop: 28,
     fontWeight: '700',
   },
   learnButton: {
     flexDirection: 'row',
     backgroundColor: '#7EA4CC',
-    borderRadius: 12,
+    borderRadius: 8,
+    height: 52,
     paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: 'center',
@@ -127,8 +175,30 @@ const styles = StyleSheet.create({
   },
   learnButtonText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontFamily: 'Freesentation7',
+    textAlign: 'center',
+    flex: 1,
+  },
+  trainingButton: {
+    flexDirection: 'row',
+    borderColor: '#C7A635',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    marginBottom: 12,
+    width: 300,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    borderWidth: 2,
+    shadowOffset: { width: 0, height: 2 },
+    position: 'relative',
+  },
+  trainingButtonText: {
+    color: '#C7A635',
     fontSize: 14,
+    fontWeight: 'bold',
     textAlign: 'center',
     flex: 1,
   },
@@ -157,5 +227,15 @@ const styles = StyleSheet.create({
   iconLeft: {
     position: 'absolute',
     left: 20,
+  },
+  emptyWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+    marginVertical: 150,
   },
 });

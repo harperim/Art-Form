@@ -2,13 +2,13 @@
 import { TouchableOpacity, Image, Text, StyleSheet } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import type { Model } from '~/types/model';
+import type { ModelWithThumbnail } from '~/types/model';
 
 type Props = {
-  item: Model;
+  item: ModelWithThumbnail;
   index: number;
   onPress: () => void;
-  disableAnimation: Model | null;
+  disableAnimation: ModelWithThumbnail | null;
 };
 
 export default function AnimatedModelCard({ item, index, onPress, disableAnimation }: Props) {
@@ -18,14 +18,14 @@ export default function AnimatedModelCard({ item, index, onPress, disableAnimati
         entering={disableAnimation ? undefined : FadeInDown.delay(index * 100).springify()}
         style={styles.card}
       >
-        <Image source={item.image} style={styles.cardImage} />
+        <Image source={{ uri: item.thumbnailUrl }} style={styles.cardImage} />
         <LinearGradient
           colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.9)']}
           locations={[0, 0.4, 1]}
           style={styles.cardTitleOverlay}
         >
           <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
-            {item.title}
+            {item.model.modelName}
           </Text>
         </LinearGradient>
       </Animated.View>
@@ -36,16 +36,18 @@ export default function AnimatedModelCard({ item, index, onPress, disableAnimati
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    height: 190,
-    borderRadius: 12,
+    height: 200,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#6E95BE',
     overflow: 'hidden',
-    backgroundColor: '#000',
-    marginBottom: 12,
+    backgroundColor: '#eee',
+    marginBottom: 8,
     position: 'relative',
   },
   cardImage: {
     width: '100%',
-    height: 190,
+    height: 200,
     resizeMode: 'cover',
   },
   cardTitleOverlay: {
@@ -62,5 +64,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
+    fontFamily: 'Freesentation7',
   },
 });

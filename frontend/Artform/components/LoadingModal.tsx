@@ -1,4 +1,5 @@
 import { Modal, View, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
+import LottieView from 'lottie-react-native';
 
 type Props = {
   visible: boolean;
@@ -17,13 +18,12 @@ export default function LoadingModal({ visible, onClose }: Props) {
           )}
 
           <Text style={styles.title}>현재 변환 중입니다.</Text>
-
-          <ActivityIndicator
-            size="large"
-            color="#7EA4CC"
-            style={{ marginVertical: 30, paddingVertical: 20 }}
+          <LottieView
+            source={require('~/assets/animation/painting_animation.json')}
+            autoPlay
+            loop
+            style={{ width: 300, height: 300 }}
           />
-
           <Text style={styles.description}>
             잠시만 기다려주세요.{'\n'}완료 후 자동으로 페이지가 전환됩니다.
           </Text>
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     width: '85%',
     backgroundColor: 'white',
     padding: 24,
-    borderRadius: 20,
+    borderRadius: 8,
     alignItems: 'center',
     position: 'relative',
   },
@@ -65,9 +65,10 @@ const styles = StyleSheet.create({
   },
   description: {
     textAlign: 'center',
+    fontFamily: 'Freesentation7',
     paddingVertical: 20,
     color: '#333',
-    fontSize: 14,
+    fontSize: 16,
     lineHeight: 22,
   },
 });

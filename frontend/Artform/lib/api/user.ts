@@ -4,7 +4,7 @@ import { getToken, getStoredRefreshToken, setToken } from '../auth';
 import { forceLogout } from '../auth-helper';
 
 const userApi = axios.create({
-  baseURL: 'http://j12d103.p.ssafy.io:8082',
+  baseURL: 'https://j12d103.p.ssafy.io/user',
   headers: { 'Content-Type': 'application/json' },
   timeout: 5000,
 });
@@ -34,7 +34,7 @@ userApi.interceptors.response.use(
         const refreshToken = await getStoredRefreshToken();
         if (!refreshToken) throw new Error('No refresh token');
 
-        const res = await axios.post('http://j12d103.p.ssafy.io:8082/user/auth/oauth/accesstoken', {
+        const res = await axios.post('https://j12d103.p.ssafy.io/user/auth/oauth/accesstoken', {
           refreshToken,
         });
 

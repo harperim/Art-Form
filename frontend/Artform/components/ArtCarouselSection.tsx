@@ -26,7 +26,7 @@ export default function ArtCarouselSection({ data, onPress }: Props) {
           <ArtCarouselCard
             image={item.thumbnailUrl}
             title={item.model.modelName}
-            subtitle={item.userName}
+            // subtitle={item.userName}
           />
         </TouchableOpacity>
       ))}
@@ -36,6 +36,7 @@ export default function ArtCarouselSection({ data, onPress }: Props) {
 
 const styles = StyleSheet.create({
   scroll: {
+    top: -4,
     paddingVertical: 10,
   },
 });

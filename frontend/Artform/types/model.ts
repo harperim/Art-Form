@@ -21,3 +21,18 @@ export type Model = {
 export type ModelWithThumbnail = Model & {
   thumbnailUrl: string;
 };
+
+export type MyModelItem = {
+  modelId: number;
+  userName: string;
+  modelName: string;
+  url: string;
+};
+
+export type MyLikeModel = {
+  imageSrc: string;
+  userId: string;
+  userName: string;
+  modelId: string;
+  modelName: string;
+};

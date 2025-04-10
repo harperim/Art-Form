@@ -6,19 +6,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 
 import colors from '~/constants/colors';
-import type { Model } from '~/types/model';
+import type { ModelWithThumbnail } from '~/types/model';
 import { useModel } from '~/context/ModelContext';
 import { useLocalSearchParams } from 'expo-router';
-import { mockModels } from '~/constants/mockModels';
+
 import AnimatedModelCard from '~/components/AnimatedModelCard';
+import { fetchHotModels, fetchRecentModels } from '~/services/modelService';
+import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
 
 export default function StoreScreen() {
   const { sort: sortParam } = useLocalSearchParams();
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'latest' | 'popular'>('latest');
+  const [models, setModels] = useState<ModelWithThumbnail[]>([]);
+
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+
   const { selectedModel, setSelectedModel } = useModel();
 
-  const openModal = (item: Model) => {
+  const handleCardPress = (item: ModelWithThumbnail) => {
     setSelectedModel(item);
   };
 
@@ -28,17 +36,61 @@ export default function StoreScreen() {
     }
   }, [sortParam]);
 
-  const sortedData = [...mockModels].sort((a, b) => {
-    if (sort === 'popular') {
-      // likes 높은 순으로 정렬 (내림차순)
-      return (b.likes ?? 0) - (a.likes ?? 0);
-    }
-    // 최신순은 id 기준 내림차순 (문자열이지만 id가 시간순이라면)
-    return Number(b.id) - Number(a.id);
-  });
+  useEffect(() => {
+    loadInitialModels();
+  }, [sort]);
 
-  const filtered = sortedData.filter((item) =>
-    item.title.toLowerCase().includes(search.toLowerCase()),
+  const loadInitialModels = async () => {
+    try {
+      const fetchModelsBySort = sort === 'latest' ? fetchRecentModels : fetchHotModels;
+      const data = await fetchModelsBySort(0);
+
+      const urls = await Promise.all(
+        data.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
+      );
+
+      const merged = data.map((model, index) => ({
+        ...model,
+        thumbnailUrl: getValidUrl(urls[index]),
+      }));
+
+      setModels(merged);
+      setPage(1);
+      setHasMore(data.length > 0);
+    } catch (err) {
+      console.error('모델 불러오기 실패:', err);
+    }
+  };
+
+  const loadMoreModels = async () => {
+    if (isFetchingMore || !hasMore) return;
+
+    setIsFetchingMore(true);
+    try {
+      const fetchModelsBySort = sort === 'latest' ? fetchRecentModels : fetchHotModels;
+      const data = await fetchModelsBySort(page);
+
+      const urls = await Promise.all(
+        data.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
+      );
+
+      const merged = data.map((model, index) => ({
+        ...model,
+        thumbnailUrl: getValidUrl(urls[index]),
+      }));
+
+      setModels((prev) => [...prev, ...merged]);
+      setPage((prev) => prev + 1);
+      if (data.length === 0) setHasMore(false);
+    } catch (err) {
+      console.error('더 불러오기 실패:', err);
+    } finally {
+      setIsFetchingMore(false);
+    }
+  };
+
+  const filtered = models.filter((item) =>
+    item.model.modelName.toLowerCase().includes(search.toLowerCase()),
   );
 
   const leftColumn = filtered.filter((_, i) => i % 2 === 0);
@@ -85,15 +137,25 @@ export default function StoreScreen() {
           <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
         </View>
       ) : (
-        <Animated.ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Animated.ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          scrollEventThrottle={100}
+          showsVerticalScrollIndicator={false} // 👈 스크롤 바 숨기기
+          onScroll={({ nativeEvent }) => {
+            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const isNearBottom =
+              layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
+            if (isNearBottom) loadMoreModels();
+          }}
+        >
           <View style={styles.columns}>
             <View style={styles.column}>
               {leftColumn.map((item, index) => (
                 <AnimatedModelCard
-                  key={`${item.id}-${sort}`}
+                  key={`${item.model.modelId}-${sort}`}
                   item={item}
                   index={index}
-                  onPress={() => openModal(item)}
+                  onPress={() => handleCardPress(item)}
                   disableAnimation={selectedModel}
                 />
               ))}
@@ -101,15 +163,21 @@ export default function StoreScreen() {
             <View style={[styles.column, { marginTop: 40 }]}>
               {rightColumn.map((item, index) => (
                 <AnimatedModelCard
-                  key={`${item.id}-${sort}`}
+                  key={`${item.model.modelId}-${sort}`}
                   item={item}
                   index={index + 0.5}
-                  onPress={() => openModal(item)}
+                  onPress={() => handleCardPress(item)}
                   disableAnimation={selectedModel}
                 />
               ))}
             </View>
           </View>
+          {/* 로딩 인디케이터 */}
+          {isFetchingMore && (
+            <View style={{ paddingVertical: 20 }}>
+              <Text style={{ textAlign: 'center', color: '#999' }}>불러오는 중...</Text>
+            </View>
+          )}
         </Animated.ScrollView>
       )}
     </SafeAreaView>
@@ -123,41 +191,46 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   searchBox: {
+    marginTop: 40,
     flexDirection: 'row',
     backgroundColor: '#F1F1F1',
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    borderRadius: 4,
+    paddingHorizontal: 16,
     alignItems: 'center',
     marginBottom: 16,
+    borderColor: '#EAEAEA',
+    borderWidth: 1,
   },
   searchIcon: {
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    height: 40,
+    height: 48,
+    fontFamily: 'Freesentation6',
+    fontSize: 16,
   },
   sortButtons: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 10,
+    gap: 4,
+    marginBottom: 20,
   },
   sortBtn: {
     paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingHorizontal: 20,
+    borderRadius: 16,
     backgroundColor: '#EAEAEA',
   },
   sortText: {
     color: '#555',
-    fontWeight: 'bold',
+    fontFamily: 'Freesentation7',
   },
   activeSort: {
     backgroundColor: colors.primary,
   },
   activeSortText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontFamily: 'Freesentation7',
   },
   emptyView: {
     flex: 1,
