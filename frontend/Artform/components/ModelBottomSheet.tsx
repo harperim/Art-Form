@@ -21,7 +21,7 @@ import colors from '~/constants/colors';
 import { useModel } from '~/context/ModelContext';
 import { useAuth } from '~/lib/auth-context';
 
-import { getImageUploadUrl, postImageMetadata } from '~/services/imageService';
+import { getImageUploadUrl } from '~/services/imageService';
 import { deleteModelReview, fetchModelReviews, postModelReview } from '~/services/reviewService';
 import { uploadToS3, getFileTypeFromUri } from '~/utils/uploadImageToS3';
 import type { ModelWithThumbnail } from '~/types/model';
@@ -103,7 +103,7 @@ export default function ModelBottomSheet() {
           return true;
         }
         if (bottomSheetRef.current) {
-          bottomSheetRef.current.close();
+          bottomSheetRef.current.dismiss();
           return true;
         }
         return false;
@@ -185,13 +185,6 @@ export default function ModelBottomSheet() {
         );
         await uploadToS3(presignedUrl, fileUri, fileType);
         uploadFileName = fileKey;
-
-        await postImageMetadata({
-          modelId: model.model.modelId,
-          userId: model.model.userId,
-          uploadFileName,
-          public: true,
-        });
       }
 
       await postModelReview(model.model.modelId, comment, uploadFileName);
