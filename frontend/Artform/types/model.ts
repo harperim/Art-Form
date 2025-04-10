@@ -32,6 +32,7 @@ export type MyModelItem = {
 export type MyLikeModel = {
   imageSrc: string;
   userId: string;
+  userName: string;
   modelId: string;
   modelName: string;
 };

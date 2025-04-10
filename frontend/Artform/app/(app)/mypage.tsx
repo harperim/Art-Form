@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '~/lib/auth-context';
 import { FlatList } from 'react-native-gesture-handler';
 
@@ -100,7 +99,7 @@ export default function MyPageScreen() {
     for (const MyLikeModel of myLikeModeList) {
       const formattedModel: MyModelItem = {
         modelId: Number(MyLikeModel.modelId),
-        userName: `${MyLikeModel.userId}`, // 임시 처리. 실제 닉네임 있으면 교체
+        userName: `${MyLikeModel.userName}`, // 임시 처리. 실제 닉네임 있으면 교체
         modelName: MyLikeModel.modelName,
         url: MyLikeModel.imageSrc,
       };
@@ -112,11 +111,11 @@ export default function MyPageScreen() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      if (selectedTab === '내가 만든 그림' && imageUrls.length === 0) {
+      if (selectedTab === '내가 만든 그림') {
         await loadImages();
-      } else if (selectedTab === '내가 만든 모델' && myModels.length === 0) {
+      } else if (selectedTab === '내가 만든 모델') {
         await loadMyModels();
-      } else if (selectedTab === '내가 좋아요한 모델' && myLikeModels.length === 0) {
+      } else if (selectedTab === '내가 좋아요한 모델') {
         await LoadMyLikeModel();
       }
       setLoading(false);
@@ -124,23 +123,21 @@ export default function MyPageScreen() {
     loadData();
   }, [selectedTab]);
 
-  const renderItem = ({ item, index }: { item: ImageItem; index: number }) => (
-    <Animated.View entering={FadeInDown.delay(index * 30).springify()}>
-      <TouchableOpacity onPress={() => setPreviewImageUri(item.url)}>
-        <Image
-          source={{ uri: item.url }}
-          style={{
-            flex: 1,
-            width: itemSize,
-            height: itemSize,
-            resizeMode: 'cover',
-            borderRadius: 4,
-            borderWidth: 0.5,
-            borderColor: '#6E95BE',
-          }}
-        />
-      </TouchableOpacity>
-    </Animated.View>
+  const renderItem = ({ item }: { item: ImageItem; index: number }) => (
+    <TouchableOpacity onPress={() => setPreviewImageUri(item.url)}>
+      <Image
+        source={{ uri: item.url }}
+        style={{
+          flex: 1,
+          width: itemSize,
+          height: itemSize,
+          resizeMode: 'cover',
+          borderRadius: 4,
+          borderWidth: 0.5,
+          borderColor: '#6E95BE',
+        }}
+      />
+    </TouchableOpacity>
   );
 
   const screenWidth = Dimensions.get('window').width;
@@ -150,10 +147,10 @@ export default function MyPageScreen() {
 
   const renderContent = () => {
     if (selectedTab === '내가 만든 그림') {
-      if (imageUrls.length) {
-        return (
-          <View style={styles.mainContentView}>
-            <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
+      return (
+        <View style={styles.mainContentView}>
+          <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
+          {imageUrls.length ? (
             <FlatList
               data={imageUrls}
               renderItem={renderItem}
@@ -163,21 +160,15 @@ export default function MyPageScreen() {
               showsVerticalScrollIndicator={false}
               style={{ marginTop: 20, display: 'flex', width: '100%' }}
             />
-          </View>
-        );
-      } else {
-        return (
-          <View style={styles.mainContentView}>
-            <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
-          </View>
-        );
-      }
+          ) : null}
+        </View>
+      );
     }
     if (selectedTab === '내가 만든 모델') {
       return (
         <View style={styles.mainContentView}>
           <Text style={styles.mainContentTitle}>총 {myModels.length}개</Text>
-          <MyPageItemList item={myModels} disableAnimation={null} />
+          {myModels.length ? <MyPageItemList item={myModels} disableAnimation={null} /> : null}
         </View>
       );
     }
@@ -185,7 +176,9 @@ export default function MyPageScreen() {
       return (
         <View style={styles.mainContentView}>
           <Text style={styles.mainContentTitle}>총 {myLikeModels.length}개</Text>
-          <MyPageItemList item={myLikeModels} disableAnimation={null} />
+          {myLikeModels.length ? (
+            <MyPageItemList item={myLikeModels} disableAnimation={null} />
+          ) : null}
         </View>
       );
     }

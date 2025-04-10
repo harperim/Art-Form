@@ -7,9 +7,7 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useModel } from '~/context/ModelContext';
-import { useAuth } from '~/lib/auth-context';
 import { fetchPresignedImageUrl } from '~/services/imageService';
 import { fetchModelInfo } from '~/services/modelService';
 import type { ModelWithThumbnail, MyModelItem } from '~/types/model';
@@ -23,9 +21,7 @@ const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height / 5;
 const GRID_ITEM_WIDTH = width / 2;
 
-export default function MypageItemList({ item, disableAnimation = null }: Props) {
-  const { userInfo } = useAuth();
-
+export default function MypageItemList({ item }: Props) {
   const { setSelectedModel } = useModel();
 
   const handleCardPress = async (item: MyModelItem) => {
@@ -44,19 +40,14 @@ export default function MypageItemList({ item, disableAnimation = null }: Props)
     }
   };
 
-  const renderGridItem = ({ item, index }: { item: MyModelItem; index: number }) => (
-    <Animated.View
-      entering={disableAnimation ? undefined : FadeInDown.delay(index * 30).springify()}
-      style={styles.card}
-    >
+  const renderGridItem = ({ item }: { item: MyModelItem }) => (
+    <View style={styles.card}>
       <TouchableOpacity activeOpacity={0.9} onPress={() => handleCardPress(item)}>
         <Image style={styles.cardImage} source={{ uri: item.url }} />
         <Text style={styles.modelName}>{item.modelName}</Text>
-        {item.userName !== userInfo.nickname ? (
-          <Text style={styles.modelArtist}>by {item.userName}</Text>
-        ) : null}
+        <Text style={styles.modelArtist}>by {item.userName}</Text>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 
   return (
