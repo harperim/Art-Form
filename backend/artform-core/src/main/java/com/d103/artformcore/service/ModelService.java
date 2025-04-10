@@ -8,6 +8,7 @@ import com.d103.artformcore.exception.ModelNotFoundException;
 import com.d103.artformcore.repository.ModelRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,6 +27,9 @@ import java.util.*;
 public class ModelService {
     private final ModelRepository modelRepository;
     private final S3Service s3Service;
+
+    @Value("${service.user.url}")
+    private String userServiceUrl;
 
     @Transactional
     public ModelSaveResponseDto getPresignedPutUrl(String fileType, String fileName) {
@@ -55,6 +59,39 @@ public class ModelService {
         }
     }
 
+    private String getUserName(long userId, String token) {
+        String userName;
+        // userName 조회
+        try {
+            // RestTemplate을 사용하는 경우
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", token); // 토큰 가져오는 메서드 필요
+            headers.set("accept", "*/*");
+
+            String url = userServiceUrl + "/user/" + userId;
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<Map<String, Object>>() {
+                    }
+            );
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map<String, Object> data = (Map<String, Object>) response.getBody().get("data");
+                userName = (String) data.get("nickname");
+            } else {
+                userName = "Unknown User";
+            }
+        } catch (Exception e) {
+            userName = "Unknown User";
+        }
+        return userName;
+    }
+
     public ModelLoadResponseDto getPresignedGetUrl(long modelId, long userId, String token) {
         Model model = modelRepository.findById(modelId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
@@ -68,40 +105,12 @@ public class ModelService {
         }
 
         String uploadFileName = model.getUploadFileName();
-        String userName;
-        // userName 조회
-        try {
-            // RestTemplate을 사용하는 경우
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", token ); // 토큰 가져오는 메서드 필요
-            headers.set("accept", "*/*");
-
-            HttpEntity<String> entity = new HttpEntity<>(headers);
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    "http://j12d103.p.ssafy.io:8082/user/" + userId,
-                    HttpMethod.GET,
-                    entity,
-                    new ParameterizedTypeReference<Map<String, Object>>() {}
-            );
-
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                Map<String, Object> data = (Map<String, Object>) response.getBody().get("data");
-                userName = (String) data.get("nickname");
-            } else {
-                userName = "Unknown User";
-            }
-        } catch (Exception e) {
-            userName = "Unknown User";
-        }
-        // userName 조회 끝
-
-        return new ModelLoadResponseDto(model, userName);
+        return new ModelLoadResponseDto(model, getUserName(model.getUserId(), token));
     }
 
     public List<ModelLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId, String token) {
         List<Model> modelList = modelRepository.findByIsPublicTrueAndDeletedAtIsNull(
-                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
+                PageRequest.of(page, 6, Sort.by(Sort.Direction.DESC, "createdAt"))
         ).getContent();
 
         List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
@@ -123,7 +132,7 @@ public class ModelService {
 
     public List<ModelLoadResponseDto> getPresignedGetUrlHotList(int page, long userId, String token) {
         List<Model> modelList = modelRepository.findByIsPublicTrueAndDeletedAtIsNull(
-                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "likeCount"))
+                PageRequest.of(page, 6, Sort.by(Sort.Direction.DESC, "likeCount"))
         ).getContent();
         List<ModelLoadResponseDto> presignedUrlDtoList = new ArrayList<>();
         for (Model model : modelList) {
@@ -204,5 +213,21 @@ public class ModelService {
         }
 
         return new ModelDownloadInfoDto(model, presignedUrl);
+    }
+    
+    // 썸네일 ID 등록
+    public void thumbnailId(long modelId, long imageId) {
+        Model model = modelRepository.findById(modelId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MODEL_NOT_FOUND));
+
+        // 삭제 여부 확인
+        if (model.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.DELETED_MODEL);
+        }
+
+        model.setThumbnailId(imageId);
+
+        // 변경사항 저장
+        modelRepository.save(model);
     }
 }

@@ -23,24 +23,30 @@ public class JwtFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         String method = request.getMethod();
 
-        log.info("요청 정보: URI={}, METHOD={}", uri, method);
+        // actuator/prometheus 요청 시 로깅 생략
+        if (!uri.equals("/actuator/prometheus")) {
+            log.info("[JwtFilter] URI={}, METHOD={}", uri, method);
 
-        String accessToken = getJwtFromRequest(request);
+            String accessToken = getJwtFromRequest(request);
+            log.info("[JwtFilter] Authorization Header: {}", request.getHeader("Authorization"));
+            log.info("[JwtFilter] Extracted Token: {}", accessToken);
 
-        // 토큰 가지고 있을 경우
-        if (accessToken != null) {
-            if (jwtTokenValidator.validateAccessToken(accessToken)) {
-                log.info("토큰 검증 성공");
-                Authentication authentication = jwtTokenValidator.getAuthentication(accessToken);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (accessToken != null) {
+                if (jwtTokenValidator.validateAccessToken(accessToken)) {
+                    Authentication authentication = jwtTokenValidator.getAuthentication(accessToken);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.info("[JwtFilter] 인증 성공: {}", authentication.getName());
+                } else {
+                    log.warn("[JwtFilter] 토큰 검증 실패");
+                }
             } else {
-                log.warn("토큰 검증 실패");
+                log.warn("[JwtFilter] 토큰이 없음");
             }
-        } else {
-            log.warn("토큰이 없음");
         }
+
         filterChain.doFilter(request, response);
     }
+
 
     // 액세스 토큰 받아오기
     private String getJwtFromRequest(HttpServletRequest request) {

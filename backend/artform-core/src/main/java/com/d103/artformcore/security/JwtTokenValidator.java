@@ -44,7 +44,7 @@ public class JwtTokenValidator {
             String sub = claims.getSubject();
             Date expiration = claims.getExpiration();
 
-            log.info("토큰 파싱 성공: subject={}, auth={}, expiration={}", sub, auth, expiration);
+//            log.info("토큰 파싱 성공: subject={}, auth={}, expiration={}", sub, auth, expiration);
 
             return auth != null;
         } catch (SignatureException e) {

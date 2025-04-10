@@ -6,6 +6,7 @@ import com.d103.artformcore.dto.ImageSaveDto;
 import com.d103.artformcore.dto.ImageSaveResponseDto;
 import com.d103.artformcore.entity.Image;
 import com.d103.artformcore.exception.CustomException;
+import com.d103.artformcore.exception.ErrorCode;
 import com.d103.artformcore.exception.ErrorResponse;
 import com.d103.artformcore.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,10 +16,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static java.lang.Thread.sleep;
 
 @Tag(name = "이미지", description = "이미지 관리 API")
 @RestController
@@ -30,9 +36,9 @@ public class ImageController {
     @Operation(summary = "이미지 업로드 Presigned URL 요청",
             description = "S3에 이미지 파일을 업로드하기 위한 Presigned URL을 요청합니다")
     @GetMapping("/presigned-url")
-    public ResponseEntity<ApiResponses<ImageSaveResponseDto>> getPresignedPutUrl(@RequestParam String fileType, @RequestParam String fileName) {
+    public ResponseEntity<ApiResponses<ImageSaveResponseDto>> getPresignedPutUrl(@RequestParam String fileType, @RequestParam String fileName, @RequestParam String service) {
         try {
-            ImageSaveResponseDto imageSaveResponseDto = imageService.getPresignedPutUrl(fileType, fileName, "image");
+            ImageSaveResponseDto imageSaveResponseDto = imageService.getPresignedPutUrl(fileType, fileName, service);
             return ResponseEntity.ok(ApiResponses.success(imageSaveResponseDto));
         } catch (CustomException e) {
             ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode().getCode(), e.getErrorCode().getMessage());
@@ -67,6 +73,7 @@ public class ImageController {
             })
     @GetMapping("/{imageId}/presigned-url")
     public ResponseEntity<ApiResponses<ImageLoadResponseDto>> getPresignedGetUrl(@PathVariable long imageId, @AuthenticationPrincipal UserDetails userDetails) {
+        System.out.println("imageId: "+ imageId);
         try {
             ImageLoadResponseDto imageLoadResponseDto = imageService.getPresignedGetUrl(imageId, Long.parseLong(userDetails.getUsername()), "image");
             return ResponseEntity.ok(ApiResponses.success(imageLoadResponseDto));
@@ -76,6 +83,27 @@ public class ImageController {
                     .body(ApiResponses.error(errorResponse));
         }
     }
+
+    // ***************************** 비동기 테스트 중 *****************************
+    @GetMapping("/{imageId}/presigned-url/async")
+    public CompletableFuture<ResponseEntity<ApiResponses<ImageLoadResponseDto>>> getPresignedUrlAsync(
+            @PathVariable long imageId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        long userId = Long.parseLong(userDetails.getUsername());
+
+        return imageService.getPresignedGetUrlAsync(imageId, userId, "image")
+                .thenApply(response -> ResponseEntity.ok(ApiResponses.success(response)));
+    }
+
+    @GetMapping("/benchmark")
+    public ApiResponses<String> benchmark(
+            @AuthenticationPrincipal UserDetails userDetails) throws InterruptedException {
+        sleep(300);
+        return ApiResponses.success("");
+    }
+
+    // **************************************************************************
 
     @Operation(summary = "최근순 이미지 다운로드 Presigned URL 요청",
             description = "최근에 등록된 이미지 리스트를 페이지 단위로 조회합니다",

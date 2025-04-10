@@ -18,8 +18,22 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+service:
+  user:
+    url: ${USER_SERVICE_URL}
+
+
 jwt:
   secret: ${JWT_SECRET}
+
+# 서버 설정
+server:
+  tomcat:
+    threads:
+      max: 500
+      min-spare: 100
+    max-connections: 8192
+    accept-count: 500
 
 # S3 설정
 cloud:

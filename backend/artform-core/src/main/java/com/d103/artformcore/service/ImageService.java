@@ -13,16 +13,23 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ImageService {
     private final ImageRepository imageRepository;
     private final ModelRepository modelRepository;
@@ -49,7 +56,7 @@ public class ImageService {
                 .model(model)
                 .userId(imageSaveDto.getUserId())
                 .uploadFileName(imageSaveDto.getUploadFileName())
-                .isPublic(imageSaveDto.isPublic())
+                .isPublic(true)
                 .createdAt(LocalDateTime.now())
                 .build();
         try {
@@ -86,6 +93,26 @@ public class ImageService {
         return new ImageLoadResponseDto(image, presignedUrl);
     }
 
+    // ***************************** 비동기 테스트 중 *****************************
+    @Async("taskExecutor")
+    public CompletableFuture<ImageLoadResponseDto> getPresignedGetUrlAsync(long imageId, long userId, String service) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        log.info("userId: {}", userId);
+        log.info("비동기 메소드 내부 인증 정보: {}", auth != null ? auth.getName() + ", 권한: " + auth.getAuthorities() : "없음" );
+
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return CompletableFuture.supplyAsync(() -> {
+            // 비동기 작업에서 SecurityContext 설정
+            SecurityContextHolder.setContext(securityContext);
+
+            ImageLoadResponseDto imageLoadResponseDto = new ImageLoadResponseDto();
+            // 비즈니스 로직 수행
+
+            return imageLoadResponseDto;
+        });
+    }
+    // **************************************************************************
+
     public List<ImageLoadResponseDto> getPresignedGetUrlRecentList(int page, long userId) {
         List<Image> imageList = imageRepository.findByIsPublicTrueAndDeletedAtIsNull(
                 PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
@@ -101,7 +128,7 @@ public class ImageService {
     public List<ImageLoadResponseDto> getPresignedGetUrlMyList(int page, long userId) {
         List<Image> imageList = imageRepository.findByUserId(
                 userId,
-                PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "createdAt"))
+                PageRequest.of(page, 12, Sort.by(Sort.Direction.DESC, "createdAt"))
         ).getContent();
 
         List<ImageLoadResponseDto> presignedUrlDtoList = new ArrayList<>();

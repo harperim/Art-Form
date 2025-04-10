@@ -12,6 +12,7 @@ import com.d103.artformcore.exception.ReviewNotFoundException;
 import com.d103.artformcore.repository.ModelRepository;
 import com.d103.artformcore.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -20,10 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -33,23 +31,46 @@ public class ReviewService {
     private final ModelRepository modelRepository;
     private final ImageService imageService;
 
-    public ReviewListDto getModelReviews(Long modelId, Long userId, String authHeader) {
+    @Value("${service.user.url}")
+    private String userServiceUrl;
+
+    public ReviewListDto getModelReviews(Long modelId, Long userId, String authHeader, int page) {
         Model model = modelRepository.findById(modelId).orElseThrow(() -> new ModelNotFoundException("모델 미존재"));
         List<Review> reviewList = reviewRepository.findReviewByModelOrderByCreatedAtDesc(model);
-
+        int totalCount = reviewList.size();
         // 아무것도 없으면
         if (reviewList.isEmpty()) {
             return ReviewListDto.builder()
                     .msg("조회 성공")
-                    .data(List.of())
+                    .data(Collections.emptyList())
+                    .reviewCount(totalCount)
                     .build();
         }
+
+        // 페이징 처리
+        int PAGE_SIZE = 5;
+        int start = page * PAGE_SIZE;
+        int end = Math.min(start + PAGE_SIZE, reviewList.size());
+
+        // 범위가 유효한지 확인
+        if (start >= reviewList.size()) {
+            return ReviewListDto.builder()
+                    .msg("조회 성공")
+                    .data(Collections.emptyList())
+                    .reviewCount(totalCount)
+                    .build();
+        }
+
+        // 페이지에 해당하는 데이터만 추출
+        List<Review> pageReviews = reviewList.subList(start, end);
+
         // 리뷰 DTO 리스트 기져오기
-        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(reviewList, userId, authHeader);
+        List<ReviewDto> reviewDtos = convertToReviewDtoListAndProcessImages(pageReviews, userId, authHeader);
 
         return ReviewListDto.builder()
                 .msg("조회 성공")
                 .data(reviewDtos)
+                .reviewCount(totalCount)
                 .build();
     }
 
@@ -133,7 +154,8 @@ public class ReviewService {
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             try {
-                String url = "http://j12d103.p.ssafy.io:8082/user/name/" + idListParam;
+//                String url = "http://j12d103.p.ssafy.io:8082/user/name/" + idListParam;
+                String url = userServiceUrl + "/user/name/" + idListParam;
                 ResponseEntity<ResponseNameList> response = restTemplate.exchange(
                         url,
                         HttpMethod.GET,

@@ -1,4 +1,4 @@
-package com.d103.artformcore.dto;
+package com.d103.artformcore.dto.like;
 
 import lombok.*;
 
