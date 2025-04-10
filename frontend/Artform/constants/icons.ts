@@ -15,6 +15,13 @@ import MyPageIcon from '~/assets/icons/mypage-outline.svg';
 import MyPageIconFilled from '~/assets/icons/mypage-filled.svg';
 
 import SendIcon from '~/assets/icons/send.svg';
+import PaletteIcon from '~/assets/icons/palette.svg';
+import TextIcon from '~/assets/icons/text.svg';
+import GalleryIcon from '~/assets/icons/gallery.svg';
+import CameraIcon from '~/assets/icons/camera.svg';
+import CheckIcon from '~/assets/icons/check.svg';
+import GridIcon from '~/assets/icons/grid.svg';
+import PlusIcon from '~/assets/icons/plus.svg';
 
 export const ICONS = {
   home: { outline: HomeIcon, filled: HomeIconFilled },
@@ -23,6 +30,13 @@ export const ICONS = {
   mypage: { outline: MyPageIcon, filled: MyPageIconFilled },
   heart: { outline: HeartIcon, filled: HeartIconFilled },
   send: SendIcon,
+  palette: PaletteIcon,
+  text: TextIcon,
+  gallery: GalleryIcon,
+  camera: CameraIcon,
+  check: CheckIcon,
+  grid: GridIcon,
+  plus: PlusIcon,
 };
 
 export const TAB_ICONS = {

@@ -66,9 +66,6 @@ public class JwtTokenProvider {
         Date refreshTokenExpireDate = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
         String refreshToken = generateRefreshToken(userId, refreshTokenExpireDate);
 
-        // redis에 저장
-        redisDao.setValues(userId, refreshToken, Duration.ofMinutes(REFRESH_TOKEN_EXPIRE_TIME));
-
         return JwtToken.builder()
                 .grantType(GRANT_TYPE)
                 .accessToken(accessToken)
@@ -155,7 +152,7 @@ public class JwtTokenProvider {
         return false;
     }
 
-    // 액세스 토큰 검증
+    // 리프레시 토큰 검증
     public Boolean validateRefreshToken(String token) {
 
         try {
@@ -165,7 +162,10 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token)// 만료확인
                     .getBody();
 
-            return true;
+            String userId = claims.getSubject();
+            String refreshToken = (String) redisDao.getValues(userId);
+
+            return refreshToken != null && refreshToken.equals(token);
         } catch (SignatureException e) {
             log.error("Invalid JWT Signature");
         } catch (SecurityException | MalformedJwtException e) {
@@ -203,5 +203,9 @@ public class JwtTokenProvider {
 
     public long getAccessTokenExpireTime() {
         return ACCESS_TOKEN_EXPIRE_TIME;
+    }
+
+    public long getRefreshTokenExpireTime() {
+        return REFRESH_TOKEN_EXPIRE_TIME;
     }
 }

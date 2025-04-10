@@ -2,7 +2,6 @@ package com.ssafy.artformuser.config;
 
 import com.ssafy.artformuser.security.JwtFilter;
 import com.ssafy.artformuser.security.JwtTokenProvider;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +11,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
@@ -28,6 +28,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http , HandlerMappingIntrospector introspector) throws Exception {
@@ -35,18 +36,18 @@ public class SecurityConfig {
         MvcRequestMatcher.Builder mvc = new MvcRequestMatcher.Builder(introspector);
 
         MvcRequestMatcher[] permitAllList = {
-                mvc.pattern("/user/auth/**"), mvc.pattern("/user/signup"),
+                mvc.pattern("/user/auth/login"), mvc.pattern("/user/signup"),
+                mvc.pattern("/user/email-check/*"),mvc.pattern("/user/nickname-check/*"),
+                mvc.pattern("/user/auth/oauth/accesstoken")
         };
 
         MvcRequestMatcher[] swaggerPatterns = {
-                mvc.pattern("/v3/api-docs"),
-                mvc.pattern("/v3/api-docs/**"),
-                mvc.pattern("/swagger-ui/**"),
-                mvc.pattern("/swagger-ui.html"),
+                mvc.pattern("/user/v3/api-docs"),
+                mvc.pattern("/user/v3/api-docs/**"),
+                mvc.pattern("/user/swagger-ui/**"),
                 mvc.pattern("/swagger-resources/**"),
                 mvc.pattern("/webjars/**"),
         };
-
 
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -57,12 +58,8 @@ public class SecurityConfig {
         http.formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable);
 
-        //  로그인 실패시
         http.exceptionHandling(exception -> exception
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("인증 실패");
-                })
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
         );
 
         // 허용

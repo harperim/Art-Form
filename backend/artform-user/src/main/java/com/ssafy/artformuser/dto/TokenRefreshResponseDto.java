@@ -10,6 +10,5 @@ import lombok.*;
 public class TokenRefreshResponseDto {
 
     private String msg;
-    private String refreshToken;
-
+    private JwtTokenDto data;
 }
