@@ -66,14 +66,28 @@ public class ImageService {
         }
     }
 
-    public List<ImageLoadResponseDto> getPresignedGetUrlByUploadFileName(List<String> uploadFileNameList, long userId, String service) {
+    public List<ImageLoadResponseDto> getPresignedGetUrlByUploadFileName(List<String> uploadFileNameList, String service) {
         List<ImageLoadResponseDto> imageLoadResponseDtoList = new ArrayList<>();
         for (String upfile : uploadFileNameList) {
-            ImageLoadResponseDto imageLoadResponseDto = getPresignedGetUrl(imageRepository.findByUploadFileName(upfile).getImageId(), userId, service);
-            imageLoadResponseDtoList.add(imageLoadResponseDto);
+            if (upfile != null && !upfile.isEmpty()) {
+                try {
+                    // S3에서 직접 URL 생성
+                    String presignedUrl = s3Service.createPresignedGetUrl("artform-data", service + "/" + upfile);
+
+                    // 임시 이미지 객체 생성
+                    Image tempImage = new Image();
+                    tempImage.setUploadFileName(upfile);
+
+                    ImageLoadResponseDto responseDto = new ImageLoadResponseDto(tempImage, presignedUrl);
+                    imageLoadResponseDtoList.add(responseDto);
+                } catch (Exception e) {
+                    log.error("URL 생성 실패: {} - {}", upfile, e.getMessage());
+                }
+            }
         }
         return imageLoadResponseDtoList;
     }
+
 
     public ImageLoadResponseDto getPresignedGetUrl(long imageId, long userId, String service) {
         Image image = imageRepository.findByImageIdAndDeletedAtIsNull(imageId)
@@ -83,6 +97,19 @@ public class ImageService {
             System.out.println(image.isPublic() + " " + image.getUserId());
             throw new CustomException(ErrorCode.FORBIDDEN_IMAGE);
         }
+
+        String uploadFileName = image.getUploadFileName();
+        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", service + "/" + uploadFileName);
+        if (presignedUrl.isEmpty()) {
+            throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
+        }
+        Long modelId = image.getModel().getModelId();
+        return new ImageLoadResponseDto(image, presignedUrl);
+    }
+
+    public ImageLoadResponseDto getPresignedGetUrl(long imageId, String service) {
+        Image image = imageRepository.findByImageIdAndDeletedAtIsNull(imageId)
+                .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
 
         String uploadFileName = image.getUploadFileName();
         String presignedUrl = s3Service.createPresignedGetUrl("artform-data", service + "/" + uploadFileName);
