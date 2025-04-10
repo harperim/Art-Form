@@ -67,8 +67,11 @@ export default function ModelScreen() {
     <SafeAreaView style={styles.container}>
       {/* 상단 제목 + 아이콘 */}
       <View style={styles.header}>
-        <Text style={styles.title}>최근에 사용한 모델</Text>
-        <TouchableOpacity onPress={toggleView}>
+        <Text style={styles.title}>최근에 본 모델</Text>
+        <TouchableOpacity
+          onPress={toggleView}
+          style={{ position: 'absolute', width: 40, height: 40, right: -10, top: 0 }}
+        >
           <ICONS.grid width={20} height={20} />
         </TouchableOpacity>
       </View>
@@ -91,8 +94,8 @@ export default function ModelScreen() {
           data={models}
           numColumns={2}
           keyExtractor={(item) => String(item.model.modelId)}
-          columnWrapperStyle={{ gap: 12 }}
-          contentContainerStyle={{ paddingBottom: 100, gap: 12 }}
+          columnWrapperStyle={{ gap: 8 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
           renderItem={renderGridItem}
         />
       ) : (
@@ -140,7 +143,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 28,
   },
   title: {
     fontSize: 18,
@@ -152,12 +155,14 @@ const styles = StyleSheet.create({
     color: '#6283A6',
     marginVertical: 12,
     fontSize: 16,
+    marginTop: 28,
     fontWeight: '700',
   },
   learnButton: {
     flexDirection: 'row',
     backgroundColor: '#7EA4CC',
-    borderRadius: 12,
+    borderRadius: 8,
+    height: 52,
     paddingVertical: 14,
     paddingHorizontal: 16,
     alignItems: 'center',
@@ -170,8 +175,8 @@ const styles = StyleSheet.create({
   },
   learnButtonText: {
     color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 18,
+    fontFamily: 'Freesentation7',
     textAlign: 'center',
     flex: 1,
   },
@@ -183,7 +188,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
     marginBottom: 12,
-    width: '100%',
+    width: 300,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     borderWidth: 2,

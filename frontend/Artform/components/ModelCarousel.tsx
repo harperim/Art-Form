@@ -37,7 +37,7 @@ export default function ModelCarousel({ data, onPress }: Props) {
         mode="horizontal-stack"
         modeConfig={{
           snapDirection: 'left',
-          stackInterval: 40, // 카드 간 간격 (조정 가능)
+          stackInterval: 36, // 카드 간 간격 (조정 가능)
           scaleInterval: 0.15, // 스케일 비율 (중앙 카드와 양 옆 카드 크기 차이)
           showLength: 3, // 화면에 동시에 보여질 카드 수
         }}
@@ -79,24 +79,24 @@ const styles = StyleSheet.create({
   card: {
     width: '80%',
     height: '100%',
-    borderRadius: 20,
+    borderRadius: 12,
+    borderColor: '#6E95BE',
+    borderWidth: 1,
+    overflow: 'hidden',
   },
   cardTitle: {
     color: 'white',
-    fontSize: 16,
-    paddingTop: 12,
-    fontWeight: '800',
+    fontSize: 18,
+    paddingTop: 16,
+    fontFamily: 'Freesentation7',
     textAlign: 'center',
-    borderRadius: 20,
   },
   cardArtist: {
     fontSize: 14,
     color: '#999',
-    paddingTop: 2,
-    padding: 6,
-    fontWeight: '500',
+    paddingBottom: 10,
+    fontFamily: 'Freesentation7',
     textAlign: 'center',
-    borderRadius: 20,
   },
   cardTitleOverlay: {
     position: 'absolute',
@@ -105,12 +105,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     zIndex: 1,
-    borderRadius: 20,
+    borderRadius: 8,
   },
   cardImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
-    borderRadius: 20,
+    borderRadius: 8,
   },
 });

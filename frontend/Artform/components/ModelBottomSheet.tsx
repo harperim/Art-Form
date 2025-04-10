@@ -358,7 +358,14 @@ export default function ModelBottomSheet() {
 
           <View style={styles.commentInputContainer}>
             <TouchableOpacity style={styles.addImageButton} onPress={pickImage}>
-              <Text style={{ fontSize: 22, color: '#555' }}>＋</Text>
+              <Text
+                style={{
+                  fontSize: 25,
+                  color: '#555',
+                  fontFamily: 'Freesentation8',
+                  lineHeight: 34,
+                }}
+              >＋</Text>
             </TouchableOpacity>
             <View style={styles.commentBox}>
               <TextInput
@@ -381,29 +388,28 @@ export default function ModelBottomSheet() {
 
 const shadowStyle = {
   shadowColor: '#000',
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.2,
-  shadowRadius: 1.41,
+  shadowOffset: { width: 0, height: 0 },
+  shadowOpacity: 0.8,
+  borderRadius: 8,
   elevation: 2,
 };
 
 const styles = StyleSheet.create({
   container: { padding: 20, paddingBottom: 40 },
   header: { marginBottom: 10 },
-  title: { fontSize: 18, fontWeight: 'bold' },
-  author: { color: '#999', marginTop: 4, marginLeft: 2 },
+  title: { fontSize: 18, fontFamily: 'Freesentation8' },
+  author: { color: '#999', marginTop: -1, fontFamily: 'Freesentation6', marginBottom: 10 },
   mainImageWrapper: { position: 'relative' },
   mainImage: {
     width: '100%',
-    height: 300,
-    borderRadius: 12,
-    marginBottom: 20,
+    height: 280,
+    borderRadius: 8,
+    marginBottom: 12,
     resizeMode: 'cover',
   },
   heartButton: {
     position: 'absolute',
     bottom: 30,
-    right: 10,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.8)',
@@ -412,27 +418,27 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   section: { marginBottom: 20 },
-  subTitle: { fontWeight: 'bold', fontSize: 16, marginBottom: 12 },
+  subTitle: { fontFamily: 'Freesentation7', fontSize: 18, marginBottom: 4 },
   useButton: {
     backgroundColor: colors.primary,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 8,
     alignItems: 'center',
+    height: 56,
   },
   useButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
-  divider: { height: 10, backgroundColor: '#E0E0E0', marginHorizontal: -20, marginVertical: 20 },
+  divider: { height: 1, backgroundColor: '#E0E0E0', marginHorizontal: -20, marginVertical: 20 },
   reviewRow: { flexDirection: 'row', marginVertical: 12 },
-  reviewImage: { width: 60, height: 80, borderRadius: 6, marginRight: 10 },
+  reviewImage: { width: 60, height: 80, borderRadius: 4, marginRight: 10 },
   reviewer: { fontWeight: 'bold' },
   reviewContent: { flex: 1, justifyContent: 'space-between' },
-  commentText: { marginVertical: 4 },
+  commentText: { marginVertical: 1, fontSize: 14, fontFamily: 'Freesentation5' },
   reviewDate: { fontSize: 12, color: '#aaa', marginTop: 4, alignSelf: 'flex-start' },
   reviewDivider: { height: 1, backgroundColor: '#E0E0E0' },
   commentInputContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   addImageButton: {
     width: 40,
     height: 50,
-    borderRadius: 12,
     backgroundColor: '#F0F0F0',
     justifyContent: 'center',
     alignItems: 'center',
@@ -442,7 +448,6 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     marginBottom: 12,
     position: 'relative',
-    borderRadius: 12,
     overflow: 'visible',
     backgroundColor: '#fff',
     ...shadowStyle,
@@ -450,24 +455,24 @@ const styles = StyleSheet.create({
   previewImage: { width: 80, height: 80, borderRadius: 12 },
   removeImageBtn: {
     position: 'absolute',
-    top: -8,
     right: -8,
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: 8,
     backgroundColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
   },
   removeImageText: { color: '#fff', fontSize: 16, lineHeight: 16 },
-  commentBox: { flex: 1, height: 50, borderRadius: 12, ...shadowStyle },
+  commentBox: { flex: 1, height: 50, borderRadius: 8, ...shadowStyle },
   commentInput: {
     flex: 1,
     height: 50,
+    fontFamily: 'Freesentation7',
     backgroundColor: '#F0F0F0',
     paddingHorizontal: 16,
     borderRadius: 12,
-    fontSize: 14,
+    fontSize: 15,
   },
   sendButton: {
     width: 40,
@@ -492,19 +497,20 @@ const styles = StyleSheet.create({
   fullscreenImage: { width: '100%', height: '100%' },
   descriptionWrapper: {
     padding: 4,
-    marginTop: 10,
-    marginBottom: 20,
+    marginBottom: 12,
   },
 
   descriptionText: {
     fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 8,
+    lineHeight: 19,
+    marginBottom: 4,
+    fontFamily: 'Freesentation6',
   },
 
   createdAtText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#888',
+    fontFamily: 'Freesentation6',
   },
   likesContainer: {
     flexDirection: 'row',
@@ -512,15 +518,16 @@ const styles = StyleSheet.create({
   },
 
   likeButton: {
-    marginRight: 12,
+    marginRight: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
     alignSelf: 'flex-start',
   },
 
   likeText: {
-    fontSize: 14,
-    color: '#333',
+    fontSize: 16,
+    color: '#6E95BE',
+    fontFamily: 'Freesentation7',
   },
 });

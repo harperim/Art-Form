@@ -163,7 +163,7 @@ export default function ConvertScreen({ model }: Props) {
               {/* ✅ 변환 완료 화면 */}
               <View style={styles.resultContent}>
                 <View style={styles.doneRow}>
-                  <ICONS.check width={20} height={20} style={styles.checkIcon} />
+                  <ICONS.check width={24} height={24} style={styles.checkIcon} />
                   <Text style={styles.doneText}>정상적으로 완료되었습니다.</Text>
                 </View>
                 {resultImage && <Image source={{ uri: resultImage }} style={styles.resultImage} />}
@@ -237,7 +237,7 @@ export default function ConvertScreen({ model }: Props) {
 
             <View style={styles.modelCard}>
               <Image source={{ uri: model.thumbnailUrl }} style={styles.modelImage} />
-              <View style={{ flex: 1, marginLeft: 12 }}>
+              <View style={{ flex: 1, marginLeft: 18, marginTop: -10 }}>
                 <Text style={styles.label}>선택한 모델</Text>
                 <Text style={styles.modelTitle}>{model.model.modelName}</Text>
                 <Text style={styles.artistName}>by {model.userName}</Text>
@@ -256,27 +256,27 @@ export default function ConvertScreen({ model }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, flex: 1, backgroundColor: 'white' },
+  container: { padding: 24, flex: 1, backgroundColor: 'white', paddingTop: 60 },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 36,
     gap: 4,
   },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 5 },
+  title: { fontSize: 18, fontFamily: 'Freesentation8' },
   uploadBox: {
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderRadius: 16,
+    borderRadius: 8,
     borderColor: '#ccc',
-    height: 350,
+    height: 340,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 24,
   },
   placeholder: { alignItems: 'center' },
-  placeholderText: { fontWeight: 'bold', fontSize: 16 },
-  supportText: { marginTop: 4, color: '#666' },
+  placeholderText: { fontSize: 18, fontFamily: 'Freesentation8' },
+  supportText: { marginTop: 2, color: '#9C9DA0', fontFamily: 'Freesentation6' },
   uploadedImage: {
     width: '100%',
     height: '100%',
@@ -286,34 +286,37 @@ const styles = StyleSheet.create({
   modelCard: {
     flexDirection: 'row',
     backgroundColor: '#F2F3F5',
-    borderRadius: 20,
+    borderRadius: 8,
     padding: 12,
-    marginBottom: 32,
+    marginBottom: 24,
     alignItems: 'center',
   },
   modelImage: {
     width: 80,
     height: 100,
-    borderRadius: 10,
+    borderRadius: 8,
   },
   label: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#888',
-    marginBottom: 4,
+    fontFamily: 'Freesentation6',
+    marginBottom: 2,
   },
   modelTitle: {
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontFamily: 'Freesentation8',
+    fontSize: 18,
     marginBottom: 4,
+    color: '#2C2D26',
   },
   artistName: {
     color: '#999',
     fontSize: 13,
+    fontFamily: 'Freesentation7',
   },
   submitButton: {
     backgroundColor: colors.primary,
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 8,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -321,31 +324,31 @@ const styles = StyleSheet.create({
   },
   submitText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontFamily: 'Freesentation7',
   },
   doneText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontSize: 18,
+    fontFamily: 'Freesentation8',
     textAlign: 'center',
   },
   resultImage: {
     width: '100%',
-    height: 280,
-    borderRadius: 16,
+    height: 380,
+    borderRadius: 8,
     marginBottom: 24,
   },
   primaryButton: {
     backgroundColor: '#7EA4CC',
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderRadius: 10,
     alignItems: 'center',
     marginBottom: 12,
   },
   primaryText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontFamily: 'Freesentation7',
+    fontSize: 16,
   },
   secondaryButton: {
     borderWidth: 1,
@@ -356,12 +359,12 @@ const styles = StyleSheet.create({
   },
   secondaryText: {
     color: '#7EA4CC',
-    fontWeight: 'bold',
+    fontFamily: 'Freesentation7',
+    fontSize: 16,
   },
   resultWrapper: {
     flex: 1,
     justifyContent: 'space-between',
-    padding: 24,
     backgroundColor: 'white',
   },
   resultContent: {
@@ -370,15 +373,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   resultButtons: {
-    paddingTop: 20,
+    paddingTop: 10,
+    marginBottom: 20,
   },
   doneRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 20,
+    alignContent: 'center',
+    marginBottom: 24,
   },
   checkIcon: {
-    marginTop: 3,
-    marginRight: 8,
+    marginRight: 12,
   },
 });

@@ -61,10 +61,13 @@ export default function MyPageScreen() {
     for (const myGalleryInfo of myGalleryList) {
       const url = myGalleryInfo.presignedUrl;
       const id = myGalleryInfo.image.imageId;
-      itemsUrl.push({
-        id,
-        url,
-      });
+      if (url && !url.endsWith('.xml')) {
+        itemsUrl.push({
+          id,
+          url,
+        });
+      }
+      // console.log('내 사진 불러오기:', itemsUrl);
     }
     setImageUrls(itemsUrl);
     setLoading(false); // ✅ 데이터 로딩 완료
@@ -120,7 +123,7 @@ export default function MyPageScreen() {
       }
       setLoading(false);
     };
-    loadData();
+    loadData(); // async 함수 내부에서 실행
   }, [selectedTab]);
 
   const renderItem = ({ item }: { item: ImageItem; index: number }) => (
@@ -157,6 +160,7 @@ export default function MyPageScreen() {
               keyExtractor={(item) => item.id.toString()}
               numColumns={3}
               columnWrapperStyle={{ gap: 4, marginBottom: 4 }}
+              contentContainerStyle={{ paddingBottom: 100 }}
               showsVerticalScrollIndicator={false}
               style={{ marginTop: 20, display: 'flex', width: '100%' }}
             />
@@ -352,7 +356,7 @@ const styles = StyleSheet.create({
   },
   mainContentView: {
     paddingTop: 20,
-    paddingBottom: 350,
+    paddingBottom: 280,
   },
   mainContentTitle: {
     fontFamily: 'Freesentation7',

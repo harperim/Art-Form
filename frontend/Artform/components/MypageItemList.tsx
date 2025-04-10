@@ -58,6 +58,7 @@ export default function MypageItemList({ item }: Props) {
         keyExtractor={(item) => item.modelId.toString()}
         columnWrapperStyle={{ gap: 12, marginBottom: 16 }}
         renderItem={renderGridItem}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -66,7 +67,7 @@ export default function MypageItemList({ item }: Props) {
 
 const styles = StyleSheet.create({
   mainContentItem: {
-    marginTop: 20,
+    marginTop: 16,
   },
   card: { width: GRID_ITEM_WIDTH, flex: 1 },
   cardImage: {

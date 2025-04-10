@@ -64,5 +64,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
+    fontFamily: 'Freesentation7',
   },
 });

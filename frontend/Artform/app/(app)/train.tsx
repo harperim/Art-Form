@@ -179,13 +179,14 @@ export default function TrainScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, backgroundColor: 'white' },
   header: {
+    marginTop: 40,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
     gap: 8,
   },
-  title: { fontSize: 18, fontWeight: 'bold' },
-  subtitle: { fontSize: 16, fontWeight: '500', marginBottom: 12 },
+  title: { fontSize: 18, fontFamily: 'Freesentation7' },
+  subtitle: { fontSize: 16, fontFamily: 'Freesentation6', marginBottom: 12 },
   image: { width: IMAGE_SIZE, height: IMAGE_SIZE, borderRadius: 8 },
   imageWrapper: {
     position: 'relative',
