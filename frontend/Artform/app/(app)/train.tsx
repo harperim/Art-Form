@@ -59,7 +59,7 @@ export default function TrainScreen() {
     try {
       const assetResult = await MediaLibrary.getAssetsAsync({
         mediaType: 'photo',
-        sortBy: [['creationTime', false]],
+        sortBy: [['modificationTime', false]],
         first: 30,
         after: after ?? undefined,
       });

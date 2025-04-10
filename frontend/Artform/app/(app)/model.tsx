@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   },
   iconLeft: {
     position: 'absolute',
-    right: 20,
+    left: 20,
   },
   emptyWrapper: {
     flex: 1,

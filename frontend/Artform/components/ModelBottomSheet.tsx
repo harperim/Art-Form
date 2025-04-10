@@ -358,7 +358,9 @@ export default function ModelBottomSheet() {
                   fontFamily: 'Freesentation8',
                   lineHeight: 34,
                 }}
-              >＋</Text>
+              >
+                ＋
+              </Text>
             </TouchableOpacity>
             <View style={styles.commentBox}>
               <TextInput
@@ -457,7 +459,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   removeImageText: { color: '#fff', fontSize: 16, lineHeight: 16 },
-  commentBox: { flex: 1, height: 50, borderRadius: 8, ...shadowStyle },
+  commentBox: { flex: 1, height: 50, ...shadowStyle },
   commentInput: {
     flex: 1,
     height: 50,
@@ -470,7 +472,6 @@ const styles = StyleSheet.create({
   sendButton: {
     width: 40,
     height: 50,
-    borderRadius: 12,
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
