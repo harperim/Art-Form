@@ -2,6 +2,7 @@ import os
 
 import inspect
 import torch
+import random
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from PIL import Image
@@ -26,21 +27,21 @@ def remove_unexpected_kwargs(orig_func, *args, **kwargs):
 
 def run_training(image_folder, output_dir, model_name):
     os.makedirs(output_dir, exist_ok=True)
-    
+
     # LoRA 설정
     lora_config_text = LoraConfig(
-        r=16,
-        lora_alpha=32,
+        r=8,
+        lora_alpha=16,
         target_modules=["q_proj", "v_proj"],
-        lora_dropout=0.1,
+        lora_dropout=0.2,
         bias="none",
         task_type=TaskType.FEATURE_EXTRACTION,
     )
     lora_config_unet = LoraConfig(
-        r=16,
-        lora_alpha=32,
+        r=8,
+        lora_alpha=16,
         target_modules=["to_q", "to_v"],
-        lora_dropout=0.1,
+        lora_dropout=0.2,
         bias="none",
         task_type=TaskType.FEATURE_EXTRACTION,
     )
@@ -57,7 +58,8 @@ def run_training(image_folder, output_dir, model_name):
                 transforms.ToTensor(),
                 transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
             ])
-            self.prompt = f"a painting in the style of {model_name}"
+            self.prompt = f"A drawing, in the style of {model_name}"
+
     
         def __len__(self):
             return len(self.image_paths)
@@ -65,7 +67,8 @@ def run_training(image_folder, output_dir, model_name):
         def __getitem__(self, idx):
             img = Image.open(self.image_paths[idx]).convert("RGB")
             img = self.transform(img)
-            return {"pixel_values": img, "prompt": self.prompt}
+            prompt = self.prompts
+            return {"pixel_values": img, "prompt": prompt}
     
     # 파이프라인 로딩 (Stable Diffusion)
     pipe = StableDiffusionPipeline.from_pretrained(
@@ -102,9 +105,9 @@ def run_training(image_folder, output_dir, model_name):
     
     optimizer = torch.optim.Adam(
         list(pipe.text_encoder.parameters()) + list(pipe.unet.parameters()),
-        lr=1e-5
+        lr=1e-6
     )
-    num_epochs = 60
+    num_epochs = 20
     pipe.scheduler = DDPMScheduler.from_config(pipe.scheduler.config)
     
     # 학습 루프
