@@ -94,7 +94,6 @@ public class ImageService {
                 .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
         // 인가 여부 확인
         if (!image.isPublic() && !image.getUserId().equals(userId)) {
-            System.out.println(image.isPublic() + " " + image.getUserId());
             throw new CustomException(ErrorCode.FORBIDDEN_IMAGE);
         }
 
@@ -103,20 +102,6 @@ public class ImageService {
         if (presignedUrl.isEmpty()) {
             throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
         }
-        Long modelId = image.getModel().getModelId();
-        return new ImageLoadResponseDto(image, presignedUrl);
-    }
-
-    public ImageLoadResponseDto getPresignedGetUrl(long imageId, String service) {
-        Image image = imageRepository.findByImageIdAndDeletedAtIsNull(imageId)
-                .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
-
-        String uploadFileName = image.getUploadFileName();
-        String presignedUrl = s3Service.createPresignedGetUrl("artform-data", service + "/" + uploadFileName);
-        if (presignedUrl.isEmpty()) {
-            throw new CustomException(ErrorCode.PRESIGNED_URL_GENERATE_FAILED);
-        }
-        Long modelId = image.getModel().getModelId();
         return new ImageLoadResponseDto(image, presignedUrl);
     }
 
