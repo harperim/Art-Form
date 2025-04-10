@@ -35,15 +35,15 @@ export default function FloatingLabelInput({
     left: 16,
     top: animatedFocus.interpolate({
       inputRange: [0, 1],
-      outputRange: [20, 6],
+      outputRange: [15, 6],
     }),
     fontSize: animatedFocus.interpolate({
       inputRange: [0, 1],
-      outputRange: [16, 12],
+      outputRange: [14, 10],
     }),
     color: animatedFocus.interpolate({
       inputRange: [0, 1],
-      outputRange: ['#999', '#3D5A5A'],
+      outputRange: ['#999', '#DAD5D1'],
     }),
     pointerEvents: 'none' as const,
   };
@@ -76,19 +76,21 @@ const styles = StyleSheet.create({
   wrapper: {
     position: 'relative',
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ccc',
-    height: 60,
+    height: 56,
+    width: 300,
     justifyContent: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 15,
+    paddingHorizontal: 12,
+    marginBottom: 12,
   },
   input: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#000',
-    paddingTop: 18,
+    paddingTop: 12,
     paddingBottom: 2,
+    fontFamily: 'Freesentation5',
   },
   rightIcon: {
     position: 'absolute',

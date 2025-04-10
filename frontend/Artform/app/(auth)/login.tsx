@@ -60,10 +60,11 @@ export default function LoginScreen() {
 
   const onLogin = async () => {
     try {
-      await handleLogin(email, password);
-      console.debug('로그인 성공');
-
-      router.replace('/home');
+      const loginSuccess = await handleLogin(email, password);
+      if (loginSuccess) {
+        console.debug('로그인 성공');
+        router.replace('/home');
+      }
     } catch (err) {
       console.debug('로그인 실패', err);
     }
@@ -150,6 +151,8 @@ const styles = StyleSheet.create({
     width: '85%',
     padding: 20,
     borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   titleWrapper: {
     position: 'relative',
@@ -158,23 +161,32 @@ const styles = StyleSheet.create({
     marginBottom: 60,
   },
   title: {
-    fontSize: 60,
+    fontSize: 58,
     color: '#fff',
     fontFamily: 'SansitaSwashed-Bold',
+    textShadowColor: '#6E95BE',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
   },
   subtitle: {
-    bottom: 5,
-    left: 80,
-    fontSize: 20,
-    color: '#F2E6E6',
-    fontWeight: 'bold',
+    bottom: 12,
+    left: 32,
+    fontSize: 18,
+    color: '#F5F5DC',
+    fontFamily: 'Freesentation7',
+    textShadowColor: '#6E95BE',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
   },
   loginButton: {
     backgroundColor: '#6E95BE',
     padding: 15,
     borderRadius: 8,
+    width: 300,
+    height: 56,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
   },
   loginText: {
     color: '#fff',

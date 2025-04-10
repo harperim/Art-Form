@@ -9,12 +9,12 @@ import {
 import React from 'react';
 import type { SharedValue } from 'react-native-reanimated';
 import Animated, { useAnimatedStyle, interpolate, Extrapolation } from 'react-native-reanimated';
-import { ICONS } from '~/constants/icons';
 import type { ModelWithThumbnail } from '~/types/model';
+import { BlurView } from 'expo-blur';
 
 const OFFSET = 20;
 const ITEM_WIDTH = Dimensions.get('window').width - OFFSET * 2;
-const ITEM_HEIGHT = Dimensions.get('window').height * 0.36;
+const ITEM_HEIGHT = Dimensions.get('window').height * 0.32;
 
 interface ParallaxCarouselCardProps {
   item: ModelWithThumbnail;
@@ -58,7 +58,16 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
     <TouchableOpacity activeOpacity={0.9} onPress={() => onPress(item)}>
       <Animated.View
         style={[
-          { width: ITEM_WIDTH, height: ITEM_HEIGHT, overflow: 'hidden', borderRadius: 15 },
+          {
+            width: ITEM_WIDTH,
+            height: ITEM_HEIGHT,
+            overflow: 'hidden',
+            borderColor: '#6E95BE',
+            borderRadius: 8,
+            alignItems: 'center',
+            borderWidth: 1,
+            justifyContent: 'center',
+          },
           translateStyle,
         ]}
       >
@@ -68,26 +77,16 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
             style={styles.imageBackground}
             resizeMode="cover"
           >
-            <Animated.View
-              style={[
-                styles.posterInfoView,
-                translateTextStyle,
-                { width: ITEM_WIDTH - OFFSET * 4 },
-              ]}
+            <BlurView
+              intensity={60}
+              tint="dark"
+              style={[styles.posterInfoView, translateTextStyle]}
             >
               <View style={styles.textInfo}>
                 <Text style={styles.posterTitle}>{item.model.modelName}</Text>
                 <Text style={styles.userName}>by {item.userName}</Text>
               </View>
-              <View style={styles.heartBox}>
-                <ICONS.heart.filled
-                  width={20}
-                  height={20}
-                  style={{ position: 'relative', top: 1 }}
-                />
-                <Text style={styles.likesCount}>{item.model.likeCount}</Text>
-              </View>
-            </Animated.View>
+            </BlurView>
           </ImageBackground>
         </Animated.View>
       </Animated.View>
@@ -97,50 +96,38 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
 
 const styles = StyleSheet.create({
   imageBackground: {
-    borderRadius: 15,
     overflow: 'hidden',
-    width: '100%',
-    height: '100%',
+    width: ITEM_WIDTH,
+    height: ITEM_HEIGHT,
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
   posterInfoView: {
-    height: 60,
+    height: 48,
+    overflow: 'hidden',
+    borderRadius: 8,
     position: 'absolute',
-    bottom: 16,
-    alignSelf: 'center',
+    alignSelf: 'flex-end',
+    paddingLeft: 28,
+    paddingRight: 28,
     alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 15,
-    minWidth: 200,
+    justifyContent: 'center',
+    bottom: 16,
+    right: 16,
   },
   textInfo: {
     flexDirection: 'column',
-    marginRight: 10,
+    alignItems: 'center',
   },
   posterTitle: {
     fontSize: 16,
-    fontFamily: 'Freesentation',
-    fontWeight: '700',
+    color: '#ffff',
+    fontFamily: 'Freesentation6',
   },
   userName: {
-    fontSize: 13,
-    color: '#444',
-    fontFamily: 'Freesentation',
-    marginTop: 2,
-  },
-  heartBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  likesCount: {
-    fontSize: 16,
-    marginLeft: 4,
-    fontWeight: '700',
-    fontFamily: 'Freesentation',
+    fontSize: 8,
+    color: '#DAD5D1',
+    fontFamily: 'Freesentation4',
   },
 });
 

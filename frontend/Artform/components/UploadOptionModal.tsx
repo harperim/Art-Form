@@ -47,21 +47,21 @@ export default function UploadOptionModal({
 
                 <Pressable style={styles.button} onPress={onGenerateByText}>
                   <View style={styles.iconLeft}>
-                    <ICONS.text width={20} height={20} />
+                    <ICONS.text width={24} height={24} />
                   </View>
                   <Text style={styles.btnText}>텍스트로 생성</Text>
                 </Pressable>
 
                 <Pressable style={styles.button} onPress={onPickFromLibrary}>
                   <View style={styles.iconLeft}>
-                    <ICONS.gallery width={20} height={20} />
+                    <ICONS.gallery width={24} height={24} />
                   </View>
                   <Text style={styles.btnText}>갤러리</Text>
                 </Pressable>
 
                 <Pressable style={styles.button} onPress={onPickFromCamera}>
                   <View style={styles.iconLeft}>
-                    <ICONS.camera width={20} height={20} />
+                    <ICONS.camera width={24} height={24} />
                   </View>
                   <Text style={styles.btnText}>카메라</Text>
                 </Pressable>
@@ -98,15 +98,15 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   title: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 30,
+    fontSize: 18,
+    fontFamily: 'Freesentation7',
+    marginBottom: 24,
   },
   button: {
     flexDirection: 'row',
     backgroundColor: '#7EA4CC',
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 8,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     alignItems: 'center',
     marginBottom: 12,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontFamily: 'Freesentation7',
     fontSize: 14,
     textAlign: 'center',
     flex: 1,

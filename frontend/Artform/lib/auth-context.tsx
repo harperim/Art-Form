@@ -4,24 +4,36 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getToken, setToken, removeToken } from './auth';
 
 type AuthContextType = {
-  user: { token: string } | null;
+  userToken: { token: string } | null;
   loading: boolean;
   isLoggedIn: boolean;
+  userInfo: userInfoType;
+  updateUserInfo: (userInfo: userInfoType) => void;
   login: (accessToken: string, refreshToken?: string) => Promise<void>;
   logout: () => Promise<void>;
+};
+type userInfoType = {
+  userId: string;
+  email: string;
+  nickname: string;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
-  const [user, setUser] = useState<{ token: string } | null>(null);
+  const [userToken, setUserToken] = useState<{ token: string } | null>(null);
+  const [userInfo, setUserInfo] = useState<userInfoType>({
+    userId: '',
+    email: '',
+    nickname: '',
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadToken = async () => {
       const token = await getToken();
       if (token) {
-        setUser({ token });
+        setUserToken({ token });
       }
       setLoading(false);
     };
@@ -30,25 +42,33 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
   const login = async (accessToken: string, refreshToken?: string) => {
     await setToken(accessToken, refreshToken);
-    setUser({ token: accessToken });
+    setUserToken({ token: accessToken });
   };
 
   const logout = async (message?: string) => {
     await removeToken();
-    setUser(null);
+    setUserToken(null);
     if (message) {
       alert(message);
     }
   };
 
+  const updateUserInfo = ({ userId, email, nickname }: userInfoType) => {
+    console.log(userId, email, nickname);
+    setUserInfo({ userId, email, nickname });
+    console.log(userInfo);
+  };
+
   return (
     <AuthContext.Provider
       value={{
-        user,
+        userToken,
         loading,
-        isLoggedIn: !!user,
+        isLoggedIn: !!userToken,
         login,
         logout,
+        userInfo,
+        updateUserInfo,
       }}
     >
       {children}
