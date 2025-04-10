@@ -154,7 +154,6 @@ public class ReviewService {
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             try {
-//                String url = "http://j12d103.p.ssafy.io:8082/user/name/" + idListParam;
                 String url = userServiceUrl + "/user/name/" + idListParam;
                 ResponseEntity<ResponseNameList> response = restTemplate.exchange(
                         url,

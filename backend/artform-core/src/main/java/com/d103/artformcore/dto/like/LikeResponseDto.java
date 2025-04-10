@@ -10,6 +10,7 @@ import lombok.*;
 public class LikeResponseDto {
     private String imageSrc;
     private String userId;
+    private String userName;
     private String modelId;
     private String modelName;
 }
