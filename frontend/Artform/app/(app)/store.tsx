@@ -140,6 +140,7 @@ export default function StoreScreen() {
         <Animated.ScrollView
           contentContainerStyle={styles.scrollContainer}
           scrollEventThrottle={100}
+          showsVerticalScrollIndicator={false} // 👈 스크롤 바 숨기기
           onScroll={({ nativeEvent }) => {
             const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
             const isNearBottom =
@@ -190,41 +191,46 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   searchBox: {
+    marginTop: 40,
     flexDirection: 'row',
     backgroundColor: '#F1F1F1',
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    borderRadius: 4,
+    paddingHorizontal: 16,
     alignItems: 'center',
     marginBottom: 16,
+    borderColor: '#EAEAEA',
+    borderWidth: 1,
   },
   searchIcon: {
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    height: 40,
+    height: 48,
+    fontFamily: 'Freesentation6',
+    fontSize: 16,
   },
   sortButtons: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 10,
+    gap: 4,
+    marginBottom: 20,
   },
   sortBtn: {
     paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingHorizontal: 20,
+    borderRadius: 16,
     backgroundColor: '#EAEAEA',
   },
   sortText: {
     color: '#555',
-    fontWeight: 'bold',
+    fontFamily: 'Freesentation7',
   },
   activeSort: {
     backgroundColor: colors.primary,
   },
   activeSortText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontFamily: 'Freesentation7',
   },
   emptyView: {
     flex: 1,

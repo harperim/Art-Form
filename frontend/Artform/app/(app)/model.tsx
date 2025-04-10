@@ -136,6 +136,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   header: {
+    marginTop: 40,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -144,6 +145,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
+    fontFamily: 'Freesentatio7',
   },
   description: {
     textAlign: 'center',
@@ -219,7 +221,7 @@ const styles = StyleSheet.create({
   },
   iconLeft: {
     position: 'absolute',
-    left: 20,
+    right: 20,
   },
   emptyWrapper: {
     flex: 1,

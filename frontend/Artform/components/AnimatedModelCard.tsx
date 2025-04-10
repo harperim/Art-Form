@@ -36,16 +36,18 @@ export default function AnimatedModelCard({ item, index, onPress, disableAnimati
 const styles = StyleSheet.create({
   card: {
     width: '100%',
-    height: 190,
-    borderRadius: 12,
+    height: 200,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#6E95BE',
     overflow: 'hidden',
     backgroundColor: '#eee',
-    marginBottom: 12,
+    marginBottom: 8,
     position: 'relative',
   },
   cardImage: {
     width: '100%',
-    height: 190,
+    height: 200,
     resizeMode: 'cover',
   },
   cardTitleOverlay: {

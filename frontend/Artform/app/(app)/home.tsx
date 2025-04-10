@@ -182,10 +182,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   popularModelView: {
-    marginTop: 8,
+    marginTop: 16,
   },
   newModelView: {
-    marginTop: 8,
+    marginTop: 16,
     marginBottom: 120,
   },
   sectionHeader: {

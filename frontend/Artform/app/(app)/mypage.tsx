@@ -100,7 +100,7 @@ export default function MyPageScreen() {
     for (const MyLikeModel of myLikeModeList) {
       const formattedModel: MyModelItem = {
         modelId: Number(MyLikeModel.modelId),
-        userName: `user-${MyLikeModel.userId}`, // 임시 처리. 실제 닉네임 있으면 교체
+        userName: `${MyLikeModel.userId}`, // 임시 처리. 실제 닉네임 있으면 교체
         modelName: MyLikeModel.modelName,
         url: MyLikeModel.imageSrc,
       };
@@ -112,20 +112,16 @@ export default function MyPageScreen() {
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      switch (selectedTab) {
-        case '내가 만든 그림':
-          await loadImages();
-          break;
-        case '내가 만든 모델':
-          await loadMyModels();
-          break;
-        case '내가 좋아요한 모델':
-          await LoadMyLikeModel();
-          break;
+      if (selectedTab === '내가 만든 그림' && imageUrls.length === 0) {
+        await loadImages();
+      } else if (selectedTab === '내가 만든 모델' && myModels.length === 0) {
+        await loadMyModels();
+      } else if (selectedTab === '내가 좋아요한 모델' && myLikeModels.length === 0) {
+        await LoadMyLikeModel();
       }
       setLoading(false);
     };
-    loadData(); // async 함수 내부에서 실행
+    loadData();
   }, [selectedTab]);
 
   const renderItem = ({ item, index }: { item: ImageItem; index: number }) => (
@@ -154,20 +150,28 @@ export default function MyPageScreen() {
 
   const renderContent = () => {
     if (selectedTab === '내가 만든 그림') {
-      return (
-        <View style={styles.mainContentView}>
-          <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
-          <FlatList
-            data={imageUrls}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id.toString()}
-            numColumns={3}
-            columnWrapperStyle={{ gap: 4, marginBottom: 4 }}
-            showsVerticalScrollIndicator={false}
-            style={{ marginTop: 20, display: 'flex', width: '100%' }}
-          />
-        </View>
-      );
+      if (imageUrls.length) {
+        return (
+          <View style={styles.mainContentView}>
+            <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
+            <FlatList
+              data={imageUrls}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={3}
+              columnWrapperStyle={{ gap: 4, marginBottom: 4 }}
+              showsVerticalScrollIndicator={false}
+              style={{ marginTop: 20, display: 'flex', width: '100%' }}
+            />
+          </View>
+        );
+      } else {
+        return (
+          <View style={styles.mainContentView}>
+            <Text style={styles.mainContentTitle}>총 {imageUrls.length}개</Text>
+          </View>
+        );
+      }
     }
     if (selectedTab === '내가 만든 모델') {
       return (
