@@ -81,5 +81,9 @@ def run_text2img(model_dir: str, prompt: str, model_name: str, guidance_scale: f
     # 결과 이미지 저장
     result.images[0].save(output_image_path)
     print(f"생성 완료: {output_image_path}")
+
+    # 메모리 정리
+    del result, pipe
+    torch.cuda.empty_cache()
     
     return output_image_path

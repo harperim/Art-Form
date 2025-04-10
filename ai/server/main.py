@@ -25,7 +25,8 @@ name_dict = {
     "수채화": "watercolor",
     "한국 전통화": "korean painting",
     "일본 전통화": "japanese painting",
-    "유화": "oil painting"
+    "유화": "oil painting",
+    "픽셀 아트": "pixel art"
 }
 
 
@@ -80,17 +81,31 @@ async def apply_endpoint(
     with input_image_path.open("wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
 
-    # 이미지 리사이즈
     try:
         with Image.open(input_image_path) as img:
             img = img.convert("RGB")
             original_width, original_height = img.size
-            target_width = 1024
-            target_height = int((target_width / original_width) * original_height)
-            resized_img = img.resize((target_width, target_height), Image.LANCZOS)
+            
+            # 정사각형으로 크롭하기 위해 더 짧은 변의 길이를 기준으로 설정
+            min_side = min(original_width, original_height)
+            
+            # 이미지 중앙을 기준으로 크롭할 영역 계산
+            left = (original_width - min_side) // 2
+            top = (original_height - min_side) // 2
+            right = left + min_side
+            bottom = top + min_side
+            
+            # 이미지 크롭
+            square_img = img.crop((left, top, right, bottom))
+            
+            # 필요하다면 리사이징 (1024x1024로 예시)
+            target_size = 1024
+            resized_img = square_img.resize((target_size, target_size), Image.LANCZOS)
+            
+            # 저장
             resized_img.save(input_image_path)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"이미지 리사이즈 실패: {e}")
+        raise HTTPException(status_code=500, detail=f"이미지 정사각형 크롭 실패: {e}")
 
     mime_type, _ = mimetypes.guess_type(input_image_path)
     if not mime_type:
@@ -129,7 +144,6 @@ async def apply_endpoint(
     register_payload = {
         "modelId": model_id,
         "userId": user_id,
-        "isPublic": "true",
         "uploadFileName": orig_upload_filename
     }
 
@@ -143,10 +157,10 @@ async def apply_endpoint(
         raise HTTPException(status_code=500, detail="이미지 등록에 실패했습니다.")
     register_data = register_resp.json()
     image_id = (register_data["data"]["imageId"])
-
+    print(image_id)
     async with httpx.AsyncClient() as client:
         register_resp = await client.post(
-            f"{CORE_SERVER_BASE}/model/update/{image_id}/{model_id}",
+            f"{CORE_SERVER_BASE}/model/update/{model_id}/{image_id}",
             json=register_payload,
             headers={"Authorization": Authorization}
         )
@@ -458,23 +472,23 @@ async def apply_endpoint(
     if not mime_type:
         mime_type = "application/octet-stream"
 
-    # Core 서버에 presigned URL 요청 (원본 이미지)
-    async with httpx.AsyncClient() as client:
-        presigned_orig_resp = await client.get(
-            f"{CORE_SERVER_BASE}/image/presigned-url",
-            headers={"Authorization": Authorization,
-                     "accept": "application/json"
-                     },
-            params={"fileType": mime_type, "fileName": Path(input_image_path).name, "service": "image"}
-        )
+    # # Core 서버에 presigned URL 요청 (원본 이미지)
+    # async with httpx.AsyncClient() as client:
+    #     presigned_orig_resp = await client.get(
+    #         f"{CORE_SERVER_BASE}/image/presigned-url",
+    #         headers={"Authorization": Authorization,
+    #                  "accept": "application/json"
+    #                  },
+    #         params={"fileType": mime_type, "fileName": Path(input_image_path).name, "service": "image"}
+    #     )
 
-    if presigned_orig_resp.status_code != 200:
-        raise HTTPException(status_code=500, detail="원본 이미지 presigned URL 요청에 실패했습니다.")
-    orig_presigned_data = presigned_orig_resp.json()
-    if not orig_presigned_data.get("success"):
-        raise HTTPException(status_code=500, detail="원본 이미지 presigned URL 발급 실패")
-    orig_presigned_url = orig_presigned_data["data"]["presignedUrl"]
-    orig_upload_filename = orig_presigned_data["data"]["uploadFileName"]
+    # if presigned_orig_resp.status_code != 200:
+    #     raise HTTPException(status_code=500, detail="원본 이미지 presigned URL 요청에 실패했습니다.")
+    # orig_presigned_data = presigned_orig_resp.json()
+    # if not orig_presigned_data.get("success"):
+    #     raise HTTPException(status_code=500, detail="원본 이미지 presigned URL 발급 실패")
+    # orig_presigned_url = orig_presigned_data["data"]["presignedUrl"]
+    # orig_upload_filename = orig_presigned_data["data"]["uploadFileName"]
 
     result_mime_type, _ = mimetypes.guess_type(result_image_path)
     if not result_mime_type:
@@ -498,15 +512,15 @@ async def apply_endpoint(
     result_upload_filename = result_presigned_data["data"]["uploadFileName"]
    
     # presigned URL을 사용하여 원본 이미지 업로드 (HTTP PUT)
-    with open(input_image_path, "rb") as f:
-        orig_file_content = f.read()
-    async with httpx.AsyncClient() as client:
-        upload_orig_resp = await client.put(
-            orig_presigned_url,
-            content=orig_file_content,
-            headers={"Content-Type": mime_type})
-    if upload_orig_resp.status_code not in (200, 201):
-        raise HTTPException(status_code=500, detail="원본 이미지 업로드에 실패했습니다.")
+    # with open(input_image_path, "rb") as f:
+    #     orig_file_content = f.read()
+    # async with httpx.AsyncClient() as client:
+    #     upload_orig_resp = await client.put(
+    #         orig_presigned_url,
+    #         content=orig_file_content,
+    #         headers={"Content-Type": mime_type})
+    # if upload_orig_resp.status_code not in (200, 201):
+    #     raise HTTPException(status_code=500, detail="원본 이미지 업로드에 실패했습니다.")
    
     # presigned URL을 사용하여 변환 이미지 업로드 (HTTP PUT)
     with open(result_image_path, "rb") as f:
@@ -520,16 +534,15 @@ async def apply_endpoint(
         raise HTTPException(status_code=500, detail="변환 이미지 업로드에 실패했습니다.")
    
     # Core 서버에 업로드 완료 등록 요청
-    register_payloads = [{
-        "modelId": model_id,
-        "userId": user_id,
-        "isPublic": "true",
-        "uploadFileName": orig_upload_filename
-    },
+    register_payloads = [
+        # {
+    #     "modelId": model_id,
+    #     "userId": user_id,
+    #     "uploadFileName": orig_upload_filename
+    # },
     {
         "modelId": model_id,
         "userId": user_id,
-        "isPublic": "true",
         "uploadFileName": result_upload_filename
     }]
 
@@ -548,17 +561,17 @@ async def apply_endpoint(
     
     # 임시 파일 삭제
     os.remove(input_image_path)
-    # os.remove(result_image_path)
+    os.remove(result_image_path)
 
     return JSONResponse(content={
         "success": True,
         "data": {
-            "original": {
-                "imageId": image_id[0],
-                "uploadFileName": orig_upload_filename
-            },
+            # "original": {
+            #     "imageId": image_id[0],
+            #     "uploadFileName": orig_upload_filename
+            # },
             "result": {
-                "imageId": image_id[1],
+                "imageId": image_id[0],
                 "uploadFileName": result_upload_filename
             }
         },
@@ -645,7 +658,6 @@ async def apply_endpoint(
     register_payload = {
         "modelId": model_id,
         "userId": user_id,
-        "isPublic": "true",
         "uploadFileName": result_upload_filename
     }
     

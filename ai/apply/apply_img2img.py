@@ -47,5 +47,9 @@ def run_inference(input_image_path: str, model_dir: str, strength_str: str = "0.
     # 결과 이미지 저장
     result.images[0].save(output_image_path)
     print(f"생성 완료: {output_image_path}")
+
+    # 메모리 정리
+    del result, pipe, init_image
+    torch.cuda.empty_cache()
     
     return output_image_path
