@@ -1,0 +1,22 @@
+
+# 결과 이미지 저장 폴더 무시
+/result/
+!result/.gitkeep
+
+# 학습된 모델 파일 및 압축 파일 무시
+ai/img_model*/
+*.zip
+
+# Python 및 PyTorch 관련 일반적인 무시 항목
+__pycache__/
+*.py[cod]
+*.so
+*.pth
+*.pkl
+*.pt
+
+# Jupyter Notebook 체크포인트
+.ipynb_checkpoints/
+
+# VSCode 설정 파일 무시
+.vscode/

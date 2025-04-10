@@ -16,7 +16,7 @@ def remove_unexpected_kwargs(orig_func, *args, **kwargs):
             else:
                 raise
 
-def run_text2img(model_dir: str, prompt: str, model_name: str, guidance_scale: float = 7.5, num_inference_steps: int = 50, strength_str: str = "0.33") -> str:
+def run_text2img(model_dir: str, prompt: str, model_name: str, guidance_scale: float = 7.5, num_inference_steps: int = 50, strength_str: str = "0.") -> str:
     """
     text2img 추론 함수
 
@@ -81,5 +81,9 @@ def run_text2img(model_dir: str, prompt: str, model_name: str, guidance_scale: f
     # 결과 이미지 저장
     result.images[0].save(output_image_path)
     print(f"생성 완료: {output_image_path}")
+
+    # 메모리 정리
+    del result, pipe
+    torch.cuda.empty_cache()
     
     return output_image_path
