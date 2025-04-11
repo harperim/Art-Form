@@ -1,0 +1,13 @@
+Jenkins	: 2.492.2
+Docker	: 28.0.1
+Nginx	: 1.27.4
+
+Spring	: 3.4.3
+JDK		: 17
+JWT		: 0.11.5
+AWS SDK	: 2.31.7
+
+FastAPI	: 0.115.12
+
+PostgreSQL	: 17.4
+Redis		: 7.4.2

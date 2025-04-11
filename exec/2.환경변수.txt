@@ -1,0 +1,21 @@
+공통 -----------------------------------------------------------
+REPO_URL			: jenkins에서 프로젝트를 clone 하기 위한 프로젝트 레포지토리 경로
+SERVER_PORT		: 서버 포트
+SERVER_DOMAIN	: 서버 도메인
+DB_PORT			: PostgreSQL 포트
+DB_NAME			: PostgreSQL DB 이름
+DB_USERNAME		: PostgreSQL 사용자 이름
+DB_PASSWORD		: PostgreSQL 비밀번호
+JWT_SECRET		: JWT 검증용 키
+MQ_PORT			: RabbitMQ 포트
+MQ_NAME			: RabbitMQ 
+MQ_PASS			: RabbitMQ 비밀번호
+Core server ---------------------------------------------------
+BUCKET_NAME		: S3 버킷 이름
+ACCESS_KEY_ID		: S3 접근 키
+SECRET_ACCESS_KEY	: S3 비밀 키
+USER_SERVICE_URL	: user 서버 주소(유저 정보 관련 처리를 위함)
+User server ---------------------------------------------------
+REDIS_HOST		: redis 컨테이너 이름
+REDIS_PORT		: redis 포트
+REDIS_PASSWORD	: redis 비밀번호
