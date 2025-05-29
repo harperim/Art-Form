@@ -1,20 +1,105 @@
 # 아트퐁 (Art-Form)
-
-## 개요 
-**서비스명:** Art-Form (아트퐁)  
-**팀명:** 삼시두끼  
-**팀원:** 강대규, 김휘동, 박준현, 정찬우, 서현석, 임정인
-
-| 역할       | 팀원 이름             |
-|------------|-----------------------|
-| Front-End  | 서현석, 임정인, 정찬우 |
-| Back-End   | 김휘동, 박준현, 강대규 |
-| AI         | 강대규, 박준현         |
+> 📅 **프로젝트 기간:** 2025.03.04 ~ 2025.04.05  
+> **👥 팀명:** 삼시두끼  
 
 
 ## 프로젝트 소개
 
-**아트퐁 (Art-Form)** 은 AI 기반 화풍 변환 기술을 활용하여 사용자가 원하는 예술 스타일로 이미지를 변환할 수 있는 서비스입니다. 사용자가 자신의 그림을 업로드하면 AI가 개별적인 화풍을 학습하고, 이를 바탕으로 사진을 변환하여 예술적인 작품을 손쉽게 제작할 수 있도록 도와줍니다.
+**아트퐁 (Art-Form)은** AI가 당신의 그림을 배우고,  
+일상 속 사진을 나만의 예술 스타일로 바꿔주는 **화풍 변환 서비스**입니다.  
+그림을 몇 장만 업로드하면, AI가 당신만의 화풍을 학습하고  
+사진을 마치 한 편의 작품처럼 손쉽게 변환해줍니다.  
+**누구나 쉽게, 나만의 감성을 담은 예술을 만들 수 있어요.**
+
+## 서비스 대상자
+
+- **자신만의 예술 스타일을 만들고 싶은 사용자**
+    - AI가 사용자의 그림을 학습하여 개성 있는 화풍을 자동으로 적용해 줍니다.
+- **창작 활동을 간편하게 즐기고 싶은 일반 사용자**
+    - 복잡한 편집 없이 원하는 이미지를 간편하게 변환할 수 있어, 누구나 예술적인 결과물을 만들 수 있습니다.
+
+**전문가가 아니어도 쉽게 사용할 수 있도록 직관적인 인터페이스와 AI 기반 자동화 기능을 제공**하여, 미술을 좋아하는 모든 사람이 부담 없이 창작을 즐길 수 있도록 도와줍니다.
+
+## **주요 기술 스택**
+✔️ Front-End  
+<img src="https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=white"/> <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white"/> <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white"/>  
+
+✔️ Back-End    
+<img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white"/> <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"/> <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"/> <img src="https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=java&logoColor=white"/>  
+
+✔️ AI 모델링  
+<img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white"/> <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white"/> <img src="https://img.shields.io/badge/Stable%20Diffusion-000000?style=for-the-badge&logo=openai&logoColor=white"/> <img src="https://img.shields.io/badge/LoRA-FF69B4?style=for-the-badge&logo=ai&logoColor=white"/>  
+
+✔️ Database  
+<img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white"/> <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white"/>  
+
+✔️ Infra / DevOps  
+<img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white"/> <img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white"/> <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white"/> <img src="https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white"/> <img src="https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white"/>
+
+## 서비스 설명 / 주요 기능
+### 🧐 어떤 서비스인가요?  
+직접 선택한 사진을 **사용자가 원하는 화풍으로 바꿔주는 서비스**입니다!
+- 사용자가 직접 그린 약 10장의 그림을 업로드하면, AI가 개인의 화풍을 학습하여 이를 바탕으로 사진 촬영 시 전체 이미지를 학습된 화풍으로 변환해주는 서비스입니다.  
+누구나 손쉽게 자신만의 예술적 스타일을 반영한 사진을 제작할 수 있습니다.
+
+### **🖼️ 주요 기능**
+1. 약 10장의 그림을 업로드하여 AI가 개인 화풍 학습
+2. Stable-Diffusion + LoRA 기반 맞춤형 화풍 모델 생성
+3. 사용자 전용 화풍 모델 저장 및 관리
+4. 모델 공유 및 인기 화풍 랭킹 제공 (커뮤니티 기능)
+5. 화풍을 적용한 이미지 결과물 생성 및 다운로드
+
+### 🔍 기능 상세 설명
+**1️⃣ 개인화된 화풍 학습**
+- 사용자가 직접 그린 약 10장의 그림을 업로드하면, AI가 이를 학습하여 개인 맞춤형 화풍 모델을 생성합니다.
+- Stable-Diffusion과 LoRA 기반의 Transfer Learning 기법을 활용해 소량의 이미지로도 맞춤형 화풍 모델을 효과적으로 생성합니다.
+
+**2️⃣ 화풍 모델 저장 및 공유**
+- 학습된 화풍 모델은 사용자 계정에 저장되어 재사용할 수 있으며, 선택적으로 커뮤니티에 공개하여 공유할 수 있습니다.
+- 공개된 화풍 모델은 인기 순 랭킹으로 정렬되어, 다른 사용자들이 쉽게 탐색하고 사용할 수 있도록 지원합니다.
+
+**3️⃣ 스타일 변환 및 이미지 다운로드**
+- 학습된 화풍을 원하는 사진에 적용하면, AI가 해당 이미지 전체를 예술적인 스타일로 변환합니다.
+- 완성된 결과물은 다운로드 기능을 통해 저장이 가능합니다.
+
+### **✨ 프로젝트의 특장점(기능 관점)**
+- 나만의 화풍을 반영한 예술 이미지 생성
+- 커뮤니티 기반 화풍 공유 및 추천 시스템
+- 복잡한 과정 없이 누구나 쉽게 사용할 수 있는 인터랙티브 UI
+- 소량의 데이터만으로도 고퀄리티 학습 가능한 AI 기술 적용
+
+## **🤖 AI 기술**
+
+### **사용자 제공 데이터를 기반으로 개별화된 화풍 학습**
+
+- 사용자가 올린 그림을 바탕으로 **Stable-Diffusion**과 **Lora**를 통해 학습
+
+#### **Stable Diffusion 개요**
+
+![SD](./image/특화PJT_stable_diffusion.png)
+
+Stable Diffusion은 잠재 확산 모델(Latent Diffusion Model)을 기반으로 한 텍스트-이미지 생성 AI 모델입니다. 이 모델은 이미지를 점진적으로 노이즈에서 복원하는 과정을 통해 고품질 이미지를 생성합니다. 주요 특징은 다음과 같습니다:
+- 이미지를 픽셀 공간이 아닌 압축된 잠재 공간에서 처리하여 계산 효율성 향상
+- 텍스트 프롬프트를 기반으로 이미지 생성 가능
+- 오픈소스로 제공되어 다양한 맞춤형 응용 프로그램 개발 가능
+
+#### **LoRA(Low-Rank Adaptation) 기술**
+
+![Lora](./image/특화PJT_Lora.png)
+
+LoRA는 대규모 사전 훈련된 모델을 적은 양의 데이터로 효율적으로 파인튜닝하기 위한 기술입니다:
+- 전체 모델 가중치를 업데이트하는 대신 저차원 행렬을 통해 모델을 적응시킴
+- 훈련 가능한 매개변수 수를 대폭 줄여 메모리 효율성 향상 및 빠른 학습 속도 제공
+- 원본 모델의 가중치는 변경하지 않고 별도의 어댑터로 작동하여 모델 배포 용이
+
+#### **이미지 증강 기법**
+사용자로부터 받은 10장의 이미지는 AI 학습에 충분한 데이터가 아닐 수 있습니다. 따라서 다음과 같은 데이터 증강(Data Augmentation) 기법을 활용하여 10장의 원본 이미지를 20장으로 확장합니다.
+이러한 증강 기법을 통해 원본 이미지의 특성은 유지하면서 다양한 변형을 생성하여 AI 모델이 화풍의 본질적인 특징을 더 잘 학습할 수 있도록 합니다. 이는 소량의 사용자 데이터로도 높은 품질의 화풍 모델을 학습할 수 있게 해주는 핵심 기술입니다.
+
+**아트퐁에서 LoRA 선택 이유**:
+
+![preview](./image/특화PJT_LoRa선택이유.webp)
+
 
 ## 프로젝트 구조
 
@@ -41,13 +126,13 @@
 
 ```
 
-## 🗂️ 시스템 아키텍처
+## 시스템 아키텍처
 
-![아키텍처_다이어그램](/uploads/47fe2c8f03bd7807b729d1ea3b5223bf/아키텍처_다이어그램.png)
+![아키텍처_다이어그램](./image/특화PJT_아키텍처_다이어그램.png)
 
 ## 🗂️ ERD 다이어그램
 
-![특화_프로젝트](/uploads/ba50ff261f8c53d46ae7adfb61ab57bb/특화_프로젝트.png)
+![특화_프로젝트](./image/특화PJT_ERD.png)
 
 
 ## Git Commit Message Convention
@@ -96,84 +181,37 @@
         - EX ) ai/feat/lora
         - ai/fix/[오류 수정]
 
-## 서비스 대상자
+## 팀원 소개
+<table>
+  <tbody>
+    <tr>
+      <td align="center">
+        <a href="#"><img src="./image/강대규.png" width="100px;" alt=""/><br />
+        <sub><b>AI & Backend : 강대규<br>ethan2024@gmail.com</b></sub></a><br />
+      </td>
+      <td align="center">
+        <a href="#"><img src="./image/김휘동.png" width="100px;" alt=""/><br />
+        <sub><b>Infra & Backend : 김휘동<br>rlagnlehd0417@gmail.com</b></sub></a><br />
+      </td>
+      <td align="center">
+        <a href="#"><img src="./image/박준현.png" width="100px;" alt=""/><br />
+        <sub><b>Backend : 박준현<br>wndrjrak12@gmail.com</b></sub></a><br />
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <a href="#"><img src="./image/서현석.png" width="100px;" alt=""/><br />
+        <sub><b>Frontend : 서현석<br>jacobshs4824@naver.com</b></sub></a><br />
+      </td>
+      <td align="center">
+        <a href="#"><img src="./image/임정인.png" width="100px;" alt=""/><br />
+        <sub><b>Frontend : 임정인<br>harperim127@gmail.com</b></sub></a><br />
+      </td>
+      <td align="center">
+        <a href="#"><img src="./image/정찬우.png" width="100px;" alt=""/><br />
+        <sub><b>Frontend : 정찬우<br>jhanoo@hanyang.ac.kr</b></sub></a><br />
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-- **자신만의 예술 스타일을 만들고 싶은 사용자**
-    - AI가 사용자의 그림을 학습하여 개성 있는 화풍을 자동으로 적용해 줍니다.
-- **창작 활동을 간편하게 즐기고 싶은 일반 사용자**
-    - 복잡한 편집 없이 원하는 이미지를 간편하게 변환할 수 있어, 누구나 예술적인 결과물을 만들 수 있습니다.
-
-**전문가가 아니어도 쉽게 사용할 수 있도록 직관적인 인터페이스와 AI 기반 자동화 기능을 제공**하여, 미술을 좋아하는 모든 사람이 부담 없이 창작을 즐길 수 있도록 도와줍니다.
-
-## 서비스 설명 / 주요 기능
-
-- **사용자가 원하는 화풍으로 바꿔주는 서비스**
-- 사용자가 약 10장의 자신만의 그림을 업로드하여 AI가 개인의 화풍을 학습하고, 이를 바탕으로 사진 촬영 시 전체 이미지를 학습된 화풍으로 변환해주는 서비스입니다. 누구나 손쉽게 자신만의 예술적 스타일을 반영한 사진을 제작할 수 있습니다.
-
-### **[ 화풍 반영 사진 변환 서비스 ]**
-
-1. 사용자가 약 10장의 화풍 학습을 위한 이미지 업로드 기능 (자신만의 예술적 화풍 제공)
-2. AI를 기반으로 Stable-Diffusion과 Lora를 활용한 맞춤형 화풍 학습 기능 (업로드된 사진을 통해 개별 화풍 모델 생성)
-3. 사용자당 화풍 모델 저장 기능 (개인화된 학습 결과물을 선택적으로 보관)
-4. 저장된 화풍 모델을 다른 사용자도 활용할 수 있으며, 인기 모델 랭킹 기능 제공 (커뮤니티 기반 추천 및 공유)
-5. 완성된 예술 사진 결과물 다운로드
-
-### **프로젝트의 특장점(기능 관점)**
-
-- 사용자 맞춤형 스타일로 개성 있는 결과물 제작
-- 인터랙티브 UI를 통한 사용 편의성 강화
-
-### **1. 개인화된 사진 업로드 및 화풍 학습**
-
-- 사용자가 약 10장의 개인화된 사진을 업로드하여, AI가 개별적인 예술 화풍을 학습할 수 있는 데이터를 제공
-- Transfer Learning 및 LoRA 기법을 활용하여 소량의 데이터로도 맞춤형 화풍 모델을 효과적으로 생성
-
-### **2. 화풍 모델 저장 및 공유**
-
-- 화풍 모델을 저장하여 개인의 학습 결과물을 선택적으로 보관
-- 저장된 화풍 모델은 커뮤니티 내에서 다른 사용자들도 활용할 수 있으며, 인기 모델 랭킹 기능을 통해 추천받은 모델을 쉽게 확인 가능
-
-### **3. 스타일 변환 및 결과물 다운로드**
-
-- 완성된 예술 사진 결과물은 이미지 저장 기능을 통해 다운로드 가능
-
-## **AI 기술**
-
-### **사용자 제공 데이터를 기반으로 개별화된 화풍 학습**
-
-- 사용자가 올린 그림을 바탕으로 **Stable-Diffusion**과 **Lora**를 통해 학습
-
-#### **Stable Diffusion 개요**
-
-![SD](/uploads/f2e6a900404b4d3b26819083e9178a97/SD.png)
-
-Stable Diffusion은 잠재 확산 모델(Latent Diffusion Model)을 기반으로 한 텍스트-이미지 생성 AI 모델입니다. 이 모델은 이미지를 점진적으로 노이즈에서 복원하는 과정을 통해 고품질 이미지를 생성합니다. 주요 특징은 다음과 같습니다:
-- 이미지를 픽셀 공간이 아닌 압축된 잠재 공간에서 처리하여 계산 효율성 향상
-- 텍스트 프롬프트를 기반으로 이미지 생성 가능
-- 오픈소스로 제공되어 다양한 맞춤형 응용 프로그램 개발 가능
-
-#### **LoRA(Low-Rank Adaptation) 기술**
-
-![Lora](/uploads/62c1eee6b449305678254ca1134aa87d/Lora.png)
-
-LoRA는 대규모 사전 훈련된 모델을 적은 양의 데이터로 효율적으로 파인튜닝하기 위한 기술입니다:
-- 전체 모델 가중치를 업데이트하는 대신 저차원 행렬을 통해 모델을 적응시킴
-- 훈련 가능한 매개변수 수를 대폭 줄여 메모리 효율성 향상 및 빠른 학습 속도 제공
-- 원본 모델의 가중치는 변경하지 않고 별도의 어댑터로 작동하여 모델 배포 용이
-
-#### **이미지 증강 기법**
-사용자로부터 받은 10장의 이미지는 AI 학습에 충분한 데이터가 아닐 수 있습니다. 따라서 다음과 같은 데이터 증강(Data Augmentation) 기법을 활용하여 10장의 원본 이미지를 20장으로 확장합니다.
-이러한 증강 기법을 통해 원본 이미지의 특성은 유지하면서 다양한 변형을 생성하여 AI 모델이 화풍의 본질적인 특징을 더 잘 학습할 수 있도록 합니다. 이는 소량의 사용자 데이터로도 높은 품질의 화풍 모델을 학습할 수 있게 해주는 핵심 기술입니다.
-
-**아트퐁에서 LoRA 선택 이유**:
-
-![preview](/uploads/3ac2590c793c923bcb9f60124b3fcde9/preview.webp)
-
-
-## **주요 기술 스택**
-
-- **프론트엔드**: React-Native, Expo, TypeScript
-- **백엔드**: FastAPI, Spring Boot
-- **AI 모델링**: Python, PyTorch/TensorFlow, Lora, Stable-Diffusion
-- **데이터베이스**: PostgreSQL, Redis
-- **배포 및 인프라**: Docker, Jenkins, Nginx, AWS, Prometheus, Grafana
