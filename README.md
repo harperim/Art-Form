@@ -20,20 +20,22 @@
 
 **전문가가 아니어도 쉽게 사용할 수 있도록 직관적인 인터페이스와 AI 기반 자동화 기능을 제공**하여, 미술을 좋아하는 모든 사람이 부담 없이 창작을 즐길 수 있도록 도와줍니다.
 
+
+
 ## **주요 기술 스택**
-✔️ Front-End  
+### ✔️ Front-End  
 <img src="https://img.shields.io/badge/React_Native-61DAFB?style=for-the-badge&logo=react&logoColor=white"/> <img src="https://img.shields.io/badge/Expo-000020?style=for-the-badge&logo=expo&logoColor=white"/> <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white"/>  
 
-✔️ Back-End    
+### ✔️ Back-End    
 <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white"/> <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"/> <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white"/> <img src="https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=java&logoColor=white"/>  
 
-✔️ AI 모델링  
+### ✔️ AI 모델링  
 <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white"/> <img src="https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white"/> <img src="https://img.shields.io/badge/Stable%20Diffusion-000000?style=for-the-badge&logo=openai&logoColor=white"/> <img src="https://img.shields.io/badge/LoRA-FF69B4?style=for-the-badge&logo=ai&logoColor=white"/>  
 
-✔️ Database  
+### ✔️ Database  
 <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white"/> <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white"/>  
 
-✔️ Infra / DevOps  
+### ✔️ Infra / DevOps  
 <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white"/> <img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white"/> <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white"/> <img src="https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white"/> <img src="https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white"/>
 
 ## 서비스 설명 / 주요 기능
@@ -67,6 +69,46 @@
 - 커뮤니티 기반 화풍 공유 및 추천 시스템
 - 복잡한 과정 없이 누구나 쉽게 사용할 수 있는 인터랙티브 UI
 - 소량의 데이터만으로도 고퀄리티 학습 가능한 AI 기술 적용
+
+## 서비스 이용 화면 
+
+
+## 🖥️ 프론트엔드 기술 및 구현 상세
+### ✔️ 기술 스택 선택 이유
+- **`React Native + Expo`**  
+    - 여러 플랫폼(Android, iOS)에서 동일한 코드베이스로 앱을 개발할 수 있는 크로스 플랫폼 프레임워크입니다.
+    - 앱 설치형 사용 경험을 제공하면서도, 빠르게 개발·배포할 수 있는 프로토타입 개발 최적화 환경이 필요했기 때문에 채택했습니다.
+    - Expo를 사용해 번들링과 OTA(Over-the-Air) 업데이트를 간편하게 적용할 수 있어, 개발 속도를 빠르게 가져갈 수 있었습니다.  
+
+- **`TypeScript`**  
+    - 프로젝트 규모가 커지면서 런타임 오류를 줄이고 안정적인 코드 관리를 위해 정적 타입 도입이 필요했습니다.  
+    - 다양한 컴포넌트 간 Props 전달 및 API 연동 시 인터페이스 설계가 명확해져 협업 효율성이 크게 향상되었습니다.
+
+### 💡 해결한 문제 및 구현 포인트
+**1️⃣ AI 이미지 출력의 대기 시간 이슈 대응**  
+- AI 서버에서 화풍 변환 이미지가 생성되기까지 수 초의 지연이 발생했습니다.  
+- 이를 해결하기 위해 로딩 상태 관리(UI Feedback) 와 함께, 비동기 요청 처리 구조를 설계했습니다.  
+- useEffect + async/await + 상태 기반 조건 렌더링을 통해 사용자 혼란을 줄이고, UX를 부드럽게 만들었습니다.  
+
+**2️⃣ 화풍 업로드~적용까지의 흐름을 유기적으로 연결**   
+- 사용자 그림 업로드 → 모델 생성 → 화풍 적용 → 결과물 다운로드로 이어지는 흐름은 복잡했기 때문에,  
+프론트단에서 각 단계를 분리된 컴포넌트로 구성하고, 전역 상태를 통해 연결하였습니다.  
+- 이를 통해 사용자는 '한 번에 순차적 흐름'처럼 자연스럽게 작업할 수 있도록 UX 흐름을 설계했습니다.
+
+**3️⃣ 결과 이미지 미리보기 최적화**  
+- AI 결과물은 고해상도 이미지로 반환되며, 성능 저하 가능성이 있었습니다.  
+- Image 컴포넌트에 lazy loading과 해상도 자동 조절을 적용하여 렌더링 부하를 줄였습니다.  
+- 또한 Expo의 FileSystem 모듈을 활용해 로컬에 저장된 이미지 캐싱을 구현했습니다.
+
+**4️⃣ API 연동 및 사용자 데이터 관리**  
+- FastAPI 기반의 AI 서버와 통신하기 위해 Axios 커스텀 인스턴스를 사용했습니다.  
+- accessToken 기반 인증이 필요한 API는 인터셉터로 토큰을 주입하고, 실패 시 리프레시 로직까지 처리했습니다.  
+- 사용자별 화풍 모델 및 이미지 결과물 관리가 용이하도록 상태 관리에는 React Context + useReducer 구조를 사용했습니다.
+
+### 📱 UI/UX 고려 사항  
+- 앱 설치형 느낌을 살리기 위해 Splash Screen과 진입 애니메이션을 추가했습니다.  
+- 그림/사진을 업로드하는 흐름은 단계별 인터페이스로 구성하여, 고령 사용자도 직관적으로 사용할 수 있도록 했습니다.  
+- 결과물은 다운로드 버튼뿐 아니라 공유 기능까지 제공해 사용성을 높였습니다.
 
 ## **🤖 AI 기술**
 
