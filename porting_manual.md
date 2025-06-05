@@ -73,7 +73,7 @@ MQ_PORT=5672
 MQ_NAME=artform
 MQ_PASS=1234
 
-JWT_SECRET=LcWDRHbKhpEpYoEgh6OkeOl2pZjG8Y5TJQwxJLqNXAtYnKul89Tb7a7iMbfRORhNNzXeeeaYS0TnHbMeKZUBTg==
+JWT_SECRET=**REPLACE_WITH_YOUR_JWT_SECRET**
 
 USER_SERVICE_URL=http://j12d103.p.ssafy.io:8082
 ```
@@ -91,7 +91,8 @@ DB_PASSWORD=d103GumiSsafy!@
 
 REDIS_HOST=j12d103.p.ssafy.io
 REDIS_PORT=6379
-JWT_SECRET=LcWDRHbKhpEpYoEgh6OkeOl2pZjG8Y5TJQwxJLqNXAtYnKul89Tb7a7iMbfRORhNNzXeeeaYS0TnHbMeKZUBTg==
+JWT_SECRET=**REPLACE_WITH_YOUR_JWT_SECRET**
+
 
 ; MQ_PORT=5672
 ; MQ_NAME=artform
@@ -138,6 +139,28 @@ CORE_URL=https://j12d103.p.ssafy.io:8081
 | `REDIS_PORT`      | Redis 포트 |
 | `REDIS_PASSWORD`  | Redis 비밀번호 |
 
+#### 🧪 .env 예시 파일
+```
+REPO_URL=https://lab.ssafy.com/s12-ai-image-sub1/S12P21D103.git
+
+SERVER_PORT=8081
+SERVER_DOMAIN=j12d103.p.ssafy.io
+DB_PORT=5432
+DB_NAME=artform_core
+DB_USERNAME=artform
+DB_PASSWORD=d103GumiSsafy!@
+
+BUCKET_NAME=artform-data
+ACCESS_KEY_ID=**REPLACE_WITH_YOUR_ACCESS_KEY_ID**
+SECRET_ACCESS_KEY=**REPLACE_WITH_YOUR_SECRET_ACCESS_KEY**
+
+MQ_PORT=5672
+MQ_NAME=artform
+MQ_PASS=1234
+
+JWT_SECRET=**REPLACE_WITH_YOUR_JWT_SECRET**
+USER_SERVICE_URL=http://j12d103.p.ssafy.io:8082
+```
 
 #### 3. 빌드
 ```
