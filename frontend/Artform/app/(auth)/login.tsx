@@ -18,7 +18,7 @@ import { useAuthActions } from '~/hooks/useAuthActions';
 export default function LoginScreen() {
   const { width, height } = useWindowDimensions();
   const router = useRouter();
-  const { handleLogin } = useAuthActions();
+  // const { handleLogin } = useAuthActions();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secureText, setSecureText] = useState(true);
@@ -58,17 +58,29 @@ export default function LoginScreen() {
     ]).start();
   }, []);
 
+  // const onLogin = async () => {
+  //   try {
+  //     const loginSuccess = await handleLogin(email, password);
+  //     if (loginSuccess) {
+  //       console.debug('로그인 성공');
+  //       router.replace('/home');
+  //     }
+  //   } catch (err) {
+  //     console.debug('로그인 실패', err);
+  //   }
+  // };
+
   const onLogin = async () => {
-    try {
-      const loginSuccess = await handleLogin(email, password);
-      if (loginSuccess) {
-        console.debug('로그인 성공');
-        router.replace('/home');
-      }
-    } catch (err) {
-      console.debug('로그인 실패', err);
+    // 하드코딩된 로그인 조건
+    if (email === 'ssafy@naver.com' && password === 'ssafy123') {
+      console.debug('✅ 테스트 로그인 성공');
+      router.replace('/home'); // 로그인 성공 시 홈 화면으로 이동
+    } else {
+      alert('이메일 또는 비밀번호가 올바르지 않습니다.');
+      console.debug('❌ 테스트 로그인 실패');
     }
   };
+
 
   return (
     <ImageBackground

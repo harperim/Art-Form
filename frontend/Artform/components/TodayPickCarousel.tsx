@@ -23,7 +23,12 @@ interface ParallaxCarouselCardProps {
   onPress: (item: ModelWithThumbnail) => void;
 }
 
-const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scrollX, onPress }) => {
+const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({
+  item,
+  id,
+  scrollX,
+  onPress,
+}) => {
   const inputRange = [(id - 1) * ITEM_WIDTH, id * ITEM_WIDTH, (id + 1) * ITEM_WIDTH];
 
   const translateStyle = useAnimatedStyle(() => {
@@ -40,7 +45,7 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
       scrollX.value,
       inputRange,
       [-ITEM_WIDTH * 0.2, 0, ITEM_WIDTH * 0.2],
-      Extrapolation.CLAMP,
+      Extrapolation.CLAMP
     );
     return {
       transform: [{ translateX }],
@@ -73,9 +78,13 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
       >
         <Animated.View style={translateImageStyle}>
           <ImageBackground
-            source={{ uri: item.thumbnailUrl }}
+            source={
+              typeof item.thumbnailUrl === 'number'
+                ? item.thumbnailUrl
+                : { uri: item.thumbnailUrl }
+            }
             style={styles.imageBackground}
-            resizeMode="cover"
+            imageStyle={{ borderRadius: 8 }}
           >
             <BlurView
               intensity={60}
@@ -96,11 +105,9 @@ const TodayPickCarousel: React.FC<ParallaxCarouselCardProps> = ({ item, id, scro
 
 const styles = StyleSheet.create({
   imageBackground: {
-    overflow: 'hidden',
     width: ITEM_WIDTH,
     height: ITEM_HEIGHT,
-    justifyContent: 'center',
-    alignSelf: 'center',
+    justifyContent: 'flex-end',
   },
   posterInfoView: {
     height: 48,

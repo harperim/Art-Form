@@ -14,55 +14,65 @@ export const useAuthActions = () => {
   const router = useRouter();
   const { login, logout } = useAuth();
 
+  // const handleRegister = async (
+  //   email: string,
+  //   password: string,
+  //   confirm: string,
+  //   nickname: string,
+  // ) => {
+  //   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  //   if (!isValidEmail) {
+  //     alert('올바른 이메일 형식이 아닙니다.');
+  //     return;
+  //   }
+
+  //   if (password !== confirm) {
+  //     alert('비밀번호가 일치하지 않습니다.');
+  //     return;
+  //   }
+
+  //   if (!email || !password || !nickname) {
+  //     alert('모든 항목을 입력해주세요.');
+  //     return;
+  //   }
+
+  //   if (nickname.length < 2 || nickname.length > 12) {
+  //     alert('닉네임은 2~12자 사이로 입력해주세요.');
+  //     return;
+  //   }
+
+  //   try {
+  //     await signupUser({ email, password, nickname });
+  //     alert('회원가입 완료! 로그인 페이지로 이동합니다.');
+  //     router.replace('/login');
+  //   } catch (err: unknown) {
+  //     if (err instanceof AxiosError) {
+  //       const status = err.response?.status;
+  //       const msg = err.response?.data?.msg;
+
+  //       if (status === 409) {
+  //         alert(msg || '이미 사용 중인 이메일 또는 닉네임입니다.');
+  //       } else if (status === 400) {
+  //         alert(msg || '요청 형식이 잘못되었습니다.');
+  //       } else {
+  //         alert('회원가입 중 오류가 발생했습니다.');
+  //       }
+  //     } else {
+  //       console.debug('회원가입 실패:', err);
+  //       alert('알 수 없는 오류가 발생했습니다.');
+  //     }
+  //   }
+  // };
+
   const handleRegister = async (
     email: string,
-    password: string,
-    confirm: string,
-    nickname: string,
-  ) => {
-    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    if (!isValidEmail) {
-      alert('올바른 이메일 형식이 아닙니다.');
-      return;
-    }
-
-    if (password !== confirm) {
-      alert('비밀번호가 일치하지 않습니다.');
-      return;
-    }
-
-    if (!email || !password || !nickname) {
-      alert('모든 항목을 입력해주세요.');
-      return;
-    }
-
-    if (nickname.length < 2 || nickname.length > 12) {
-      alert('닉네임은 2~12자 사이로 입력해주세요.');
-      return;
-    }
-
-    try {
-      await signupUser({ email, password, nickname });
-      alert('회원가입 완료! 로그인 페이지로 이동합니다.');
-      router.replace('/login');
-    } catch (err: unknown) {
-      if (err instanceof AxiosError) {
-        const status = err.response?.status;
-        const msg = err.response?.data?.msg;
-
-        if (status === 409) {
-          alert(msg || '이미 사용 중인 이메일 또는 닉네임입니다.');
-        } else if (status === 400) {
-          alert(msg || '요청 형식이 잘못되었습니다.');
-        } else {
-          alert('회원가입 중 오류가 발생했습니다.');
-        }
-      } else {
-        console.debug('회원가입 실패:', err);
-        alert('알 수 없는 오류가 발생했습니다.');
-      }
-    }
+    pw: string,
+    pwConfirm: string,
+    nickname: string
+  ): Promise<{ success: boolean }> => {
+    console.log('✅ 회원가입 시도:', { email, pw, pwConfirm, nickname });
+    return { success: true };
   };
 
   const handleLogin = async (email: string, password: string) => {
@@ -106,32 +116,47 @@ export const useAuthActions = () => {
     }
   };
 
-  const checkNickname = async (nickname: string) => {
-    try {
-      const res = await checkNicknameDuplicate(nickname);
-      if (res.data === true) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (err) {
-      console.debug('닉네임 중복 체크 실패:', err);
-      alert('중복 체크 중 오류가 발생했습니다.');
-      return false;
-    }
+  // const checkNickname = async (nickname: string) => {
+  //   try {
+  //     const res = await checkNicknameDuplicate(nickname);
+  //     if (res.data === true) {
+  //       return true;
+  //     } else {
+  //       return false;
+  //     }
+  //   } catch (err) {
+  //     console.debug('닉네임 중복 체크 실패:', err);
+  //     alert('중복 체크 중 오류가 발생했습니다.');
+  //     return false;
+  //   }
+  // };
+
+  const checkNickname = async (nickname: string): Promise<boolean> => {
+    if (nickname === '삼시두끼') return false;
+    if (nickname === '픽셀도깨비') return true;
+    return false; // 나머지는 모두 사용 불가 처리
   };
 
-  const checkEmail = async (email: string) => {
-    if (!email) return null;
+  // const checkEmail = async (email: string) => {
+  //   if (!email) return null;
 
-    try {
-      const res = await checkEmailDuplicate(email);
-      return res.data; // boolean
-    } catch (err) {
-      console.debug('이메일 중복 체크 실패:', err);
-      return null;
-    }
+  //   try {
+  //     const res = await checkEmailDuplicate(email);
+  //     return res.data; // boolean
+  //   } catch (err) {
+  //     console.debug('이메일 중복 체크 실패:', err);
+  //     return null;
+  //   }
+  // };
+
+  const checkEmail = async (email: string): Promise<boolean> => {
+    return email === 'ssafy@naver.com';
   };
 
-  return { handleLogin, handleLogout, handleRegister, checkNickname, checkEmail };
+  // return { handleLogin, handleLogout, handleRegister, checkNickname, checkEmail };
+  return {
+    handleRegister,
+    checkNickname,
+    checkEmail,
+  };
 };

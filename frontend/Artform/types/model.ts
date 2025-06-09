@@ -19,7 +19,7 @@ export type Model = {
 };
 
 export type ModelWithThumbnail = Model & {
-  thumbnailUrl: string;
+  thumbnailUrl: string | number;
 };
 
 export type MyModelItem = {

@@ -18,12 +18,19 @@ import { router } from 'expo-router';
 import { useModel } from '~/context/ModelContext';
 
 import { useCallback, useEffect, useState } from 'react';
-import { fetchHotModels, fetchRandomModels, fetchRecentModels } from '~/services/modelService';
 import type { ModelWithThumbnail } from '~/types/model';
-import { fetchPresignedImageUrl, getValidUrl } from '~/services/imageService';
 
-import { useAuth } from '~/lib/auth-context';
-import { fetchMyInfo } from '~/services/userService';
+// 이미지 import
+import image1 from '../../assets/images/FE/개양귀비.jpg';
+import image2 from '../../assets/images/FE/물랭드라갈레트의무도회.jpg';
+import image3 from '../../assets/images/FE/엘리멘탈.jpg';
+import image4 from '../../assets/images/FE/지브리.jpg';
+import image5 from '../../assets/images/FE/라푼젤.jpg';
+import image6 from '../../assets/images/FE/양산을쓴여인.jpg';
+import image7 from '../../assets/images/FE/파리의거리.jpg';
+import image8 from '../../assets/images/FE/유미의세포들.jpg';
+import image9 from '../../assets/images/FE/동양화.png';
+import image10 from '../../assets/images/FE/그랑드자트섬의-일요일-오후.jpg';
 
 export default function Home() {
   const [todayData, setTodayData] = useState<ModelWithThumbnail[]>([]);
@@ -41,58 +48,56 @@ export default function Home() {
     setSelectedModel(item);
   };
 
-  const loadModels = async () => {
-    try {
-      const [random, hot, recent] = await Promise.all([
-        fetchRandomModels(5),
-        fetchHotModels(0),
-        fetchRecentModels(0),
-      ]);
-
-      const all = [...random, ...hot, ...recent];
-      const urls = await Promise.all(
-        all.map((model) => fetchPresignedImageUrl(model.model.thumbnailId)),
-      );
-
-      const randomMerged = random.map((model, index) => ({
-        ...model,
-        thumbnailUrl: getValidUrl(urls[index]),
-      }));
-
-      const hotMerged = hot.map((model, index) => ({
-        ...model,
-        thumbnailUrl: getValidUrl(urls[random.length + index]),
-      }));
-
-      const recentMerged = recent.map((model, index) => ({
-        ...model,
-        thumbnailUrl: getValidUrl(urls[random.length + hot.length + index]),
-      }));
-
-      setTodayData(randomMerged);
-      setHotModels(hotMerged);
-      setRecentModels(recentMerged);
-    } catch (err) {
-      console.debug('모델 데이터 불러오기 실패:', err);
-    }
-  };
-
-  const { updateUserInfo } = useAuth();
-  const fetchUserInfo = async () => {
-    const userInfo = await fetchMyInfo();
-    updateUserInfo(userInfo);
-  };
-
   useEffect(() => {
-    loadModels();
+    const fakeModel = (
+      modelId: number,
+      modelName: string,
+      image: any,
+      userName: string
+    ): ModelWithThumbnail => ({
+      model: {
+        modelId,
+        userId: 1,
+        modelName,
+        description: `${modelName}에 대한 설명입니다.`,
+        likeCount: 0,
+        uploadFileName: `${modelName}.jpg`,
+        thumbnailId: modelId,
+        createdAt: new Date().toISOString(),
+        deletedAt: null,
+        public: true,
+      },
+      userName,
+      thumbnailUrl: Image.resolveAssetSource(image).uri,
+    });
 
-    fetchUserInfo();
+    const dummyToday = [
+      fakeModel(1, '개양귀비', image1, '모네'),
+      fakeModel(2, '물랭드라갈레트의무도회', image2, '르누아르'),
+      fakeModel(3, '엘리멘탈', image3, '픽사'),
+      fakeModel(4, '지브리', image4, '미야자키 하야오'),
+    ];
+
+    const dummyHot = [
+      fakeModel(5, '라푼젤', image5, '디즈니'),
+      fakeModel(6, '양산을 쓴 여인', image6, '모네'),
+      fakeModel(7, '파리의 거리', image7, '카유보트'),
+    ];
+
+    const dummyRecent = [
+      fakeModel(8, '유미의 세포들', image8, '스튜디오드래곤'),
+      fakeModel(9, '동양화', image9, '김홍도'),
+      fakeModel(10, '그랑드자트섬의 일요일 오후', image10, '쇠라'),
+    ];
+
+    setTodayData(dummyToday);
+    setHotModels(dummyHot);
+    setRecentModels(dummyRecent);
   }, []);
+
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchUserInfo();
-    await loadModels();
     setRefreshing(false);
   }, []);
 
