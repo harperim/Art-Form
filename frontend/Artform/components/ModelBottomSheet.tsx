@@ -10,6 +10,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image as RNImage
 } from 'react-native';
 import { BottomSheetBackdrop, BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import * as ImagePicker from 'expo-image-picker';
@@ -28,10 +29,13 @@ import type { ModelWithThumbnail } from '~/types/model';
 import type { Review } from '~/types/review';
 import { fetchModelLikeStatus, likeModel } from '~/services/modelService';
 
+import image11 from '../assets/images/FE/유미의세포들.jpg';
+
+
 export default function ModelBottomSheet() {
   const snapPoints = useMemo(() => ['85%'], []);
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(0);
+  const [likes, setLikes] = useState(42);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [comment, setComment] = useState('');
   const [commentImage, setCommentImage] = useState<{ uri: string } | null>(null);
@@ -49,46 +53,89 @@ export default function ModelBottomSheet() {
     useModel();
   const model = selectedModel as ModelWithThumbnail;
 
-  useEffect(() => {
-    const init = async () => {
-      if (!model) return;
+  // 검색 
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState<ModelWithThumbnail[]>([]); // 검색 결과 리스트
 
-      setPage(0);
-      setHasMore(true);
-      loadReviews(0, true);
-      setLikes(model.model.likeCount);
+  const dummyModels: ModelWithThumbnail[] = [
+    {
+      model: {
+        modelId: 1,
+        modelName: '유미의 세포들',
+        likeCount: 42,
+        description: '세포들의 세계를 그린 따뜻한 그림입니다.',
+        createdAt: new Date().toISOString(),
+      },
+      thumbnailUrl: '',
+      userName: '작가1',
+    },
+    {
+      model: {
+        modelId: 2,
+        modelName: '픽셀 꿈의 숲',
+        likeCount: 10,
+        description: '환상적인 숲을 그린 픽셀 아트 스타일',
+        createdAt: new Date().toISOString(),
+      },
+      thumbnailUrl: '',
+      userName: '작가2',
+    },
+  ];
 
-      try {
-        const liked = await fetchModelLikeStatus(model.model.modelId);
-        setLiked(liked);
-      } catch (err) {
-        console.warn('좋아요 여부 불러오기 실패:', err);
-        setLiked(false);
-      }
-    };
+  const handleSearch = useCallback((text: string) => {
+    setSearchText(text);
+    const filtered = dummyModels.filter((model) =>
+      model.model.modelName.toLowerCase().includes(text.toLowerCase()),
+    );
+    setSearchResults(filtered);
+  }, []);
 
-    init(); // async 실행
+
+  // useEffect(() => {
+  //   const init = async () => {
+  //     if (!model) return;
+
+  //     setPage(0);
+  //     setHasMore(true);
+  //     loadReviews(0, true);
+  //     setLikes(model.model.likeCount);
+
+  //     try {
+  //       const liked = await fetchModelLikeStatus(model.model.modelId);
+  //       setLiked(liked);
+  //     } catch (err) {
+  //       console.warn('좋아요 여부 불러오기 실패:', err);
+  //       setLiked(false);
+  //     }
+  //   };
+
+  //   init(); // async 실행
+  // }, [model]);
+
+    // 해당 코드 주석 처리 또는 조건문 추가
+    useEffect(() => {
+    if (!model) return;
+
+    setPage(0);
+    setHasMore(true);
+    loadReviews(0, true);
+
+    // setLikes(model.model.likeCount);
+    setLikes(42);
+    setLiked(false); // 처음엔 false로 시작
   }, [model]);
+
 
   useEffect(() => {
     if (!selectedModel) return;
 
-    let cancelled = false;
-
-    const refreshIfNeeded = async () => {
-      const updatedModel = await refreshSelectedModel();
-
-      if (!cancelled && updatedModel) {
-        bottomSheetRef.current?.present();
-      }
-    };
-
-    refreshIfNeeded();
-
-    return () => {
-      cancelled = true;
-    };
+    // 강제로 dismiss 후 다시 present
+    bottomSheetRef.current?.dismiss();
+    setTimeout(() => {
+      bottomSheetRef.current?.present();
+    }, 100); // 짧은 지연 후 재호출
   }, [selectedModel]);
+
 
   useEffect(() => {
     const hideSub = Keyboard.addListener('keyboardDidHide', () => inputRef.current?.blur());
@@ -128,39 +175,46 @@ export default function ModelBottomSheet() {
       {
         text: '삭제',
         style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteModelReview(reviewId);
-            setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId));
-          } catch (err) {
-            console.warn('리뷰 삭제 실패:', err);
-            alert('리뷰 삭제에 실패했습니다.');
-          }
+        onPress: () => {
+          console.log('더미 리뷰 삭제', reviewId);
+          setReviews((prev) => prev.filter((r) => r.reviewId !== reviewId));
+          setReviewCount((prev) => prev - 1);
         },
       },
     ]);
   };
+
 
   const loadReviews = async (nextPage = 0, reset = false) => {
     if (isFetchingMore || !model || (!hasMore && nextPage !== 0)) return;
 
     setIsFetchingMore(true);
     try {
-      const { data, reviewCount } = await fetchModelReviews(model.model.modelId, nextPage);
+      const dummyReviews = [
+        {
+          reviewId: 1,
+          content: '보자마자 미소 지었어요 ㅠㅠ 이런 따뜻한 그림 너무 좋아요',
+          createdAt: new Date().toISOString(),
+          presignedUrl: null,
+          userId: 123,
+          userName: '솜솜이',
+        },
+        {
+          reviewId: 2,
+          content: '진짜 감정이 살아 있는 느낌… 이게 바로 세포들의 세계인가요?',
+          createdAt: new Date().toISOString(),
+          presignedUrl: null,
+          userId: 456,
+          userName: '날아라슈퍼보드',
+        },
+      ];
 
-      setReviewCount(reviewCount);
-
-      setReviews((prev) => {
-        const existingIds = new Set(prev.map((r) => r.reviewId));
-        const filtered = data.filter((r) => !existingIds.has(r.reviewId));
-        return reset || nextPage === 0 ? data : [...prev, ...filtered];
-      });
-
+      setReviewCount(dummyReviews.length);
+      setReviews(reset || nextPage === 0 ? dummyReviews : [...reviews, ...dummyReviews]);
       setPage(nextPage + 1);
-      setHasMore((nextPage + 1) * data.length < reviewCount); // 페이지당 개수로 남은 여부 계산
+      setHasMore(false); // 더미니까 더 불러올 건 없다고 처리
     } catch (err) {
-      console.debug('리뷰 불러오기 실패:', err);
-
+      console.debug('더미 리뷰 로딩 실패:', err);
       setReviews([]);
       setReviewCount(0);
       setHasMore(false);
@@ -169,51 +223,62 @@ export default function ModelBottomSheet() {
     }
   };
 
+
   const handleSendComment = async () => {
     if (!comment.trim()) return;
     try {
-      let uploadFileName: string | undefined;
-      if (commentImage) {
-        const fileUri = commentImage.uri;
-        const fileName = fileUri.split('/').pop()!;
-        const fileType = getFileTypeFromUri(fileUri);
+      // 실제 업로드 생략
+      console.log('리뷰 등록 (더미)', comment, commentImage?.uri);
 
-        const { presignedUrl, uploadFileName: fileKey } = await getImageUploadUrl(
-          fileName,
-          fileType,
-          'review',
-        );
-        await uploadToS3(presignedUrl, fileUri, fileType);
-        uploadFileName = fileKey;
-      }
+      const newReview: Review = {
+        reviewId: Date.now(), // 고유 ID 대체
+        content: comment,
+        createdAt: new Date().toISOString(),
+        presignedUrl: commentImage?.uri ?? null,
+        userId: Number(userInfo.userId),
+        userName: userInfo.nickname || '픽셀도깨비',
+      };
 
-      await postModelReview(model.model.modelId, comment, uploadFileName);
+      // 리뷰 목록에 새 댓글 추가
+      setReviews((prev) => [...prev, newReview]);
+      setReviewCount((prev) => prev + 1);
 
+      // 입력 초기화
       setComment('');
       inputRef.current?.clear?.();
       setCommentImage(null);
-      loadReviews(0, true);
     } catch (err) {
       console.debug('리뷰 등록 실패:', err);
       alert('리뷰 등록 중 오류가 발생했습니다.');
     }
   };
 
+
+
   if (!model) return null;
+
+  const localThumbnailUrl =
+    model.model.modelName === '유미의 세포들'
+      ? RNImage.resolveAssetSource(image11).uri
+      : model.thumbnailUrl;
 
   return (
     <>
       {previewImageUri && (
         <TouchableOpacity
-          style={styles.fullscreenModal}
-          onPress={() => setPreviewImageUri(null)}
-          activeOpacity={1}
+          style={styles.likeButton}
+          onPress={() => {
+            const nextLiked = !liked;
+            setLiked(nextLiked);
+            setLikes((prev) => prev + (nextLiked ? 1 : -1));
+          }}
         >
-          <Image
-            source={{ uri: previewImageUri }}
-            style={styles.fullscreenImage}
-            resizeMode="contain"
-          />
+          {liked ? (
+            <ICONS.heart.filled width={24} height={24} />
+          ) : (
+            <ICONS.heart.outline width={24} height={24} />
+          )}
+          <Text style={styles.likeText}>{likes}</Text>
         </TouchableOpacity>
       )}
 
@@ -241,6 +306,48 @@ export default function ModelBottomSheet() {
           }}
           contentContainerStyle={styles.container}
         >
+          {/* 모델 검색창 */}
+          <View style={{ marginBottom: 16 }}>
+            <TextInput
+              value={searchText}
+              onChangeText={handleSearch}
+              placeholder="모델 검색하기..."
+              style={{
+                backgroundColor: '#F0F0F0',
+                borderRadius: 12,
+                paddingHorizontal: 16,
+                height: 44,
+                fontFamily: 'Freesentation7',
+              }}
+            />
+          </View>
+
+          {/* 검색 결과 리스트 */}
+          {searchText.length > 0 && (
+            <View style={{ marginBottom: 20 }}>
+              <Text style={styles.subTitle}>검색 결과</Text>
+              {searchResults.map((item) => (
+                <TouchableOpacity
+                  key={item.model.modelId}
+                  style={{ paddingVertical: 8 }}
+                  onPress={() => {
+                    setSelectedModel(item);
+                    setSearchText('');
+                    setSearchResults([]);
+                  }}
+                >
+                  <Text style={{ fontSize: 16, fontFamily: 'Freesentation6' }}>
+                    {item.model.modelName}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+              {searchResults.length === 0 && (
+                <Text style={{ color: '#888', marginTop: 4 }}>검색 결과가 없습니다.</Text>
+              )}
+            </View>
+          )}
+
+
           {/* 헤더 */}
           <View style={styles.header}>
             <View>
@@ -250,9 +357,22 @@ export default function ModelBottomSheet() {
           </View>
 
           {/* 대표 이미지 */}
-          <View style={styles.mainImageWrapper}>
+          {/* <View style={styles.mainImageWrapper}>
             <TouchableOpacity onPress={() => setPreviewImageUri(model.thumbnailUrl)}>
               <Image source={{ uri: model.thumbnailUrl }} style={styles.mainImage} />
+            </TouchableOpacity>
+          </View> */}
+          {/* 대표 이미지 */}
+          <View style={styles.mainImageWrapper}>
+            <TouchableOpacity onPress={() => setPreviewImageUri(localThumbnailUrl)}>
+              <Image
+                source={
+                  model.model.modelName === '유미의 세포들'
+                    ? image11
+                    : { uri: model.thumbnailUrl }
+                }
+                style={styles.mainImage}
+              />
             </TouchableOpacity>
           </View>
 
@@ -260,16 +380,10 @@ export default function ModelBottomSheet() {
           <View style={styles.likesContainer}>
             <TouchableOpacity
               style={styles.likeButton}
-              onPress={async () => {
-                try {
-                  const isLiked = await likeModel(model.model.modelId);
-                  setLiked(isLiked);
-                  setLikes((prev) => (isLiked ? prev + 1 : prev - 1));
-                } catch (err) {
-                  console.warn('좋아요 처리 실패:', err);
-                  setLiked((prev) => !prev);
-                  setLikes((prev) => (liked ? prev + 1 : prev - 1));
-                }
+              onPress={() => {
+                const nextLiked = !liked;
+                setLiked(nextLiked);
+                setLikes((prev) => prev + (nextLiked ? 1 : -1));
               }}
             >
               {liked ? (
@@ -420,6 +534,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     height: 56,
+    justifyContent: 'center'
   },
   useButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
   divider: { height: 1, backgroundColor: '#E0E0E0', marginHorizontal: -20, marginVertical: 20 },

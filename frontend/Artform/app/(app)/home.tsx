@@ -143,7 +143,7 @@ export default function Home() {
       <View style={styles.popularModelView}>
         <View style={styles.sectionHeader}>
           <Text style={styles.title}>인기모델</Text>
-          <TouchableOpacity onPress={() => router.push('/store?sort=popular')}>
+          <TouchableOpacity onPress={() => router.push('/store?sort=latest')}>
             <Text style={styles.seeMoreBtn}>더 보기</Text>
           </TouchableOpacity>
         </View>
@@ -154,7 +154,7 @@ export default function Home() {
       <View style={styles.newModelView}>
         <View style={styles.sectionHeader}>
           <Text style={styles.title}>최신모델</Text>
-          <TouchableOpacity onPress={() => router.push('/store?sort=latest')}>
+          <TouchableOpacity onPress={() => router.push('/store?sort=popular')}>
             <Text style={styles.seeMoreBtn}>더 보기</Text>
           </TouchableOpacity>
         </View>

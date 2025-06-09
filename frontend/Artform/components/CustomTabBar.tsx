@@ -1,5 +1,6 @@
 // components/CustomTabBar.tsx
-import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, TouchableOpacity, StyleSheet, Platform, Keyboard } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { TAB_ICONS } from '~/constants/icons';
 
@@ -8,7 +9,23 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 
   const currentRouteName = state.routes[state.index].name;
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+
   if (hiddenRoutes.includes(currentRouteName)) return null;
+
+  // ✅ 키보드 리스너 등록
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const hide = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
+  // ✅ 숨김 조건: 키보드 보이거나 숨겨야 하는 라우트일 때
+  if (keyboardVisible || hiddenRoutes.includes(currentRouteName)) return null;
 
   return (
     <View style={styles.tabBar}>
